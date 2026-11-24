@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { BUSINESS_KINDS, BUSINESS_STATUS, MAX_PHOTOS } from './businesses.model.js';
+import { BUSINESS_KINDS, BUSINESS_STATUS, MAX_PHOTOS, FOOD_CUISINES, MENU_LIMITS } from './businesses.model.js';
 import { paginationFields } from '../../common/utils/pagination.js';
 import { GEO } from '../../config/constants.js';
 import { imageRef, lat, lng, objectId, queryBool, slugParam } from '../../common/utils/validators.js';
@@ -39,6 +39,33 @@ const address = z.strictObject({
 
 const location = z.strictObject({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) });
 
+const menuItem = z.strictObject({
+  name: z.string().trim().min(1, 'Item name is required').max(80),
+  price: z.number().min(0).max(MENU_LIMITS.maxPrice),
+  isVeg: z.boolean().optional(),
+});
+const menuSection = z.strictObject({
+  section: z.string().trim().min(1, 'Section name is required').max(60),
+  items: z.array(menuItem).min(1, 'Add at least one item').max(MENU_LIMITS.itemsPerSection),
+});
+
+/** Food details (FR-FOOD-1). Only accepted for businesses of kind "food". */
+const food = z.strictObject({
+  cuisines: z
+    .array(z.enum(FOOD_CUISINES))
+    .max(5)
+    .refine((v) => new Set(v).size === v.length, 'Each cuisine only once')
+    .optional(),
+  isVegFriendly: z.boolean().optional(),
+  menu: z
+    .array(menuSection)
+    .max(MENU_LIMITS.sections)
+    .refine((m) => m.reduce((n, s) => n + s.items.length, 0) <= MENU_LIMITS.totalItems, {
+      message: `At most ${MENU_LIMITS.totalItems} menu items`,
+    })
+    .optional(),
+});
+
 /** Fields an owner may edit on an APPROVED (published/hidden) business (FR-BUS-5). */
 const ownerEditable = {
   description: z.string().trim().max(2000).optional(),
@@ -46,6 +73,9 @@ const ownerEditable = {
   contact: contact.optional(),
   openingHours: z.array(hoursSlot).max(21).optional(),
   photos: z.array(imageRef).max(MAX_PHOTOS).optional(),
+  // Food details and menu are "details" too: owners keep them up to date.
+  priceRange: z.union([z.number().int().min(1).max(3), z.null()]).optional(),
+  food: food.optional(),
 };
 
 /** Identity and placement fields ("material" fields). */
@@ -112,6 +142,9 @@ export const listQuery = z
     categoryId: objectId.optional(),
     subcategoryId: objectId.optional(),
     kind: z.enum(BUSINESS_KINDS).optional(),
+    cuisine: z.enum(FOOD_CUISINES).optional(),
+    priceRange: z.coerce.number().int().min(1).max(3).optional(),
+    isVegFriendly: queryBool.optional(),
     area: z.string().trim().max(80).optional(),
     isVerified: queryBool.optional(),
     openNow: queryBool.optional(),

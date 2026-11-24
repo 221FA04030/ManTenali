@@ -10,6 +10,7 @@ import { toPoint, fromPoint, kmToMeters, clampRadiusKm } from '../../common/util
 import { isOpenAt, openNowFilter } from '../../common/utils/hours.js';
 import { escapeRegex } from '../../common/utils/validators.js';
 import { ROLES } from '../../config/constants.js';
+import { getEnv } from '../../config/env.js';
 
 const S = BUSINESS_STATUS;
 
@@ -30,7 +31,45 @@ const KIND_BY_MAIN_SLUG = { 'food-dining': 'food', shopping: 'shop' };
 const kindFor = (mainCategory, explicit) => explicit ?? KIND_BY_MAIN_SLUG[mainCategory?.slug] ?? 'service';
 
 const CARD_FIELDS =
-  'name slug kind categoryId subcategoryId address location contact.phone contact.whatsapp photos isVerified isSeed ratingAvg ratingCount openingHours updatedAt';
+  'name slug kind categoryId subcategoryId address location contact.phone contact.whatsapp photos isVerified isSeed ratingAvg ratingCount openingHours updatedAt priceRange food.cuisines food.isVegFriendly';
+
+/* ----------------------------- food (Step 4) ----------------------------- */
+
+/** Card-level food summary (no menu, to keep list payloads small). */
+function foodSummary(b) {
+  if (b.kind !== 'food') return null;
+  return { cuisines: b.food?.cuisines ?? [], isVegFriendly: Boolean(b.food?.isVegFriendly) };
+}
+
+function foodDetail(b) {
+  if (b.kind !== 'food') return null;
+  return {
+    cuisines: b.food?.cuisines ?? [],
+    isVegFriendly: Boolean(b.food?.isVegFriendly),
+    menu: (b.food?.menu ?? []).map((sec) => ({
+      section: sec.section,
+      items: sec.items.map(({ name, price, isVeg }) => ({ name, price, isVeg: Boolean(isVeg) })),
+    })),
+  };
+}
+
+/**
+ * Apply price range and food details. Food details are only for businesses
+ * of kind "food"; if a business stops being food, its food details are removed.
+ */
+function applyFoodFields(doc, input) {
+  if (input.priceRange !== undefined) doc.priceRange = input.priceRange === null ? undefined : input.priceRange;
+  if (input.food !== undefined) {
+    if (doc.kind !== 'food') {
+      throw AppError.validation('Cuisines and menus are only for food businesses.', [
+        { field: 'body.food', message: 'Only for food businesses' },
+      ]);
+    }
+    const current = doc.food ? { cuisines: doc.food.cuisines, isVegFriendly: doc.food.isVegFriendly, menu: doc.food.menu } : {};
+    doc.food = { cuisines: [], isVegFriendly: false, menu: [], ...current, ...input.food };
+  }
+  if (doc.kind !== 'food' && doc.food) doc.food = undefined;
+}
 
 const isAdmin = (user) => user?.role === ROLES.ADMIN;
 const isOwnerOf = (user, b) => Boolean(user && b.ownerId && String(b.ownerId) === String(user.id));
@@ -56,6 +95,8 @@ function toCard(b, categories, now) {
     ratingCount: b.ratingCount ?? 0,
     isOpenNow: isOpenAt(b.openingHours, now),
     contact: { phone: b.contact?.phone ?? null, whatsapp: b.contact?.whatsapp ?? null },
+    priceRange: b.priceRange ?? null,
+    food: foodSummary(b),
     updatedAt: b.updatedAt,
   };
 }
@@ -97,6 +138,8 @@ function toDetail(b, categories, user, { now = new Date(), includeReview = false
     })),
     isOpenNow: isOpenAt(b.openingHours, now),
     photos: b.photos ?? [],
+    priceRange: b.priceRange ?? null,
+    food: foodDetail(b),
     isVerified: Boolean(b.isVerified),
     verifiedAt: b.verifiedAt ?? null,
     isSeed: Boolean(b.isSeed),
@@ -211,6 +254,11 @@ export async function listPublic(query, now = new Date()) {
   if (query.subcategoryId) filter.subcategoryId = new mongoose.Types.ObjectId(query.subcategoryId);
   if (query.kind) filter.kind = query.kind;
   if (query.area) filter['address.area'] = query.area;
+  // Food filters (FR-FOOD-2) imply food businesses.
+  if (query.cuisine || query.isVegFriendly !== undefined) filter.kind = 'food';
+  if (query.cuisine) filter['food.cuisines'] = query.cuisine;
+  if (query.isVegFriendly !== undefined) filter['food.isVegFriendly'] = query.isVegFriendly;
+  if (query.priceRange) filter.priceRange = query.priceRange;
   if (query.isVerified !== undefined) filter.isVerified = query.isVerified;
   if (query.openNow) Object.assign(filter, openNowFilter(now));
 
@@ -318,6 +366,7 @@ export async function submitBusiness(user, input) {
     status: input.submit ? S.PENDING : S.DRAFT,
     submittedAt: input.submit ? now : undefined,
   });
+  applyFoodFields(doc, input);
   await doc.save();
   return toDetail(doc.toObject(), new Map([[String(category.id), category], [String(subcategory.id), subcategory]]), user, {
     includeReview: true,
@@ -398,6 +447,7 @@ export async function updateBusiness(user, id, input) {
     await assertNotDuplicate(input.name ?? doc.name, input.address?.area ?? doc.address.area, doc._id);
   }
   applyCommonFields(doc, input);
+  applyFoodFields(doc, input);
   if (admin) {
     if (input.status !== undefined) doc.status = input.status;
     if (input.ownerId !== undefined) doc.ownerId = input.ownerId === null ? undefined : await prepareOwner(input.ownerId);
@@ -503,6 +553,7 @@ export async function createBusiness(user, input) {
     status: input.status ?? S.DRAFT,
     createdBy: user.id,
   });
+  applyFoodFields(doc, input);
   if (input.ownerId) doc.ownerId = await prepareOwner(input.ownerId);
   await doc.save();
   return toDetail(doc.toObject(), await categoryMapFor([doc]), user);
@@ -578,6 +629,8 @@ export async function countBySubcategory(categoryId) {
  * `categoryIdBySlug` maps a SUBcategory slug -> { id, parentId }.
  */
 export async function seedBusinesses(list, categoryIdBySlug) {
+  // Defence in depth: sample data never reaches production, whatever the caller.
+  if (getEnv().isProduction) throw new Error('Sample data cannot be seeded in production.');
   let created = 0;
   for (const item of list) {
     if (await Business.exists({ slug: item.slug })) continue;

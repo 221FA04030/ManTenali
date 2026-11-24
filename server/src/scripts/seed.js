@@ -5,7 +5,9 @@
  * With --samples it also adds SAMPLE content (businesses...), always flagged
  * isSeed = true, never verified, and shown as "Sample data" in the app:
  *   npm run seed -- --samples
- * Refuses NODE_ENV=production unless --confirm-production is passed.
+ * Refuses NODE_ENV=production unless --confirm-production is passed, and then
+ * seeds reference categories ONLY: sample content is never allowed in
+ * production (there is no override).
  */
 import mongoose from 'mongoose';
 import { loadEnv } from '../config/env.js';
@@ -27,6 +29,9 @@ async function main() {
     env = loadEnv();
   } catch (err) {
     fail(err.message);
+  }
+  if (env.isProduction && process.argv.includes('--samples')) {
+    fail('Sample data is for local development and testing only and is never seeded into production.');
   }
   if (env.isProduction && !process.argv.includes('--confirm-production')) {
     fail('NODE_ENV=production. Re-run with --confirm-production only if you really intend to seed production.');

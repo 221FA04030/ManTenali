@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { TrustBadge, Badge } from '../../../components/ui/Badge.jsx';
 import { IconBubble } from '../../../components/ui/IconBubble.jsx';
 import { ContactActions } from './ContactActions.jsx';
+import { PriceRange, VegFriendlyBadge, useCuisineLabels } from '../../food/components/FoodBits.jsx';
 import { categoryName } from '../../categories/api.js';
 import { categoryIcon } from '../../../lib/categoryIcons.js';
 import { cldUrl } from '../../../lib/cloudinary.js';
@@ -13,6 +14,7 @@ import { formatDistance, formatRelative } from '../../../lib/format.js';
 export function BusinessCard({ business: b }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
+  const cuisineLabels = useCuisineLabels();
   return (
     <article className="overflow-hidden rounded-card bg-white shadow-card ring-1 ring-brand-100">
       <Link to={`/businesses/${b.slug}`} className="flex gap-3 p-3 hover:bg-brand-50/60">
@@ -31,11 +33,18 @@ export function BusinessCard({ business: b }) {
             <TrustBadge isVerified={b.isVerified} isSeed={b.isSeed} />
             {b.isOpenNow === true && <Badge tone="green">{t('business.openNow')}</Badge>}
             {b.isOpenNow === false && <Badge tone="gray">{t('business.closedNow')}</Badge>}
+            {b.food?.isVegFriendly && <VegFriendlyBadge />}
           </div>
           <h3 className="line-clamp-2 text-base font-bold leading-snug text-ink">{b.name}</h3>
           <p className="truncate text-[13px] text-ink-muted">
             {[categoryName(b.subcategory ?? b.category, lang), b.area].filter(Boolean).join(' • ')}
           </p>
+          {b.food && (b.food.cuisines.length > 0 || b.priceRange) && (
+            <p className="flex min-w-0 items-center gap-2 text-[13px] text-ink-muted">
+              <PriceRange value={b.priceRange} />
+              <span className="truncate">{cuisineLabels(b.food.cuisines)}</span>
+            </p>
+          )}
           <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-ink-soft">
             {b.distanceM !== undefined && (
               <span className="inline-flex items-center gap-1">

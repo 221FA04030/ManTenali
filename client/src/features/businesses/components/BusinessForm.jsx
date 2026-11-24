@@ -6,6 +6,8 @@ import { Input } from '../../../components/ui/Input.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { ImageUpload } from '../../../components/ui/ImageUpload.jsx';
 import { CategoryPicker } from '../../categories/components/CategoryPicker.jsx';
+import { useCategoryTree } from '../../categories/api.js';
+import { FoodFieldsEditor, foodToState, stateToFood, validateFood } from '../../food/components/FoodFieldsEditor.jsx';
 import { TENALI_AREAS } from '../../../config/areas.js';
 import { getCurrentPosition } from '../../../lib/geo.js';
 import { HoursEditor, hoursToRows, rowsToHours } from './HoursEditor.jsx';
@@ -46,11 +48,12 @@ function initialState(b) {
     hours: hoursToRows(b?.openingHours),
     photos: b?.photos ?? [],
     owner: b?.ownerId ? { id: b.ownerId } : null,
+    foodState: foodToState(b),
   };
 }
 
 /** Client-side checks mirroring the server rules. Keys match server field paths. */
-export function validateForm(s, mode) {
+export function validateForm(s, mode, { isFood = false } = {}) {
   const e = {};
   if (showsListingFields(mode)) {
     if (s.name.trim().length < 2) e.name = 'form.v.name';
@@ -70,11 +73,15 @@ export function validateForm(s, mode) {
     if (!r.closed && Boolean(r.open) !== Boolean(r.close)) e.openingHours = 'form.v.hours';
     if (!r.closed && r.open && r.open === r.close) e.openingHours = 'form.v.hours';
   }
+  if (isFood && s.foodState) {
+    const foodError = validateFood(s.foodState);
+    if (foodError) e.food = foodError;
+  }
   return e;
 }
 
 /** Build the API payload. Each mode sends only the fields it may change. */
-export function toPayload(s, mode, original) {
+export function toPayload(s, mode, original, { isFood = false } = {}) {
   const payload = {
     description: s.description.trim(),
     tags: s.tags
@@ -85,6 +92,8 @@ export function toPayload(s, mode, original) {
     openingHours: rowsToHours(s.hours),
     photos: s.photos,
   };
+  // Food details only for food businesses (the server rejects them otherwise).
+  if (isFood && s.foodState) Object.assign(payload, stateToFood(s.foodState));
   if (!showsListingFields(mode)) return payload;
   Object.assign(payload, {
     name: s.name.trim(),
@@ -120,6 +129,11 @@ export function BusinessForm({ mode, business, onSubmit, submitting, serverError
   const admin = mode === 'admin';
   const listing = showsListingFields(mode);
   const submission = mode === 'submission';
+  const { tree } = useCategoryTree('business');
+  const mainSlug = tree.find((m) => m.id === s.categoryId)?.slug;
+  // Food fields: admins follow the chosen kind; submissions follow the main
+  // category (Food & Dining becomes kind "food"); owners the listing's kind.
+  const isFood = admin ? s.kind === 'food' : submission ? (mainSlug ? mainSlug === 'food-dining' : business?.kind === 'food') : business?.kind === 'food';
 
   const fillMyLocation = async () => {
     setLocating(true);
@@ -134,14 +148,14 @@ export function BusinessForm({ mode, business, onSubmit, submitting, serverError
   };
 
   const send = (submit) => {
-    const errors = validateForm(s, mode);
+    const errors = validateForm(s, mode, { isFood });
     setClientErrors(errors);
     if (Object.keys(errors).length) {
       const first = document.querySelector('[aria-invalid="true"]');
       first?.focus?.();
       return;
     }
-    onSubmit(toPayload(s, mode, business), { submit });
+    onSubmit(toPayload(s, mode, business, { isFood }), { submit });
   };
 
   return (
@@ -239,6 +253,12 @@ export function BusinessForm({ mode, business, onSubmit, submitting, serverError
         <HoursEditor rows={s.hours} onChange={(hours) => set({ hours })} />
         {err('openingHours') && <p className="mt-2 text-sm text-red-700">{err('openingHours')}</p>}
       </Card>
+
+      {isFood && (
+        <Card>
+          <FoodFieldsEditor value={s.foodState} onChange={(foodState) => set({ foodState })} error={err('food')} />
+        </Card>
+      )}
 
       <Card className="flex flex-col gap-3">
         <h2 className="text-base font-bold">{t('form.photos', { max: MAX_PHOTOS })}</h2>

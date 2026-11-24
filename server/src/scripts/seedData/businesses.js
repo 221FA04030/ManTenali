@@ -61,6 +61,23 @@ export const BUSINESS_SEED = [
     lng: 80.6419,
     contact: { phone: '+91 90000 00004' },
     openingHours: weekdays('06:00', '11:30'),
+    priceRange: 1,
+    food: {
+      cuisines: ['south-indian', 'andhra'],
+      isVegFriendly: true,
+      menu: [
+        {
+          section: 'Tiffins',
+          items: [
+            { name: 'Idli (2)', price: 30, isVeg: true },
+            { name: 'Plain Dosa', price: 40, isVeg: true },
+            { name: 'Pesarattu', price: 50, isVeg: true },
+            { name: 'Upma', price: 35, isVeg: true },
+          ],
+        },
+        { section: 'Beverages', items: [{ name: 'Filter Coffee', price: 20, isVeg: true }] },
+      ],
+    },
   },
   {
     slug: 'sample-kothapeta-biryani-house',
@@ -74,6 +91,28 @@ export const BUSINESS_SEED = [
     lng: 80.6398,
     contact: { phone: '+91 90000 00005', whatsapp: '+91 90000 00005' },
     openingHours: weekdays('12:00', '23:00'),
+    priceRange: 2,
+    food: {
+      cuisines: ['biryani', 'andhra', 'north-indian'],
+      isVegFriendly: false,
+      menu: [
+        {
+          section: 'Biryani',
+          items: [
+            { name: 'Chicken Dum Biryani', price: 220, isVeg: false },
+            { name: 'Mutton Biryani', price: 320, isVeg: false },
+            { name: 'Veg Biryani', price: 160, isVeg: true },
+          ],
+        },
+        {
+          section: 'Curries',
+          items: [
+            { name: 'Andhra Chicken Curry', price: 200, isVeg: false },
+            { name: 'Paneer Butter Masala', price: 180, isVeg: true },
+          ],
+        },
+      ],
+    },
   },
   {
     slug: 'sample-ithanagar-sweets',
@@ -87,6 +126,21 @@ export const BUSINESS_SEED = [
     lng: 80.6502,
     contact: { phone: '+91 90000 00006' },
     openingHours: weekdays('08:00', '22:00'),
+    priceRange: 1,
+    food: {
+      cuisines: ['bakery-sweets', 'snacks-chaat'],
+      isVegFriendly: true,
+      menu: [
+        {
+          section: 'Sweets (per kg)',
+          items: [
+            { name: 'Kaju Katli', price: 900, isVeg: true },
+            { name: 'Mysore Pak', price: 480, isVeg: true },
+          ],
+        },
+        { section: 'Snacks', items: [{ name: 'Veg Puff', price: 20, isVeg: true }, { name: 'Egg Puff', price: 25, isVeg: false }] },
+      ],
+    },
   },
   {
     slug: 'sample-chenchupet-tailors',
