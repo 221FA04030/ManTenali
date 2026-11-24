@@ -14,8 +14,7 @@ import { ErrorState } from '../../../components/ui/ErrorState.jsx';
 import { useToast } from '../../../components/ui/Toast.jsx';
 import { errorMessageKey } from '../../../lib/apiClient.js';
 import { formatRelative } from '../../../lib/format.js';
-import { businessesApi, useAdminBusinesses, useBusinessMutation } from '../../businesses/api.js';
-import { STATUS_TONE } from '../../manage/pages/ManageHomePage.jsx';
+import { businessesApi, useAdminBusinesses, useBusinessMutation, STATUS_TONE } from '../../businesses/api.js';
 
 const actionBtn =
   'inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold ring-1 ring-brand-200 hover:bg-brand-50 disabled:opacity-50';
@@ -91,7 +90,7 @@ export default function AdminBusinessesPage() {
             }}
           >
             <option value="">{t('admin.allStatuses')}</option>
-            {['draft', 'published', 'hidden', 'archived'].map((s) => (
+            {['draft', 'pending', 'published', 'rejected', 'hidden', 'archived'].map((s) => (
               <option key={s} value={s}>
                 {t(`status.${s}`)}
               </option>
@@ -138,7 +137,11 @@ export default function AdminBusinessesPage() {
                   </Link>
                   {b.status !== 'archived' && (
                     <>
-                      {b.status === 'published' ? (
+                      {b.status === 'pending' || b.status === 'rejected' ? (
+                        <Link to={`/admin/submissions/${b.id}`} className={actionBtn}>
+                          {t('review.open')}
+                        </Link>
+                      ) : b.status === 'published' ? (
                         <button type="button" className={actionBtn} onClick={() => setStatusM.mutate({ id: b.id, value: 'hidden' })}>
                           <EyeOff className="h-4 w-4" aria-hidden="true" /> {t('admin.hide')}
                         </button>
@@ -147,7 +150,7 @@ export default function AdminBusinessesPage() {
                           <Eye className="h-4 w-4" aria-hidden="true" /> {t('admin.publish')}
                         </button>
                       )}
-                      {!b.isSeed && (
+                      {!b.isSeed && b.status === 'published' && (
                         <button type="button" className={actionBtn} onClick={() => verify.mutate({ id: b.id, value: !b.isVerified })}>
                           <BadgeCheck className="h-4 w-4" aria-hidden="true" /> {b.isVerified ? t('admin.unverify') : t('admin.verify')}
                         </button>

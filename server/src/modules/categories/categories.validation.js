@@ -18,6 +18,7 @@ export const createSchema = z.strictObject({
     .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Use lowercase letters, numbers and dashes')
     .max(90)
     .optional(),
+  parentId: objectId.optional(),
   icon: icon.optional(),
   sortOrder: z.number().int().min(0).max(10_000).optional(),
 });

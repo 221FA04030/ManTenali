@@ -26,6 +26,33 @@ npm run seed         # reference categories (safe to re-run; never overwrites ad
 npm run seed -- --samples   # also adds demo businesses labelled "Sample data" (development only)
 ```
 
+### Upgrading an existing database to two-level categories
+
+If you ran `npm run seed` before business submissions were added:
+
+```bash
+npm run seed                                # adds main categories, attaches existing ones (non-destructive)
+npm run migrate:categories                  # dry run: shows what would change
+npm run migrate:categories -- --apply       # moves business category references, backfills keys
+```
+
+### Business submissions (API summary)
+
+| Method | Path | Access | Purpose |
+|--------|------|--------|---------|
+| POST | `/api/v1/businesses/submissions` | Signed in | Submit a business (`submit: true`) or save a draft |
+| GET | `/api/v1/businesses/mine` | Signed in | My businesses with status and rejection reason |
+| GET | `/api/v1/businesses/mine/:id` | Owner | One of my listings (for editing) |
+| PATCH | `/api/v1/businesses/:id` | Owner / Admin | Edit (owners: all fields before approval, details/hours/photos after) |
+| POST | `/api/v1/businesses/:id/submit` | Owner | Submit a draft or resubmit a rejected listing |
+| GET | `/api/v1/admin/submissions?status=pending\|published\|rejected` | Admin | Review queue |
+| GET | `/api/v1/admin/submissions/:id` | Admin | Submission detail with submitter and reviewer |
+| POST | `/api/v1/admin/submissions/:id/approve` | Admin | Approve (goes live, submitter becomes owner) |
+| POST | `/api/v1/admin/submissions/:id/reject` | Admin | Reject with a required `reason` |
+| POST / PATCH | `/api/v1/categories` (`parentId` for subcategories) | Admin | Manage categories (deactivate, never delete) |
+
+Only approved (`published`) businesses appear in public lists, filters and detail pages.
+
 ### Images (Cloudinary)
 
 Photo uploads use **Cloudinary** (signed direct uploads). Add these three variables to `server/.env`

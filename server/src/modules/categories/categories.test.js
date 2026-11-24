@@ -3,8 +3,8 @@ import request from 'supertest';
 import { buildTestApp, connectTestDb, disconnectTestDb, clearTestDb, TEST_ORIGIN } from '../../tests/helpers.js';
 import { loginAs } from '../../tests/factories.js';
 import { Category } from './categories.model.js';
-import { seedCategories, assertActiveCategory } from './categories.service.js';
-import { CATEGORY_SEED } from '../../scripts/seedData/categories.js';
+import { seedCategories, seedCategoryTree, assertActiveCategory, assertCategoryPair } from './categories.service.js';
+import { CATEGORY_SEED, BUSINESS_CATEGORY_TREE } from '../../scripts/seedData/categories.js';
 
 let app;
 beforeAll(async () => {
@@ -105,13 +105,72 @@ describe('category service rules', () => {
     await expect(assertActiveCategory(inactive._id, 'business')).rejects.toMatchObject({ code: 'VALIDATION_ERROR' });
   });
 
-  it('seedCategories is idempotent and keeps admin edits', async () => {
+  it('seedCategories (event/news) is idempotent and keeps admin edits', async () => {
     const first = await seedCategories(CATEGORY_SEED);
     expect(first.created).toBe(CATEGORY_SEED.length);
-    await Category.updateOne({ type: 'business', slug: 'restaurants' }, { 'name.en': 'Edited by admin' });
+    await Category.updateOne({ type: 'event', slug: 'sports' }, { 'name.en': 'Edited by admin' });
     const second = await seedCategories(CATEGORY_SEED);
     expect(second).toEqual({ created: 0, existing: CATEGORY_SEED.length });
-    expect((await Category.findOne({ slug: 'restaurants', type: 'business' }).lean()).name.en).toBe('Edited by admin');
+    expect((await Category.findOne({ slug: 'sports', type: 'event' }).lean()).name.en).toBe('Edited by admin');
     expect(CATEGORY_SEED.every((c) => c.name.te)).toBe(true);
+  });
+});
+
+describe('two-level business categories', () => {
+  it('seedCategoryTree creates the tree, attaches existing flat categories, and is idempotent', async () => {
+    // A category from the original flat seed, edited by an admin.
+    await make({ slug: 'restaurants', name: { en: 'Restaurants (edited)' } });
+    const first = await seedCategoryTree(BUSINESS_CATEGORY_TREE);
+    const subCount = BUSINESS_CATEGORY_TREE.reduce((n, m) => n + m.children.length, 0);
+    expect(first).toEqual({ createdMain: BUSINESS_CATEGORY_TREE.length, createdSub: subCount - 1, attached: 1 });
+
+    const food = await Category.findOne({ type: 'business', slug: 'food-dining' }).lean();
+    const restaurants = await Category.findOne({ type: 'business', slug: 'restaurants' }).lean();
+    expect(String(restaurants.parentId)).toBe(String(food._id));
+    expect(restaurants.name.en).toBe('Restaurants (edited)'); // admin edit kept
+    expect(await Category.countDocuments({ type: 'business', slug: 'restaurants' })).toBe(1); // no duplicate
+
+    const again = await seedCategoryTree(BUSINESS_CATEGORY_TREE);
+    expect(again).toEqual({ createdMain: 0, createdSub: 0, attached: 0 });
+    for (const main of ['health-medical', 'education', 'hotels-stay', 'events-entertainment']) {
+      expect(await Category.exists({ type: 'business', slug: main, parentId: null })).toBeTruthy();
+    }
+    expect(BUSINESS_CATEGORY_TREE.every((m) => m.name.te && m.children.every((c) => c.name.te))).toBe(true);
+  });
+
+  it('admin creates subcategories only under a main business category', async () => {
+    const { agent } = await loginAs(app, 'admin');
+    const main = (await agent.post('/api/v1/categories').send({ name: { en: 'Pets' }, type: 'business' })).body.data;
+    const sub = await agent.post('/api/v1/categories').send({ name: { en: 'Pet Shops' }, type: 'business', parentId: main.id });
+    expect(sub.status).toBe(201);
+    expect(sub.body.data.parentId).toBe(main.id);
+    // no third level
+    const third = await agent.post('/api/v1/categories').send({ name: { en: 'Fish' }, type: 'business', parentId: sub.body.data.id });
+    expect(third.status).toBe(400);
+    // events/news stay flat
+    const evt = await agent.post('/api/v1/categories').send({ name: { en: 'Kids' }, type: 'event', parentId: main.id });
+    expect(evt.status).toBe(400);
+    // parent can't be changed later
+    const move = await agent.patch(`/api/v1/categories/${sub.body.data.id}`).send({ parentId: main.id });
+    expect(move.status).toBe(400);
+  });
+
+  it('hides subcategories of a deactivated main category from the public list', async () => {
+    const main = await make({ slug: 'main', parentId: null, isActive: false });
+    await make({ slug: 'child', parentId: main._id });
+    const res = await request(app).get('/api/v1/categories').query({ type: 'business' });
+    expect(res.body.data.map((c) => c.slug)).not.toContain('child');
+  });
+
+  it('assertCategoryPair requires an active main category and a subcategory of it', async () => {
+    const food = await make({ slug: 'food' });
+    const shop = await make({ slug: 'shop' });
+    const tiffin = await make({ slug: 'tiffin', parentId: food._id });
+    const inactiveSub = await make({ slug: 'old-sub', parentId: food._id, isActive: false });
+    await expect(assertCategoryPair(food._id, tiffin._id)).resolves.toMatchObject({ subcategory: { slug: 'tiffin' } });
+    await expect(assertCategoryPair(shop._id, tiffin._id)).rejects.toMatchObject({ code: 'VALIDATION_ERROR' });
+    await expect(assertCategoryPair(tiffin._id, tiffin._id)).rejects.toMatchObject({ code: 'VALIDATION_ERROR' });
+    await expect(assertCategoryPair(food._id, inactiveSub._id)).rejects.toMatchObject({ code: 'VALIDATION_ERROR' });
+    await expect(assertCategoryPair(food._id, food._id)).rejects.toMatchObject({ code: 'VALIDATION_ERROR' });
   });
 });

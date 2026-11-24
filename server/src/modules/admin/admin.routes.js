@@ -7,6 +7,8 @@ import { adminListUsersQuery, adminUpdateUserSchema, idParams } from '../users/u
 import {
   adminListQuery as businessListQuery,
   verifySchema,
+  rejectSchema,
+  submissionsQuery,
   idParams as businessIdParams,
 } from '../businesses/businesses.validation.js';
 import * as controller from './admin.controller.js';
@@ -28,6 +30,16 @@ export function buildAdminRoutes() {
     '/businesses/:id/verify',
     validate({ params: businessIdParams, body: verifySchema }),
     asyncHandler(controller.verifyBusiness),
+  );
+
+  // Business submission review (self-submitted listings)
+  router.get('/submissions', validate({ query: submissionsQuery }), asyncHandler(controller.listSubmissions));
+  router.get('/submissions/:id', validate({ params: businessIdParams }), asyncHandler(controller.getSubmission));
+  router.post('/submissions/:id/approve', validate({ params: businessIdParams }), asyncHandler(controller.approveSubmission));
+  router.post(
+    '/submissions/:id/reject',
+    validate({ params: businessIdParams, body: rejectSchema }),
+    asyncHandler(controller.rejectSubmission),
   );
   return router;
 }

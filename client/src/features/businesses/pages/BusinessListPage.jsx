@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Store } from 'lucide-react';
+import { Plus, Store } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { LocationBar } from '../../../components/ui/LocationBar.jsx';
 import { ListSkeleton } from '../../../components/ui/Skeleton.jsx';
@@ -13,7 +13,7 @@ import { BusinessFilters } from '../components/BusinessFilters.jsx';
 import { BusinessCard } from '../components/BusinessCard.jsx';
 import { useBusinessList, KINDS } from '../api.js';
 
-const FILTER_KEYS = ['kind', 'categoryId', 'isVerified', 'openNow', 'sort'];
+const FILTER_KEYS = ['kind', 'categoryId', 'subcategoryId', 'isVerified', 'openNow', 'sort'];
 
 /** /businesses - list with filters, near me / area, load more (FR-BUS-1/2). */
 export default function BusinessListPage() {
@@ -92,6 +92,19 @@ export default function BusinessListPage() {
             )}
           </>
         )}
+
+        <Link
+          to="/manage/new"
+          className="mt-2 flex items-center gap-3 rounded-card bg-brand-50 p-4 ring-1 ring-brand-200 hover:bg-brand-100"
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-700 text-white">
+            <Plus className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span className="flex flex-col">
+            <span className="font-bold text-ink">{t('submit.ctaTitle')}</span>
+            <span className="text-sm text-ink-muted">{t('submit.ctaBody')}</span>
+          </span>
+        </Link>
       </div>
     </>
   );

@@ -134,7 +134,7 @@ describe('business detail', () => {
       'GET /businesses/missing': () => ({ status: 404, body: { success: false, error: { code: 'NOT_FOUND', message: 'x' } } }),
     });
     const { unmount } = renderApp('/businesses/annapurna-tiffins');
-    expect(await screen.findByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/manage/businesses/annapurna-tiffins');
+    expect(await screen.findByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/manage/businesses/b1');
     expect(screen.getByText('Draft')).toBeInTheDocument();
     unmount();
     renderApp('/businesses/missing');
@@ -173,24 +173,28 @@ describe('business form helpers', () => {
 describe('admin and owner screens', () => {
   const adminRow = { id: 'b1', slug: 'shop-one', name: 'Shop One', kind: 'shop', area: 'Main Road', status: 'draft', isVerified: false, isSeed: false, owner: null, updatedAt: new Date().toISOString() };
 
-  it('admin publishes, verifies and archives (with confirmation)', async () => {
+  it('admin publishes drafts, verifies and archives live listings (with confirmation)', async () => {
+    const live = { ...adminRow, id: 'b2', slug: 'shop-two', name: 'Shop Two', status: 'published' };
     const { calls } = mockApi({
       'GET /auth/me': () => ok(sampleUser({ role: 'admin' })),
-      'GET /admin/businesses': () => ok([adminRow], { page: 1, limit: 20, total: 1, totalPages: 1 }),
+      'GET /admin/businesses': () => ok([adminRow, live], { page: 1, limit: 20, total: 2, totalPages: 1 }),
       'PATCH /businesses/b1': ({ body }) => ok({ ...adminRow, ...body }),
-      'PATCH /admin/businesses/b1/verify': ({ body }) => ok({ id: 'b1', ...body }),
-      'DELETE /businesses/b1': () => ok({ id: 'b1', status: 'archived' }),
+      'PATCH /admin/businesses/b2/verify': ({ body }) => ok({ id: 'b2', ...body }),
+      'DELETE /businesses/b2': () => ok({ id: 'b2', status: 'archived' }),
     });
     renderApp('/admin/businesses');
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: /Publish/ }));
-    await user.click(screen.getByRole('button', { name: /^Verify/ }));
-    await user.click(screen.getByRole('button', { name: /Archive/ }));
+    const draftCard = (await screen.findByText('Shop One')).closest('li');
+    expect(within(draftCard).queryByRole('button', { name: /^Verify/ })).toBeNull(); // only live listings can be verified
+    await user.click(within(draftCard).getByRole('button', { name: /Publish/ }));
+    const liveCard = screen.getByText('Shop Two').closest('li');
+    await user.click(within(liveCard).getByRole('button', { name: /^Verify/ }));
+    await user.click(within(liveCard).getByRole('button', { name: /Archive/ }));
     const dialog = await screen.findByRole('dialog');
     await user.click(within(dialog).getByRole('button', { name: 'Archive' }));
-    await waitFor(() => expect(calls.some((c) => c.method === 'DELETE' && c.path === '/businesses/b1')).toBe(true));
+    await waitFor(() => expect(calls.some((c) => c.method === 'DELETE' && c.path === '/businesses/b2')).toBe(true));
     expect(calls.find((c) => c.method === 'PATCH' && c.path === '/businesses/b1').body).toEqual({ status: 'published' });
-    expect(calls.find((c) => c.path === '/admin/businesses/b1/verify').body).toEqual({ isVerified: true });
+    expect(calls.find((c) => c.path === '/admin/businesses/b2/verify').body).toEqual({ isVerified: true });
   });
 
   it('non-admins cannot open admin business screens', async () => {
@@ -202,7 +206,7 @@ describe('admin and owner screens', () => {
   it('owner edits only owner fields from the manage page', async () => {
     const { calls } = mockApi({
       'GET /auth/me': () => ok(sampleUser({ role: 'owner' })),
-      'GET /businesses/shop-one': () =>
+      'GET /businesses/mine/b1': () =>
         ok({
           ...card({ id: 'b1', slug: 'shop-one', name: 'Shop One' }),
           description: 'Old',
@@ -216,7 +220,7 @@ describe('admin and owner screens', () => {
         }),
       'PATCH /businesses/b1': ({ body }) => ok({ id: 'b1', ...body }),
     });
-    renderApp('/manage/businesses/shop-one');
+    renderApp('/manage/businesses/b1');
     const user = userEvent.setup();
     const desc = await screen.findByLabelText('Description');
     expect(screen.queryByLabelText('Business name')).toBeNull();

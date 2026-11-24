@@ -8,12 +8,18 @@ export function Modal({ open, onClose, title, children, footer }) {
   const { t } = useTranslation();
   const titleId = useId();
   const panelRef = useRef(null);
+  // Keep the latest onClose without re-running the open/close effect: re-running it
+  // on every render would steal focus from inputs inside the dialog while typing.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     if (!open) return undefined;
     const previous = document.activeElement;
     panelRef.current?.focus();
-    const onKey = (e) => e.key === 'Escape' && onClose?.();
+    const onKey = (e) => e.key === 'Escape' && onCloseRef.current?.();
     document.addEventListener('keydown', onKey);
     const overflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -22,7 +28,7 @@ export function Modal({ open, onClose, title, children, footer }) {
       document.body.style.overflow = overflow;
       previous?.focus?.();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
   return createPortal(

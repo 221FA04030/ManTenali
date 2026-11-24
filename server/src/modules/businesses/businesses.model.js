@@ -2,9 +2,19 @@ import mongoose from 'mongoose';
 import { isOvernight } from '../../common/utils/hours.js';
 
 export const BUSINESS_KINDS = Object.freeze(['shop', 'food', 'service']);
+/**
+ * draft     - saved but not submitted (or created by an admin, not yet live)
+ * pending   - submitted by a user, waiting for admin review
+ * published - approved / live (the ONLY status visible to the public)
+ * rejected  - review rejected with a reason; the owner may edit and resubmit
+ * hidden    - taken down by an admin
+ * archived  - soft deleted
+ */
 export const BUSINESS_STATUS = Object.freeze({
   DRAFT: 'draft',
+  PENDING: 'pending',
   PUBLISHED: 'published',
+  REJECTED: 'rejected',
   HIDDEN: 'hidden',
   ARCHIVED: 'archived',
 });
@@ -31,8 +41,11 @@ const businessSchema = new mongoose.Schema(
   {
     ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     name: { type: String, required: true, trim: true, maxlength: 120 },
+    // Normalised name used to detect duplicate listings in the same area.
+    nameKey: { type: String, required: true },
     slug: { type: String, required: true, trim: true, lowercase: true, maxlength: 90 },
-    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
+    categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true }, // main category
+    subcategoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' }, // must belong to categoryId
     kind: { type: String, enum: BUSINESS_KINDS, required: true },
     description: { type: String, trim: true, maxlength: 2000 },
     tags: { type: [{ type: String, trim: true, maxlength: 40 }], default: [] },
@@ -64,12 +77,26 @@ const businessSchema = new mongoose.Schema(
     ratingAvg: { type: Number, default: 0, min: 0, max: 5 }, // denormalised, owned by reviews (Step 9)
     ratingCount: { type: Number, default: 0, min: 0 },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    // Self-submission review trail (never exposed on public endpoints).
+    submittedAt: { type: Date },
+    rejectionReason: { type: String, trim: true, maxlength: 500 },
+    reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    reviewedAt: { type: Date },
   },
   { timestamps: true },
 );
 
-businessSchema.pre('validate', function deriveOvernight(next) {
+/** "Sri  Krishna Sweets!" -> "srikrishnasweets" (letters/digits in any script). */
+export function normaliseName(name) {
+  return String(name ?? '')
+    .normalize('NFKC')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, '');
+}
+
+businessSchema.pre('validate', function derive(next) {
   for (const slot of this.openingHours ?? []) slot.overnight = !slot.closed && isOvernight(slot);
+  if (this.isModified('name') || !this.nameKey) this.nameKey = normaliseName(this.name);
   next();
 });
 
@@ -85,5 +112,9 @@ businessSchema.index({ ownerId: 1 });
 businessSchema.index({ status: 1, kind: 1 });
 businessSchema.index({ status: 1, updatedAt: -1 });
 businessSchema.index({ status: 1, ratingAvg: -1 });
+businessSchema.index({ status: 1, subcategoryId: 1, 'address.area': 1 });
+businessSchema.index({ nameKey: 1, 'address.area': 1 });
+businessSchema.index({ ownerId: 1, status: 1 });
+businessSchema.index({ status: 1, submittedAt: 1 });
 
 export const Business = mongoose.models.Business ?? mongoose.model('Business', businessSchema);

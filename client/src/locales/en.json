@@ -251,7 +251,8 @@
     "count_other": "{{count}} businesses",
     "ratings_one": "{{count}} rating",
     "ratings_other": "{{count}} ratings",
-    "verifiedOn": "Verified {{date}}"
+    "verifiedOn": "Verified {{date}}",
+    "allIn": "All {{name}}"
   },
   "location": {
     "nearMe": "Near me",
@@ -266,7 +267,10 @@
     "published": "Published",
     "hidden": "Hidden",
     "archived": "Archived",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "pending": "Pending review",
+    "rejected": "Rejected",
+    "approved": "Approved"
   },
   "form": {
     "basics": "Basic details",
@@ -299,7 +303,24 @@
     "findOwnerPlaceholder": "Name or email",
     "ownerHint": "The user becomes a business owner and can edit details, hours and photos.",
     "noUsersFound": "No matching users.",
-    "saved": "Saved"
+    "saved": "Saved",
+    "mainCategory": "Main category",
+    "subcategory": "Subcategory",
+    "subcategoryHint": "Choose a main category first.",
+    "locationHint": "Tap \"Use my current location\" while at the business, or enter the map coordinates.",
+    "fixErrors": "Please fix the highlighted fields.",
+    "v": {
+      "name": "Enter the business name (2-120 characters).",
+      "category": "Choose a main category.",
+      "subcategory": "Choose a subcategory.",
+      "addressLine": "Enter the street or a landmark.",
+      "area": "Choose the area.",
+      "pincode": "PIN code must be 6 digits.",
+      "coords": "Enter valid map coordinates.",
+      "phone": "Enter a valid phone number.",
+      "website": "Enter a full web address starting with https://",
+      "hours": "Give both opening and closing times (and they must differ), or mark the day closed."
+    }
   },
   "manage": {
     "emptyTitle": "No businesses yet",
@@ -328,5 +349,70 @@
     "unverifiedDone": "Verification removed",
     "statusChanged": "Status changed to {{status}}",
     "archivedDone": "Business archived"
+  },
+  "submit": {
+    "addYourBusiness": "Add your business",
+    "addHint": "List your shop or service on Mana Tenali",
+    "myBusinessesHint": "Your listings and their review status",
+    "intro": "Your listing is checked by the Mana Tenali team before it appears in the app. You can save a draft and submit it when ready.",
+    "saveDraft": "Save draft",
+    "submitForReview": "Submit for review",
+    "resubmit": "Resubmit",
+    "sentForReview": "Sent for review. We will check it soon.",
+    "draftSaved": "Draft saved",
+    "pendingNote": "Waiting for review. It will appear in the app once approved.",
+    "rejectedBecause": "Not approved:",
+    "fixAndResubmit": "Update the listing below and resubmit it for review.",
+    "emptyBody": "Add your shop or service and the Mana Tenali team will review it.",
+    "ctaTitle": "Own a business in Tenali?",
+    "ctaBody": "Add it to Mana Tenali for free."
+  },
+  "review": {
+    "title": "Business submissions",
+    "hint": "Approve or reject businesses added by users",
+    "detailTitle": "Review submission",
+    "emptyTitle": "Nothing here",
+    "empty": {
+      "pending": "No submissions are waiting for review.",
+      "published": "No approved submissions yet.",
+      "rejected": "No rejected submissions."
+    },
+    "by": "by {{name}}",
+    "submitted": "submitted {{time}}",
+    "submittedBy": "Submitted by",
+    "submittedAt": "Submitted",
+    "reviewedAt": "Reviewed",
+    "noPhotos": "No photos were added.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approved": "Approved - the business is now live.",
+    "rejected": "Rejected - the owner can see your reason.",
+    "rejectTitle": "Reject this submission?",
+    "reason": "Reason (shown to the owner)",
+    "reasonHint": "Explain what to fix, e.g. \"Please add a photo of the shop front.\"",
+    "reasonRequired": "Please give a reason (at least 5 characters).",
+    "open": "Review"
+  },
+  "categoriesAdmin": {
+    "title": "Categories",
+    "hint": "Main categories and subcategories for businesses",
+    "note": "Categories are never deleted because businesses may use them. Deactivate one to hide it from new listings and filters.",
+    "newMain": "New main category",
+    "newSub": "Add subcategory",
+    "newSubIn": "New subcategory in {{name}}",
+    "edit": "Edit category",
+    "nameEn": "Name (English)",
+    "nameTe": "Name (Telugu)",
+    "icon": "Icon",
+    "sortOrder": "Order",
+    "sortHint": "Lower numbers appear first.",
+    "order": "order {{n}}",
+    "inactive": "Inactive",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "activated": "Category activated",
+    "deactivated": "Category deactivated",
+    "emptyTitle": "No categories yet",
+    "emptyBody": "Run the seed script or add a main category."
   }
 }

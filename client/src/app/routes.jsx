@@ -17,9 +17,13 @@ const ManageBusinessPage = lazy(() => import('../features/manage/pages/ManageBus
 const AdminHomePage = lazy(() => import('../features/admin/pages/AdminHomePage.jsx'));
 const AdminBusinessesPage = lazy(() => import('../features/admin/pages/AdminBusinessesPage.jsx'));
 const AdminBusinessFormPage = lazy(() => import('../features/admin/pages/AdminBusinessFormPage.jsx'));
+const AddBusinessPage = lazy(() => import('../features/manage/pages/AddBusinessPage.jsx'));
+const AdminSubmissionsPage = lazy(() => import('../features/admin/pages/AdminSubmissionsPage.jsx'));
+const AdminSubmissionDetailPage = lazy(() => import('../features/admin/pages/AdminSubmissionDetailPage.jsx'));
+const AdminCategoriesPage = lazy(() => import('../features/admin/pages/AdminCategoriesPage.jsx'));
 
 const placeholder = (titleKey) => <PlaceholderPage titleKey={titleKey} />;
-const ownerOrAdmin = (el) => <RequireAuth roles={['owner', 'admin']}>{el}</RequireAuth>;
+const signedIn = (el) => <RequireAuth>{el}</RequireAuth>;
 const adminOnly = (el) => <RequireAuth roles={['admin']}>{el}</RequireAuth>;
 
 /** Route table (spec section 10). Placeholders are replaced step by step. */
@@ -53,13 +57,17 @@ export const routes = [
         path: 'profile/reviews',
         element: <RequireAuth>{placeholder('profile.myReviews')}</RequireAuth>,
       },
-      { path: 'manage', element: ownerOrAdmin(<ManageHomePage />) },
-      { path: 'manage/businesses/:slug', element: ownerOrAdmin(<ManageBusinessPage />) },
+      { path: 'manage', element: signedIn(<ManageHomePage />) },
+      { path: 'manage/new', element: signedIn(<AddBusinessPage />) },
+      { path: 'manage/businesses/:id', element: signedIn(<ManageBusinessPage />) },
       { path: 'login', element: <LoginPage /> },
       { path: 'admin', element: adminOnly(<AdminHomePage />) },
       { path: 'admin/businesses', element: adminOnly(<AdminBusinessesPage />) },
       { path: 'admin/businesses/new', element: adminOnly(<AdminBusinessFormPage />) },
       { path: 'admin/businesses/:slug/edit', element: adminOnly(<AdminBusinessFormPage />) },
+      { path: 'admin/submissions', element: adminOnly(<AdminSubmissionsPage />) },
+      { path: 'admin/submissions/:id', element: adminOnly(<AdminSubmissionDetailPage />) },
+      { path: 'admin/categories', element: adminOnly(<AdminCategoriesPage />) },
       { path: 'about', element: <AboutPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],

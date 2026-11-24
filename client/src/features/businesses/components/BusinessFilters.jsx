@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useCategories, categoryName } from '../../categories/api.js';
+import { useCategoryTree, categoryName } from '../../categories/api.js';
 import { KINDS } from '../api.js';
 import { cn } from '../../../lib/cn.js';
 
@@ -15,7 +15,8 @@ const chip = (active) =>
  */
 export function BusinessFilters({ value, onChange, nearMe, hideKind }) {
   const { t, i18n } = useTranslation();
-  const { data: categories = [] } = useCategories('business');
+  const { tree } = useCategoryTree('business');
+  const selectedMain = tree.find((m) => m.id === value.categoryId);
 
   return (
     <div className="flex flex-col gap-3">
@@ -32,18 +33,47 @@ export function BusinessFilters({ value, onChange, nearMe, hideKind }) {
         </div>
       )}
 
-      {categories.length > 0 && (
+      {tree.length > 0 && (
         <div role="group" aria-label={t('business.category')} className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
-          <button type="button" className={chip(!value.categoryId)} aria-pressed={!value.categoryId} onClick={() => onChange({ categoryId: undefined })}>
+          <button
+            type="button"
+            className={chip(!value.categoryId)}
+            aria-pressed={!value.categoryId}
+            onClick={() => onChange({ categoryId: undefined, subcategoryId: undefined })}
+          >
             {t('business.allCategories')}
           </button>
-          {categories.map((c) => (
+          {tree.map((c) => (
             <button
               key={c.id}
               type="button"
               className={chip(value.categoryId === c.id)}
               aria-pressed={value.categoryId === c.id}
-              onClick={() => onChange({ categoryId: c.id })}
+              onClick={() => onChange({ categoryId: c.id, subcategoryId: undefined })}
+            >
+              {categoryName(c, i18n.language)}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {selectedMain?.children.length > 0 && (
+        <div role="group" aria-label={t('form.subcategory')} className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
+          <button
+            type="button"
+            className={chip(!value.subcategoryId)}
+            aria-pressed={!value.subcategoryId}
+            onClick={() => onChange({ subcategoryId: undefined })}
+          >
+            {t('business.allIn', { name: categoryName(selectedMain, i18n.language) })}
+          </button>
+          {selectedMain.children.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              className={chip(value.subcategoryId === c.id)}
+              aria-pressed={value.subcategoryId === c.id}
+              onClick={() => onChange({ subcategoryId: c.id })}
             >
               {categoryName(c, i18n.language)}
             </button>

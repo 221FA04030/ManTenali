@@ -24,3 +24,20 @@ export async function listBusinesses(req, res) {
 export async function verifyBusiness(req, res) {
   return ok(res, await businessesService.setVerified(req.validated.params.id, req.validated.body.isVerified));
 }
+
+export async function listSubmissions(req, res) {
+  const { items, meta } = await businessesService.adminSubmissions(req.validated.query);
+  return ok(res, items, meta);
+}
+
+export async function getSubmission(req, res) {
+  return ok(res, await businessesService.adminGetSubmission(req.user, req.validated.params.id));
+}
+
+export async function approveSubmission(req, res) {
+  return ok(res, await businessesService.approveSubmission(req.user, req.validated.params.id));
+}
+
+export async function rejectSubmission(req, res) {
+  return ok(res, await businessesService.rejectSubmission(req.user, req.validated.params.id, req.validated.body.reason));
+}
