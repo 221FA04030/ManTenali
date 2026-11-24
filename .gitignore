@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# builds
+dist/
+coverage/
+
+# secrets - never commit
+.env
+.env.*
+!.env.example
+
+# local reference documents (public repo)
+DOCS/
+
+# logs / OS / editor
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
