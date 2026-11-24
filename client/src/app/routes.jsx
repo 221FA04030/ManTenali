@@ -21,6 +21,7 @@ const AddBusinessPage = lazy(() => import('../features/manage/pages/AddBusinessP
 const AdminSubmissionsPage = lazy(() => import('../features/admin/pages/AdminSubmissionsPage.jsx'));
 const AdminSubmissionDetailPage = lazy(() => import('../features/admin/pages/AdminSubmissionDetailPage.jsx'));
 const AdminCategoriesPage = lazy(() => import('../features/admin/pages/AdminCategoriesPage.jsx'));
+const FoodListPage = lazy(() => import('../features/food/pages/FoodListPage.jsx'));
 
 const placeholder = (titleKey) => <PlaceholderPage titleKey={titleKey} />;
 const signedIn = (el) => <RequireAuth>{el}</RequireAuth>;
@@ -35,7 +36,7 @@ export const routes = [
       { path: 'explore', element: <ExplorePage /> },
       { path: 'businesses', element: <BusinessListPage /> },
       { path: 'businesses/:slug', element: <BusinessDetailPage /> },
-      { path: 'food', element: placeholder('pages.food') },
+      { path: 'food', element: <FoodListPage /> },
       { path: 'offers', element: placeholder('pages.offers') },
       { path: 'offers/:id', element: placeholder('pages.offers') },
       { path: 'events', element: placeholder('pages.events') },

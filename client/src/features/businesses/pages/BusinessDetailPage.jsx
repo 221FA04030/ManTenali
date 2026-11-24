@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/AuthContext.jsx';
-import { Clock, Globe, Mail, MapPin, Pencil, Star, Store } from 'lucide-react';
+import { BookOpen, Clock, Globe, Mail, MapPin, Pencil, Star, Store } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { Card } from '../../../components/ui/Card.jsx';
 import { Badge, TrustBadge } from '../../../components/ui/Badge.jsx';
@@ -10,6 +10,8 @@ import { ErrorState } from '../../../components/ui/ErrorState.jsx';
 import { EmptyState } from '../../../components/ui/EmptyState.jsx';
 import { ContactActions } from '../components/ContactActions.jsx';
 import { HoursTable } from '../components/HoursTable.jsx';
+import { MenuView } from '../../food/components/MenuView.jsx';
+import { PriceRange, VegFriendlyBadge } from '../../food/components/FoodBits.jsx';
 import { useBusiness } from '../api.js';
 import { categoryName } from '../../categories/api.js';
 import { cldUrl } from '../../../lib/cloudinary.js';
@@ -112,6 +114,38 @@ export default function BusinessDetailPage() {
             {b.isVerified && b.verifiedAt && ` • ${t('business.verifiedOn', { date: formatDateTime(b.verifiedAt, lang) })}`}
           </p>
         </Card>
+
+        {b.food && (
+          <Card className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {b.priceRange && (
+                <span className="rounded-full bg-brand-50 px-3 py-1 text-sm">
+                  <PriceRange value={b.priceRange} /> <span className="text-ink-muted">{t(`food.price.${b.priceRange}`)}</span>
+                </span>
+              )}
+              {b.food.isVegFriendly && <VegFriendlyBadge />}
+            </div>
+            {b.food.cuisines.length > 0 && (
+              <ul className="flex flex-wrap gap-1.5" aria-label={t('food.cuisine')}>
+                {b.food.cuisines.map((c) => (
+                  <li key={c}>
+                    <Badge tone="gray">{t(`cuisines.${c}`)}</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        )}
+
+        {b.food && (
+          <Card>
+            <h2 className="mb-3 flex items-center gap-2 text-base font-bold">
+              <BookOpen className="h-5 w-5 text-brand-700" aria-hidden="true" />
+              {t('food.menu')}
+            </h2>
+            <MenuView menu={b.food.menu} />
+          </Card>
+        )}
 
         {b.description && (
           <Card>

@@ -20,6 +20,41 @@ export const BUSINESS_STATUS = Object.freeze({
 });
 export const MAX_PHOTOS = 8;
 
+/**
+ * Fixed cuisine list (FR-FOOD-1/2). A fixed list keeps the cuisine filter
+ * reliable; labels (English/Telugu) live in the client locale files.
+ */
+export const FOOD_CUISINES = Object.freeze([
+  'south-indian',
+  'andhra',
+  'north-indian',
+  'chinese',
+  'biryani',
+  'bakery-sweets',
+  'snacks-chaat',
+  'juices-beverages',
+  'cafe',
+  'multi-cuisine',
+]);
+export const MENU_LIMITS = Object.freeze({ sections: 20, itemsPerSection: 60, totalItems: 200, maxPrice: 100_000 });
+
+// Embedded: the menu is always read with its business (spec section 7).
+const menuItemSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, trim: true, maxlength: 80 },
+    price: { type: Number, required: true, min: 0, max: MENU_LIMITS.maxPrice }, // INR
+    isVeg: { type: Boolean, default: false },
+  },
+  { _id: false },
+);
+const menuSectionSchema = new mongoose.Schema(
+  {
+    section: { type: String, required: true, trim: true, maxlength: 60 },
+    items: { type: [menuItemSchema], default: [] },
+  },
+  { _id: false },
+);
+
 const imageSchema = new mongoose.Schema(
   { url: { type: String, required: true }, publicId: { type: String, required: true } },
   { _id: false },
@@ -70,6 +105,20 @@ const businessSchema = new mongoose.Schema(
       default: [],
       validate: [(v) => v.length <= MAX_PHOTOS, `At most ${MAX_PHOTOS} photos`],
     },
+    // Price range 1-3 (cheap / moderate / expensive) - mainly for food.
+    priceRange: { type: Number, min: 1, max: 3 },
+    // Only when kind = food (FR-FOOD-1).
+    food: {
+      type: new mongoose.Schema(
+        {
+          cuisines: { type: [{ type: String, enum: FOOD_CUISINES }], default: [] },
+          isVegFriendly: { type: Boolean, default: false },
+          menu: { type: [menuSectionSchema], default: [] },
+        },
+        { _id: false },
+      ),
+      default: undefined,
+    },
     isVerified: { type: Boolean, default: false },
     verifiedAt: { type: Date },
     status: { type: String, enum: Object.values(BUSINESS_STATUS), default: BUSINESS_STATUS.DRAFT },
@@ -116,5 +165,8 @@ businessSchema.index({ status: 1, subcategoryId: 1, 'address.area': 1 });
 businessSchema.index({ nameKey: 1, 'address.area': 1 });
 businessSchema.index({ ownerId: 1, status: 1 });
 businessSchema.index({ status: 1, submittedAt: 1 });
+// Food filters (FR-FOOD-2): cuisine, price range, veg-friendly within published food businesses.
+businessSchema.index({ status: 1, kind: 1, 'food.cuisines': 1 });
+businessSchema.index({ status: 1, kind: 1, priceRange: 1 });
 
 export const Business = mongoose.models.Business ?? mongoose.model('Business', businessSchema);

@@ -96,3 +96,18 @@ The owner approved adding business self-submission to Phase 1, overriding spec �
 | F1.12 | `npm run migrate:categories` is a dry run by default (`-- --apply` writes). It moves old flat category references into `subcategoryId`, backfills `nameKey`, and deactivates unused superseded subcategories. It never deletes anything, and production needs `--confirm-production`. | Safe upgrade of existing data. |
 | F1.13 | Offers (Step 5), search (Step 8) and reviews (Step 9) don't exist yet. When they are built they must use `assertPublished` / `getPublishedIds`; tests already cover those guards for every non-published status. | Keeps offer and review visibility tied to approval. |
 | F1.14 | Shared `Modal` keeps `onClose` in a ref so its focus effect runs only on open/close. | Bug found by the new tests: typing in a modal lost focus after the first character. |
+
+## Step 4 - Food
+
+| # | Decision | Reason |
+|---|----------|--------|
+| D4.1 | `step-4-food` was branched from `feature-business-submissions` (`10177cd`) because that pull request was not yet merged into `step-3-businesses`, and the owner said to go ahead. Once it is merged, `step-4-food` contains only the Step 4 changes on top. | Step 4 changes the same files; branching from the older Step 3 would have caused conflicts. |
+| D4.2 | Cuisines are a **fixed list** (10 keys, with English and Telugu labels), at most 5 per business. | Owner choice (recommended): keeps the cuisine filter reliable. |
+| D4.3 | `priceRange` (1–3) is a top-level field, as in the spec ("mainly food"); `food { cuisines, isVegFriendly, menu }` is accepted only for businesses of kind `food`, and is removed if an admin changes the kind. | Spec §7. |
+| D4.4 | The menu is embedded: up to 20 sections, 60 items per section, 200 items in total; prices are whole rupee amounts from 0 to 100,000; each item has a veg/non-veg flag. Sections need a name and at least one item. | Spec rule to embed small data read with its parent; limits keep the business document and the API response small. |
+| D4.5 | Owners edit price range, cuisines, veg-friendly and the menu **directly**, including on approved listings (no re-review). | Owner choice (recommended); the spec lists the menu as an owner-editable detail. |
+| D4.6 | `/food` = businesses of kind `food` (spec), using the same directory component as `/businesses` with cuisine, price range and veg-friendly filters. The `cuisine` and `isVegFriendly` filters imply `kind = food`. Hotels & Stay listings stay under Local Shops & Businesses. | Spec routes and filters; no duplicated list code. |
+| D4.7 | For submissions, food fields are shown when the main category is Food & Dining (whose submissions get `kind = food`); admins see them when kind is `food`; owners when their listing is a food business. | Keeps the form consistent with the server's kind rule. |
+| D4.8 | List cards carry only a food summary (cuisines, veg-friendly, price range); the menu appears only on the detail page. | Spec NFR: list payloads under 100 KB. |
+| D4.9 | Contact buttons wrap onto a second line when all three (call, WhatsApp, directions) don't fit at 360 px. | Found during the 360 px check. |
+| D4.10 | Sample data is **never** seeded into production, with no override. `npm run seed -- --samples` fails when `NODE_ENV=production` (even with `--confirm-production`), and `seedBusinesses()` itself refuses to run in production. In production only reference categories can be seeded, and that still requires `--confirm-production`. | Owner instruction: dummy and sample data are for local development and testing only. |

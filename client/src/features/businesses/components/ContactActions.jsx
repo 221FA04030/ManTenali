@@ -4,7 +4,7 @@ import { directionsUrl, telUrl, whatsappUrl } from '../../../lib/geo.js';
 import { cn } from '../../../lib/cn.js';
 
 const base =
-  'inline-flex min-h-tap flex-1 items-center justify-center gap-1.5 rounded-full px-3 text-sm font-semibold transition-colors';
+  'inline-flex min-h-tap flex-[1_1_auto] items-center justify-center gap-1.5 whitespace-nowrap rounded-full px-3 text-sm font-semibold transition-colors';
 
 /**
  * One-tap contact actions (FR-UX-1): call, WhatsApp, directions.
@@ -20,7 +20,7 @@ export function ContactActions({ contact, location, name, size = 'md', onAction 
   if (!actions.length) return null;
 
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
       {actions.map(({ key, href, icon: Icon, label, external }, i) => (
         <a
           key={key}

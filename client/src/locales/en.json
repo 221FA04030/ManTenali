@@ -414,5 +414,53 @@
     "deactivated": "Category deactivated",
     "emptyTitle": "No categories yet",
     "emptyBody": "Run the seed script or add a main category."
+  },
+  "cuisines": {
+    "south-indian": "South Indian",
+    "andhra": "Andhra",
+    "north-indian": "North Indian",
+    "chinese": "Chinese",
+    "biryani": "Biryani",
+    "bakery-sweets": "Bakery & Sweets",
+    "snacks-chaat": "Snacks & Chaat",
+    "juices-beverages": "Juices & Beverages",
+    "cafe": "Café",
+    "multi-cuisine": "Multi-cuisine"
+  },
+  "food": {
+    "cuisine": "Cuisine",
+    "allCuisines": "All cuisines",
+    "priceRange": "Price range",
+    "price": {
+      "1": "Budget",
+      "2": "Moderate",
+      "3": "Premium"
+    },
+    "vegFriendly": "Veg-friendly",
+    "vegFriendlyLabel": "Good vegetarian options available",
+    "veg": "Veg",
+    "nonVeg": "Non-veg",
+    "menu": "Menu",
+    "noMenu": "Menu not added yet.",
+    "vegOnly": "Show veg items only",
+    "menuNote": "Prices are listed by the business and may change.",
+    "details": "Food details",
+    "cuisinesLabel": "Cuisines (up to {{max}})",
+    "menuHint": "Optional. Group items into sections like Tiffins, Meals or Beverages. Prices in rupees.",
+    "sectionName": "Section {{n}}",
+    "sectionPlaceholder": "e.g. Tiffins",
+    "itemPlaceholder": "Item name",
+    "itemName": "Item {{n}} name",
+    "itemPrice": "Item {{n}} price",
+    "addItem": "Add item",
+    "addSection": "Add menu section",
+    "removeSection": "Remove section {{n}}",
+    "removeItem": "Remove item {{n}}",
+    "v": {
+      "section": "Give each menu section a name.",
+      "items": "Add at least one item to each menu section.",
+      "itemName": "Give each menu item a name.",
+      "price": "Enter a valid price for each item (in rupees)."
+    }
   }
 }

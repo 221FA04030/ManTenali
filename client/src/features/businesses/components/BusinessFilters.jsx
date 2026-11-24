@@ -3,7 +3,7 @@ import { useCategoryTree, categoryName } from '../../categories/api.js';
 import { KINDS } from '../api.js';
 import { cn } from '../../../lib/cn.js';
 
-const chip = (active) =>
+export const chip = (active) =>
   cn(
     'inline-flex min-h-[40px] shrink-0 items-center rounded-full px-3.5 text-sm font-medium ring-1 transition-colors',
     active ? 'bg-brand-700 text-white ring-brand-700' : 'bg-white text-ink ring-brand-200 hover:bg-brand-50',
@@ -13,7 +13,7 @@ const chip = (active) =>
  * Filters for the business list. `value` holds URL-backed filters;
  * `onChange(patch)` updates them. `nearMe` enables distance sorting.
  */
-export function BusinessFilters({ value, onChange, nearMe, hideKind }) {
+export function BusinessFilters({ value, onChange, nearMe, hideKind, hideCategories, children }) {
   const { t, i18n } = useTranslation();
   const { tree } = useCategoryTree('business');
   const selectedMain = tree.find((m) => m.id === value.categoryId);
@@ -33,7 +33,7 @@ export function BusinessFilters({ value, onChange, nearMe, hideKind }) {
         </div>
       )}
 
-      {tree.length > 0 && (
+      {!hideCategories && tree.length > 0 && (
         <div role="group" aria-label={t('business.category')} className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
           <button
             type="button"
@@ -57,7 +57,7 @@ export function BusinessFilters({ value, onChange, nearMe, hideKind }) {
         </div>
       )}
 
-      {selectedMain?.children.length > 0 && (
+      {!hideCategories && selectedMain?.children.length > 0 && (
         <div role="group" aria-label={t('form.subcategory')} className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
           <button
             type="button"
@@ -80,6 +80,8 @@ export function BusinessFilters({ value, onChange, nearMe, hideKind }) {
           ))}
         </div>
       )}
+
+      {children}
 
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className={chip(value.openNow)} aria-pressed={Boolean(value.openNow)} onClick={() => onChange({ openNow: value.openNow ? undefined : 'true' })}>

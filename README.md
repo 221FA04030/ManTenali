@@ -23,7 +23,7 @@ never logged and never sent to the client. Tests do not need it - they use an in
 ```bash
 npm run seed:admin   # creates the first admin from ADMIN_SEED_EMAIL / ADMIN_SEED_PASSWORD in server/.env
 npm run seed         # reference categories (safe to re-run; never overwrites admin edits)
-npm run seed -- --samples   # also adds demo businesses labelled "Sample data" (development only)
+npm run seed -- --samples   # also adds demo businesses labelled "Sample data" (local dev/test only; always refused in production)
 ```
 
 ### Upgrading an existing database to two-level categories

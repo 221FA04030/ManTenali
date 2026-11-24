@@ -13,10 +13,14 @@ import { BusinessFilters } from '../components/BusinessFilters.jsx';
 import { BusinessCard } from '../components/BusinessCard.jsx';
 import { useBusinessList, KINDS } from '../api.js';
 
-const FILTER_KEYS = ['kind', 'categoryId', 'subcategoryId', 'isVerified', 'openNow', 'sort'];
+const FILTER_KEYS = ['kind', 'categoryId', 'subcategoryId', 'isVerified', 'openNow', 'sort', 'cuisine', 'priceRange', 'isVegFriendly'];
 
-/** /businesses - list with filters, near me / area, load more (FR-BUS-1/2). */
-export default function BusinessListPage() {
+/**
+ * Business directory: list with filters, near me / area, load more (FR-BUS-1/2).
+ * `fixedKind` locks the kind (e.g. "food" for /food); `renderFilters(value, onChange)`
+ * adds page-specific filters (e.g. cuisine, price range, veg-friendly).
+ */
+export function BusinessDirectory({ fixedKind, title: fixedTitle, renderFilters, emptyIcon = Store }) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const { area, coords } = useLocationContext();
@@ -28,12 +32,14 @@ export default function BusinessListPage() {
       if (v) f[k] = v;
     }
     if (f.kind && !KINDS.includes(f.kind)) delete f.kind;
+    if (fixedKind) delete f.kind;
     if (f.sort === 'distance' && !coords) delete f.sort;
     return f;
-  }, [searchParams, coords]);
+  }, [searchParams, coords, fixedKind]);
 
   const params = useMemo(() => {
     const p = { ...filters };
+    if (fixedKind) p.kind = fixedKind;
     if (coords) {
       p.lat = coords.lat;
       p.lng = coords.lng;
@@ -43,7 +49,7 @@ export default function BusinessListPage() {
       p.area = area;
     }
     return p;
-  }, [filters, coords, area]);
+  }, [filters, coords, area, fixedKind]);
 
   const query = useBusinessList(params);
   const items = query.data?.pages.flatMap((p) => p.data) ?? [];
@@ -58,21 +64,23 @@ export default function BusinessListPage() {
     setSearchParams(next, { replace: true });
   };
 
-  const title = filters.kind === 'service' ? t('business.servicesTitle') : t('pages.businesses');
+  const title = fixedTitle ?? (filters.kind === 'service' ? t('business.servicesTitle') : t('pages.businesses'));
 
   return (
     <>
       <PageHeader title={title} />
       <div className="flex flex-col gap-4 p-4">
         <LocationBar />
-        <BusinessFilters value={filters} onChange={update} nearMe={Boolean(coords)} />
+        <BusinessFilters value={filters} onChange={update} nearMe={Boolean(coords)} hideKind={Boolean(fixedKind)} hideCategories={Boolean(fixedKind)}>
+          {renderFilters?.(filters, update)}
+        </BusinessFilters>
 
         {query.isPending ? (
           <ListSkeleton rows={4} />
         ) : query.isError ? (
           <ErrorState error={query.error} onRetry={() => query.refetch()} />
         ) : items.length === 0 ? (
-          <EmptyState icon={Store} title={t('business.emptyTitle')} body={t('business.emptyBody')} />
+          <EmptyState icon={emptyIcon} title={t('business.emptyTitle')} body={t('business.emptyBody')} />
         ) : (
           <>
             <p className="text-sm text-ink-muted" aria-live="polite">
@@ -108,4 +116,9 @@ export default function BusinessListPage() {
       </div>
     </>
   );
+}
+
+/** /businesses */
+export default function BusinessListPage() {
+  return <BusinessDirectory />;
 }
