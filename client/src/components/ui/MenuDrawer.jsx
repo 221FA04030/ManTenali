@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Globe, Info, LogIn, LogOut, ShieldCheck, User, X } from 'lucide-react';
+import { Globe, Info, LogIn, LogOut, Plus, ShieldCheck, Store, User, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useMenu } from '../../app/MenuContext.jsx';
 import { useAuth } from '../../features/auth/AuthContext.jsx';
@@ -99,6 +99,16 @@ export function MenuDrawer() {
             <Link to="/login" className={linkCls} onClick={closeMenu}>
               <LogIn className="h-5 w-5 text-brand-700" aria-hidden="true" />
               {t('menu.login')}
+            </Link>
+          )}
+          <Link to="/manage/new" className={linkCls} onClick={closeMenu}>
+            <Plus className="h-5 w-5 text-brand-700" aria-hidden="true" />
+            {t('submit.addYourBusiness')}
+          </Link>
+          {user && (
+            <Link to="/manage" className={linkCls} onClick={closeMenu}>
+              <Store className="h-5 w-5 text-brand-700" aria-hidden="true" />
+              {t('profile.myBusinesses')}
             </Link>
           )}
           <Link to="/about" className={linkCls} onClick={closeMenu}>

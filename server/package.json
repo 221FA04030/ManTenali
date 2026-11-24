@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "seed": "node --env-file-if-exists=.env src/scripts/seed.js",
     "seed:admin": "node --env-file-if-exists=.env src/scripts/seedAdmin.js",
-    "check:media": "node --env-file-if-exists=.env src/scripts/checkMedia.js"
+    "check:media": "node --env-file-if-exists=.env src/scripts/checkMedia.js",
+    "migrate:categories": "node --env-file-if-exists=.env src/scripts/migrateCategories.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

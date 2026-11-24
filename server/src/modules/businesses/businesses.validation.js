@@ -21,12 +21,15 @@ const hoursSlot = z
   .refine((s) => s.closed || (s.open && s.close), { message: 'Give open and close times, or mark the day closed' })
   .refine((s) => s.closed || s.open !== s.close, { message: 'Open and close times must differ' });
 
-const contact = z.strictObject({
+const contactShape = {
   phone: z.union([phone, z.literal('')]).optional(),
   whatsapp: z.union([phone, z.literal('')]).optional(),
   email: z.union([z.email().max(254), z.literal('')]).optional(),
   website: z.union([z.url({ protocol: /^https?$/ }).max(300), z.literal('')]).optional(),
-});
+};
+const contact = z.strictObject(contactShape);
+/** Self-submitted listings must give a phone number people can call. */
+const submissionContact = z.strictObject({ ...contactShape, phone });
 
 const address = z.strictObject({
   line: z.string().trim().min(3).max(200),
@@ -36,7 +39,7 @@ const address = z.strictObject({
 
 const location = z.strictObject({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) });
 
-/** Fields an owner may edit on their own business (FR-BUS-5). */
+/** Fields an owner may edit on an APPROVED (published/hidden) business (FR-BUS-5). */
 const ownerEditable = {
   description: z.string().trim().max(2000).optional(),
   tags: z.array(z.string().trim().min(1).max(40)).max(15).optional(),
@@ -45,38 +48,69 @@ const ownerEditable = {
   photos: z.array(imageRef).max(MAX_PHOTOS).optional(),
 };
 
-/** Admin-only fields (FR-BUS-4/6): identity, placement, status and ownership. */
-const adminEditable = {
+/** Identity and placement fields ("material" fields). */
+const listingFields = {
   name: z.string().trim().min(2).max(120),
   categoryId: objectId,
+  subcategoryId: objectId,
   kind: z.enum(BUSINESS_KINDS),
   address,
   location,
-  status: z.enum([BUSINESS_STATUS.DRAFT, BUSINESS_STATUS.PUBLISHED, BUSINESS_STATUS.HIDDEN]),
-  ownerId: z.union([objectId, z.null()]),
 };
+
+const optionalAll = (shape) => Object.fromEntries(Object.entries(shape).map(([k, v]) => [k, v.optional()]));
+
+/* ---------- admin ---------- */
 
 export const createSchema = z.strictObject({
   ...ownerEditable,
-  ...adminEditable,
-  status: adminEditable.status.optional(),
+  ...listingFields,
+  status: z.enum([BUSINESS_STATUS.DRAFT, BUSINESS_STATUS.PUBLISHED, BUSINESS_STATUS.HIDDEN]).optional(),
   ownerId: objectId.optional(),
 });
 
 export const adminUpdateSchema = z
   .strictObject({
     ...ownerEditable,
-    ...Object.fromEntries(Object.entries(adminEditable).map(([k, v]) => [k, v.optional()])),
+    ...optionalAll(listingFields),
+    status: z.enum([BUSINESS_STATUS.DRAFT, BUSINESS_STATUS.PUBLISHED, BUSINESS_STATUS.HIDDEN]).optional(),
+    ownerId: z.union([objectId, z.null()]).optional(),
   })
   .refine((v) => Object.keys(v).length > 0, { message: 'Nothing to update' });
 
+/* ---------- self-submission (any signed-in user) ---------- */
+
+/**
+ * New submission. Owner, status and review fields are NEVER accepted from the
+ * client (strict schema); the server sets them. `submit: true` sends it for
+ * review, otherwise it is saved as a draft.
+ */
+export const submissionCreateSchema = z.strictObject({
+  ...ownerEditable,
+  ...listingFields,
+  kind: listingFields.kind.optional(),
+  contact: submissionContact,
+  submit: z.boolean().optional(),
+});
+
+/**
+ * Non-admin edit. The service decides which of these the caller may change,
+ * based on the listing's status (material fields only before approval).
+ */
 export const ownerUpdateSchema = z
-  .strictObject(ownerEditable)
+  .strictObject({ ...ownerEditable, ...optionalAll(listingFields) })
   .refine((v) => Object.keys(v).length > 0, { message: 'Nothing to update' });
+
+export const rejectSchema = z.strictObject({
+  reason: z.string().trim().min(5, 'Give a short reason (at least 5 characters)').max(500),
+});
+
+/* ---------- queries ---------- */
 
 export const listQuery = z
   .strictObject({
     categoryId: objectId.optional(),
+    subcategoryId: objectId.optional(),
     kind: z.enum(BUSINESS_KINDS).optional(),
     area: z.string().trim().max(80).optional(),
     isVerified: queryBool.optional(),
@@ -97,6 +131,12 @@ export const adminListQuery = z.strictObject({
   q: z.string().trim().max(100).optional(),
   status: z.enum(Object.values(BUSINESS_STATUS)).optional(),
   ownerId: objectId.optional(),
+  ...paginationFields,
+});
+
+export const submissionsQuery = z.strictObject({
+  status: z.enum([BUSINESS_STATUS.PENDING, BUSINESS_STATUS.PUBLISHED, BUSINESS_STATUS.REJECTED]).default(BUSINESS_STATUS.PENDING),
+  q: z.string().trim().max(100).optional(),
   ...paginationFields,
 });
 

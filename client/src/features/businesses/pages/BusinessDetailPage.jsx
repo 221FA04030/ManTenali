@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../auth/AuthContext.jsx';
 import { Clock, Globe, Mail, MapPin, Pencil, Star, Store } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { Card } from '../../../components/ui/Card.jsx';
@@ -38,6 +39,7 @@ export default function BusinessDetailPage() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const { data: b, isPending, isError, error, refetch } = useBusiness(slug);
+  const { user } = useAuth();
 
   if (isPending) {
     return (
@@ -72,7 +74,7 @@ export default function BusinessDetailPage() {
         actions={
           b.canManage && (
             <Link
-              to={`/manage/businesses/${b.slug}`}
+              to={user?.role === 'admin' ? `/admin/businesses/${b.slug}/edit` : `/manage/businesses/${b.id}`}
               aria-label={t('business.edit')}
               className="flex min-h-tap min-w-tap items-center justify-center rounded-full text-white hover:bg-white/15"
             >
@@ -93,7 +95,7 @@ export default function BusinessDetailPage() {
           </div>
           <h2 className="text-xl font-bold leading-snug">{b.name}</h2>
           <p className="text-sm text-ink-muted">
-            {[categoryName(b.category, lang), t(`business.kinds.${b.kind}`)].filter(Boolean).join(' • ')}
+            {[categoryName(b.category, lang), categoryName(b.subcategory, lang)].filter(Boolean).join(' › ')}
           </p>
           {b.ratingCount > 0 && (
             <p className="inline-flex items-center gap-1 text-sm">

@@ -23,10 +23,13 @@ const photo = (id = 'p1') => ({
 });
 
 async function validBody(overrides = {}) {
-  const cat = await createCategory({ slug: `cat-${Date.now()}` });
+  const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  const main = await createCategory({ slug: `main-${stamp}` });
+  const sub = await createCategory({ slug: `sub-${stamp}`, parentId: main._id });
   return {
     name: 'Sri Krishna Sweets',
-    categoryId: String(cat._id),
+    categoryId: String(main._id),
+    subcategoryId: String(sub._id),
     kind: 'food',
     description: 'Fresh sweets daily',
     tags: ['sweets', 'sweets', 'bakery'],
@@ -140,7 +143,12 @@ describe('admin create, edit, archive, verify', () => {
     });
     expect((await User.findById(futureOwner._id).lean()).role).toBe('owner');
 
-    const second = await agent.post('/api/v1/businesses').send(await validBody());
+    const dup = await agent.post('/api/v1/businesses').send(await validBody());
+    expect(dup.status).toBe(409); // same name, same area
+    const second = await agent
+      .post('/api/v1/businesses')
+      .send(await validBody({ address: { line: 'Main Road', area: 'Main Road', pincode: '522201' } }));
+    expect(second.status).toBe(201);
     expect(second.body.data.slug).toMatch(/^sri-krishna-sweets-[a-z0-9]{5}$/);
   });
 
@@ -238,12 +246,13 @@ describe('owner edits (FR-BUS-5)', () => {
     const statusChange = await owner.agent.patch(`/api/v1/businesses/${b._id}`).send({ status: 'published' });
     expect(statusChange.status).toBe(400); // unknown field for owners (strict schema)
     const rename = await owner.agent.patch(`/api/v1/businesses/${b._id}`).send({ name: 'New name' });
-    expect(rename.status).toBe(400);
+    expect(rename.status).toBe(403); // approved listing: material fields are admin-only
     const other = await createBusiness();
     const foreign = await owner.agent.patch(`/api/v1/businesses/${other._id}`).send({ description: 'hack' });
-    expect(foreign.status).toBe(403);
+    expect(foreign.status).toBe(404); // not yours -> not found (no ID probing)
     const user = await loginAs(app, 'user');
-    expect((await user.agent.patch(`/api/v1/businesses/${b._id}`).send({ description: 'x' })).status).toBe(403);
+    expect((await user.agent.patch(`/api/v1/businesses/${b._id}`).send({ description: 'x' })).status).toBe(404);
+    expect((await Business.findById(b._id).lean()).name).toBe(b.name);
   });
 
   it('GET /businesses/mine lists only the owner’s non-archived businesses', async () => {
@@ -255,7 +264,10 @@ describe('owner edits (FR-BUS-5)', () => {
     expect(res.status).toBe(200);
     expect(res.body.data.map((b) => b.name)).toEqual(['Mine']);
     const user = await loginAs(app, 'user');
-    expect((await user.agent.get('/api/v1/businesses/mine')).status).toBe(403);
+    const empty = await user.agent.get('/api/v1/businesses/mine');
+    expect(empty.status).toBe(200);
+    expect(empty.body.data).toEqual([]);
+    expect((await request(app).get('/api/v1/businesses/mine')).status).toBe(401);
   });
 });
 
@@ -271,13 +283,15 @@ describe('service rules', () => {
   it('seedBusinesses creates sample, unverified, published listings idempotently', async () => {
     const slugs = [...new Set(BUSINESS_SEED.map((b) => b.categorySlug))];
     const ids = new Map();
-    for (const slug of slugs) ids.set(slug, (await createCategory({ slug }))._id);
+    const main = await createCategory({ slug: 'main-seed' });
+    for (const slug of slugs) ids.set(slug, { id: (await createCategory({ slug, parentId: main._id }))._id, parentId: main._id });
     const first = await seedBusinesses(BUSINESS_SEED, ids);
     expect(first.created).toBe(BUSINESS_SEED.length);
     const again = await seedBusinesses(BUSINESS_SEED, ids);
     expect(again.created).toBe(0);
     const all = await Business.find().lean();
     expect(all.every((b) => b.isSeed && !b.isVerified && b.status === 'published')).toBe(true);
+    expect(all.every((b) => String(b.categoryId) === String(main._id) && b.subcategoryId)).toBe(true);
   });
 
   it('uses the spec indexes for list queries', async () => {

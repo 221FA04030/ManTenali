@@ -25,3 +25,15 @@ export async function update(req, res) {
 export async function archive(req, res) {
   return ok(res, await businessesService.archiveBusiness(req.validated.params.id));
 }
+
+export async function getMine(req, res) {
+  return ok(res, await businessesService.getMine(req.user, req.validated.params.id));
+}
+
+export async function submit(req, res) {
+  return created(res, await businessesService.submitBusiness(req.user, req.validated.body));
+}
+
+export async function submitForReview(req, res) {
+  return ok(res, await businessesService.submitForReview(req.user, req.validated.params.id));
+}

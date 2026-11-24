@@ -10,9 +10,9 @@
 import mongoose from 'mongoose';
 import { loadEnv } from '../config/env.js';
 import { redactUri } from '../config/db.js';
-import { seedCategories, findIdBySlug } from '../modules/categories/categories.service.js';
+import { seedCategories, seedCategoryTree, findIdBySlug, getParentMap } from '../modules/categories/categories.service.js';
 import { seedBusinesses } from '../modules/businesses/businesses.service.js';
-import { CATEGORY_SEED } from './seedData/categories.js';
+import { CATEGORY_SEED, BUSINESS_CATEGORY_TREE } from './seedData/categories.js';
 import { BUSINESS_SEED } from './seedData/businesses.js';
 
 const out = (msg) => process.stdout.write(`${msg}\n`);
@@ -38,13 +38,22 @@ async function main() {
   }
   out('database connected');
 
+  const tree = await seedCategoryTree(BUSINESS_CATEGORY_TREE);
+  out(
+    `business categories: ${tree.createdMain} main + ${tree.createdSub} subcategories created, ${tree.attached} existing attached to a main category`,
+  );
   const categories = await seedCategories(CATEGORY_SEED);
-  out(`categories: ${categories.created} created, ${categories.existing} already present`);
+  out(`event/news categories: ${categories.created} created, ${categories.existing} already present`);
 
   if (process.argv.includes('--samples')) {
     const slugs = [...new Set(BUSINESS_SEED.map((b) => b.categorySlug))];
     const ids = new Map();
-    for (const slug of slugs) ids.set(slug, await findIdBySlug('business', slug));
+    for (const slug of slugs) {
+      const id = await findIdBySlug('business', slug);
+      if (!id) continue;
+      const parentId = (await getParentMap([id])).get(String(id));
+      ids.set(slug, { id, parentId });
+    }
     const businesses = await seedBusinesses(BUSINESS_SEED, ids);
     out(`sample businesses: ${businesses.created} created, ${businesses.skipped} skipped (already present)`);
   } else {

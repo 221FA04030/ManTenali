@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Bookmark, LogOut, ShieldCheck, Star, Store } from 'lucide-react';
+import { Bookmark, LogOut, Plus, ShieldCheck, Star, Store } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { Card } from '../../../components/ui/Card.jsx';
 import { Input } from '../../../components/ui/Input.jsx';
@@ -136,11 +136,12 @@ export default function ProfilePage() {
           <li>
             <ListRow icon={Star} title={t('profile.myReviews')} subtitle={t('profile.myReviewsHint')} to="/profile/reviews" iconSize="md" />
           </li>
-          {(user.role === 'owner' || user.role === 'admin') && (
-            <li>
-              <ListRow icon={Store} title={t('profile.myBusinesses')} subtitle={t('profile.myBusinessesHint')} to="/manage" iconSize="md" />
-            </li>
-          )}
+          <li>
+            <ListRow icon={Plus} title={t('submit.addYourBusiness')} subtitle={t('submit.addHint')} to="/manage/new" iconSize="md" />
+          </li>
+          <li>
+            <ListRow icon={Store} title={t('profile.myBusinesses')} subtitle={t('submit.myBusinessesHint')} to="/manage" iconSize="md" />
+          </li>
           {user.role === 'admin' && (
             <li>
               <ListRow icon={ShieldCheck} title={t('menu.admin')} subtitle={t('profile.adminHint')} to="/admin" iconSize="md" />

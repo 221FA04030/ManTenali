@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LocateFixed } from 'lucide-react';
+import { LocateFixed, Send } from 'lucide-react';
 import { Card } from '../../../components/ui/Card.jsx';
 import { Input } from '../../../components/ui/Input.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { ImageUpload } from '../../../components/ui/ImageUpload.jsx';
-import { useCategories, categoryName } from '../../categories/api.js';
+import { CategoryPicker } from '../../categories/components/CategoryPicker.jsx';
 import { TENALI_AREAS } from '../../../config/areas.js';
 import { getCurrentPosition } from '../../../lib/geo.js';
 import { HoursEditor, hoursToRows, rowsToHours } from './HoursEditor.jsx';
@@ -14,13 +14,24 @@ import { KINDS } from '../api.js';
 
 const MAX_PHOTOS = 8;
 const TENALI = { lat: 16.2379, lng: 80.6444 };
+const PHONE_RX = /^\+?[\d\s-]{7,20}$/;
+
+/**
+ * Modes:
+ *  - "admin":      everything, including status, kind and owner
+ *  - "submission": a user's own listing before approval (draft / pending / rejected):
+ *                  identity, category, address and location editable; no status/owner
+ *  - "owner":      an approved listing: only description, tags, contact, hours, photos
+ */
+const showsListingFields = (mode) => mode === 'admin' || mode === 'submission';
 
 function initialState(b) {
   return {
     name: b?.name ?? '',
     categoryId: b?.category?.id ?? '',
+    subcategoryId: b?.subcategory?.id ?? '',
     kind: b?.kind ?? 'shop',
-    status: b?.status ?? 'draft',
+    status: ['draft', 'published', 'hidden'].includes(b?.status) ? b.status : 'draft',
     description: b?.description ?? '',
     tags: (b?.tags ?? []).join(', '),
     line: b?.address?.line ?? '',
@@ -38,24 +49,52 @@ function initialState(b) {
   };
 }
 
-/** Build the API payload. Owners only send the fields they're allowed to edit. */
+/** Client-side checks mirroring the server rules. Keys match server field paths. */
+export function validateForm(s, mode) {
+  const e = {};
+  if (showsListingFields(mode)) {
+    if (s.name.trim().length < 2) e.name = 'form.v.name';
+    if (!s.categoryId) e.categoryId = 'form.v.category';
+    if (!s.subcategoryId) e.subcategoryId = 'form.v.subcategory';
+    if (s.line.trim().length < 3) e['address.line'] = 'form.v.addressLine';
+    if (!s.area) e['address.area'] = 'form.v.area';
+    if (s.pincode && !/^\d{6}$/.test(s.pincode.trim())) e['address.pincode'] = 'form.v.pincode';
+    if (!Number.isFinite(Number(s.lat)) || Math.abs(Number(s.lat)) > 90) e['location.lat'] = 'form.v.coords';
+    if (!Number.isFinite(Number(s.lng)) || Math.abs(Number(s.lng)) > 180) e['location.lng'] = 'form.v.coords';
+  }
+  const phoneRequired = mode === 'submission' || (mode === 'owner' && s.phone);
+  if (phoneRequired && !PHONE_RX.test(s.phone.trim())) e['contact.phone'] = 'form.v.phone';
+  if (s.whatsapp && !PHONE_RX.test(s.whatsapp.trim())) e['contact.whatsapp'] = 'form.v.phone';
+  if (s.website && !/^https?:\/\/\S+\.\S+/.test(s.website.trim())) e['contact.website'] = 'form.v.website';
+  for (const r of s.hours) {
+    if (!r.closed && Boolean(r.open) !== Boolean(r.close)) e.openingHours = 'form.v.hours';
+    if (!r.closed && r.open && r.open === r.close) e.openingHours = 'form.v.hours';
+  }
+  return e;
+}
+
+/** Build the API payload. Each mode sends only the fields it may change. */
 export function toPayload(s, mode, original) {
   const payload = {
     description: s.description.trim(),
-    tags: s.tags.split(',').map((x) => x.trim()).filter(Boolean),
+    tags: s.tags
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean),
     contact: { phone: s.phone.trim(), whatsapp: s.whatsapp.trim(), email: s.email.trim(), website: s.website.trim() },
     openingHours: rowsToHours(s.hours),
     photos: s.photos,
   };
-  if (mode !== 'admin') return payload;
+  if (!showsListingFields(mode)) return payload;
   Object.assign(payload, {
     name: s.name.trim(),
     categoryId: s.categoryId,
-    kind: s.kind,
-    status: s.status,
+    subcategoryId: s.subcategoryId,
     address: { line: s.line.trim(), area: s.area.trim(), pincode: s.pincode.trim() },
     location: { lat: Number(s.lat), lng: Number(s.lng) },
   });
+  if (mode !== 'admin') return payload;
+  Object.assign(payload, { kind: s.kind, status: s.status });
   const originalOwner = original?.ownerId ?? null;
   const nextOwner = s.owner?.id ?? null;
   if (!original) {
@@ -67,18 +106,20 @@ export function toPayload(s, mode, original) {
 }
 
 /**
- * Shared create/edit form. mode="admin" shows identity, placement, status and
- * owner fields; mode="owner" shows only what owners may change (FR-BUS-5).
+ * Shared create/edit form. `onSubmit(payload, { submit })` - in submission
+ * mode `submit` is true when the user chose "Submit for review".
  */
-export function BusinessForm({ mode, business, onSubmit, submitting, serverErrors = {} }) {
-  const { t, i18n } = useTranslation();
+export function BusinessForm({ mode, business, onSubmit, submitting, serverErrors = {}, canSubmitForReview = false }) {
+  const { t } = useTranslation();
   const [s, setS] = useState(() => initialState(business));
+  const [clientErrors, setClientErrors] = useState({});
   const [locating, setLocating] = useState(false);
-  const { data: categories = [] } = useCategories('business', { enabled: mode === 'admin' });
   const set = (patch) => setS((prev) => ({ ...prev, ...patch }));
   const field = (name) => ({ value: s[name], onChange: (e) => set({ [name]: e.target.value }) });
-  const err = (key) => serverErrors[key];
+  const err = (key) => (clientErrors[key] ? t(clientErrors[key]) : serverErrors[key]);
   const admin = mode === 'admin';
+  const listing = showsListingFields(mode);
+  const submission = mode === 'submission';
 
   const fillMyLocation = async () => {
     setLocating(true);
@@ -92,41 +133,60 @@ export function BusinessForm({ mode, business, onSubmit, submitting, serverError
     }
   };
 
+  const send = (submit) => {
+    const errors = validateForm(s, mode);
+    setClientErrors(errors);
+    if (Object.keys(errors).length) {
+      const first = document.querySelector('[aria-invalid="true"]');
+      first?.focus?.();
+      return;
+    }
+    onSubmit(toPayload(s, mode, business), { submit });
+  };
+
   return (
     <form
       noValidate
       className="flex flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit(toPayload(s, mode, business));
+        send(false);
       }}
     >
-      {admin && (
+      {Object.keys(clientErrors).length > 0 && (
+        <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">
+          {t('form.fixErrors')}
+        </p>
+      )}
+
+      {listing && (
         <Card className="flex flex-col gap-4">
           <h2 className="text-base font-bold">{t('form.basics')}</h2>
-          <Input label={t('form.name')} required error={err('name')} {...field('name')} />
-          <Input as="select" label={t('business.category')} error={err('categoryId')} {...field('categoryId')}>
-            <option value="">{t('form.choose')}</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {categoryName(c, i18n.language)}
-              </option>
-            ))}
-          </Input>
-          <Input as="select" label={t('business.kind')} error={err('kind')} {...field('kind')}>
-            {KINDS.map((k) => (
-              <option key={k} value={k}>
-                {t(`business.kinds.${k}`)}
-              </option>
-            ))}
-          </Input>
-          <Input as="select" label={t('form.status')} hint={t('form.statusHint')} error={err('status')} {...field('status')}>
-            {['draft', 'published', 'hidden'].map((st) => (
-              <option key={st} value={st}>
-                {t(`status.${st}`)}
-              </option>
-            ))}
-          </Input>
+          <Input label={t('form.name')} required maxLength={120} error={err('name')} {...field('name')} />
+          <CategoryPicker
+            categoryId={s.categoryId}
+            subcategoryId={s.subcategoryId}
+            onChange={(patch) => set(patch)}
+            errors={{ categoryId: err('categoryId'), subcategoryId: err('subcategoryId') }}
+          />
+          {admin && (
+            <>
+              <Input as="select" label={t('business.kind')} error={err('kind')} {...field('kind')}>
+                {KINDS.map((k) => (
+                  <option key={k} value={k}>
+                    {t(`business.kinds.${k}`)}
+                  </option>
+                ))}
+              </Input>
+              <Input as="select" label={t('form.status')} hint={t('form.statusHint')} error={err('status')} {...field('status')}>
+                {['draft', 'published', 'hidden'].map((st) => (
+                  <option key={st} value={st}>
+                    {t(`status.${st}`)}
+                  </option>
+                ))}
+              </Input>
+            </>
+          )}
         </Card>
       )}
 
@@ -136,10 +196,10 @@ export function BusinessForm({ mode, business, onSubmit, submitting, serverError
         <Input label={t('form.tags')} hint={t('form.tagsHint')} error={err('tags')} {...field('tags')} />
       </Card>
 
-      {admin && (
+      {listing && (
         <Card className="flex flex-col gap-4">
           <h2 className="text-base font-bold">{t('business.address')}</h2>
-          <Input label={t('form.addressLine')} error={err('address.line')} {...field('line')} />
+          <Input label={t('form.addressLine')} maxLength={200} error={err('address.line')} {...field('line')} />
           <Input as="select" label={t('location.area')} error={err('address.area')} {...field('area')}>
             <option value="">{t('form.choose')}</option>
             {[...new Set([...TENALI_AREAS, s.area].filter(Boolean))].map((a) => (
@@ -149,6 +209,7 @@ export function BusinessForm({ mode, business, onSubmit, submitting, serverError
             ))}
           </Input>
           <Input label={t('form.pincode')} inputMode="numeric" maxLength={6} error={err('address.pincode')} {...field('pincode')} />
+          <p className="text-xs text-ink-soft">{t('form.locationHint')}</p>
           <div className="grid grid-cols-2 gap-3">
             <Input label={t('form.lat')} type="number" step="0.00001" error={err('location.lat')} {...field('lat')} />
             <Input label={t('form.lng')} type="number" step="0.00001" error={err('location.lng')} {...field('lng')} />
@@ -162,7 +223,13 @@ export function BusinessForm({ mode, business, onSubmit, submitting, serverError
 
       <Card className="flex flex-col gap-4">
         <h2 className="text-base font-bold">{t('form.contact')}</h2>
-        <Input label={t('form.phone')} type="tel" inputMode="tel" error={err('contact.phone')} {...field('phone')} />
+        <Input
+          label={submission ? `${t('form.phone')} *` : t('form.phone')}
+          type="tel"
+          inputMode="tel"
+          error={err('contact.phone')}
+          {...field('phone')}
+        />
         <Input label={t('business.whatsapp')} type="tel" inputMode="tel" error={err('contact.whatsapp')} {...field('whatsapp')} />
         <Input label={t('auth.email')} type="email" error={err('contact.email')} {...field('email')} />
         <Input label={t('form.website')} type="url" placeholder="https://" error={err('contact.website')} {...field('website')} />
@@ -201,9 +268,21 @@ export function BusinessForm({ mode, business, onSubmit, submitting, serverError
         </Card>
       )}
 
-      <Button type="submit" size="lg" loading={submitting} fullWidth>
-        {t('common.save')}
-      </Button>
+      {submission && canSubmitForReview ? (
+        <div className="flex flex-col gap-2 sm:flex-row-reverse">
+          <Button size="lg" fullWidth loading={submitting} onClick={() => send(true)}>
+            <Send className="h-4 w-4" aria-hidden="true" />
+            {t('submit.submitForReview')}
+          </Button>
+          <Button type="submit" variant="secondary" size="lg" fullWidth disabled={submitting}>
+            {business ? t('common.save') : t('submit.saveDraft')}
+          </Button>
+        </div>
+      ) : (
+        <Button type="submit" size="lg" loading={submitting} fullWidth>
+          {t('common.save')}
+        </Button>
+      )}
     </form>
   );
 }

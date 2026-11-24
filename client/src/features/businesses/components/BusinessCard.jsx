@@ -24,7 +24,7 @@ export function BusinessCard({ business: b }) {
             className="h-[88px] w-[88px] shrink-0 rounded-2xl object-cover"
           />
         ) : (
-          <IconBubble icon={categoryIcon(b.category?.icon)} size="lg" className="h-[88px] w-[88px]" />
+          <IconBubble icon={categoryIcon(b.subcategory?.icon ?? b.category?.icon)} size="lg" className="h-[88px] w-[88px]" />
         )}
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <div className="flex flex-wrap items-center gap-1.5">
@@ -34,7 +34,7 @@ export function BusinessCard({ business: b }) {
           </div>
           <h3 className="line-clamp-2 text-base font-bold leading-snug text-ink">{b.name}</h3>
           <p className="truncate text-[13px] text-ink-muted">
-            {[categoryName(b.category, lang), b.area].filter(Boolean).join(' • ')}
+            {[categoryName(b.subcategory ?? b.category, lang), b.area].filter(Boolean).join(' • ')}
           </p>
           <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-ink-soft">
             {b.distanceM !== undefined && (

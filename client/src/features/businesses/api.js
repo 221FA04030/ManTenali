@@ -6,6 +6,9 @@ export const businessKeys = {
   list: (params) => ['businesses', 'list', params],
   detail: (slug) => ['businesses', 'detail', slug],
   mine: ['businesses', 'mine'],
+  mineOne: (id) => ['businesses', 'mine', id],
+  submissions: (params) => ['businesses', 'submissions', params],
+  submission: (id) => ['businesses', 'submission', id],
   admin: (params) => ['businesses', 'admin', params],
 };
 
@@ -18,6 +21,15 @@ export const businessesApi = {
   archive: (id) => api.delete(`/businesses/${id}`).then((r) => r.data),
   adminList: (query) => api.get('/admin/businesses', { query }),
   verify: (id, isVerified) => api.patch(`/admin/businesses/${id}/verify`, { isVerified }).then((r) => r.data),
+  // self-submission
+  getMine: (id) => api.get(`/businesses/mine/${id}`).then((r) => r.data),
+  submit: (body) => api.post('/businesses/submissions', body).then((r) => r.data),
+  submitForReview: (id) => api.post(`/businesses/${id}/submit`).then((r) => r.data),
+  // admin review
+  submissions: (query) => api.get('/admin/submissions', { query }),
+  submission: (id) => api.get(`/admin/submissions/${id}`).then((r) => r.data),
+  approve: (id) => api.post(`/admin/submissions/${id}/approve`).then((r) => r.data),
+  reject: (id, reason) => api.post(`/admin/submissions/${id}/reject`, { reason }).then((r) => r.data),
 };
 
 /** Public list with "load more" pagination (FR-BUS-1/2). */
@@ -37,6 +49,33 @@ export function useBusiness(slug) {
 export function useMyBusinesses() {
   return useQuery({ queryKey: businessKeys.mine, queryFn: businessesApi.mine });
 }
+
+export function useMyBusiness(id) {
+  return useQuery({ queryKey: businessKeys.mineOne(id), queryFn: () => businessesApi.getMine(id), enabled: Boolean(id) });
+}
+
+export function useSubmissions(params) {
+  return useQuery({
+    queryKey: businessKeys.submissions(params),
+    queryFn: () => businessesApi.submissions(params),
+    placeholderData: (prev) => prev,
+  });
+}
+
+export function useSubmission(id) {
+  return useQuery({ queryKey: businessKeys.submission(id), queryFn: () => businessesApi.submission(id), enabled: Boolean(id) });
+}
+
+/** Status shown to owners: "published" reads as "Approved". */
+export const OWNER_STATUS_KEY = {
+  draft: 'status.draft',
+  pending: 'status.pending',
+  published: 'status.approved',
+  rejected: 'status.rejected',
+  hidden: 'status.hidden',
+  archived: 'status.archived',
+};
+export const STATUS_TONE = { draft: 'gray', pending: 'amber', published: 'green', rejected: 'red', hidden: 'gray', archived: 'red' };
 
 export function useAdminBusinesses(params) {
   return useQuery({
