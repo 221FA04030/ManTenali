@@ -1,15 +1,19 @@
 /**
  * Development/demo seed: `npm run seed`
  *
- * Step 2 seeds reference categories (safe and idempotent). Later steps add
- * sample content, always flagged isSeed = true and shown as "Sample data".
+ * Always seeds reference categories (safe and idempotent).
+ * With --samples it also adds SAMPLE content (businesses...), always flagged
+ * isSeed = true, never verified, and shown as "Sample data" in the app:
+ *   npm run seed -- --samples
  * Refuses NODE_ENV=production unless --confirm-production is passed.
  */
 import mongoose from 'mongoose';
 import { loadEnv } from '../config/env.js';
 import { redactUri } from '../config/db.js';
-import { seedCategories } from '../modules/categories/categories.service.js';
+import { seedCategories, findIdBySlug } from '../modules/categories/categories.service.js';
+import { seedBusinesses } from '../modules/businesses/businesses.service.js';
 import { CATEGORY_SEED } from './seedData/categories.js';
+import { BUSINESS_SEED } from './seedData/businesses.js';
 
 const out = (msg) => process.stdout.write(`${msg}\n`);
 const fail = (msg) => {
@@ -36,6 +40,16 @@ async function main() {
 
   const categories = await seedCategories(CATEGORY_SEED);
   out(`categories: ${categories.created} created, ${categories.existing} already present`);
+
+  if (process.argv.includes('--samples')) {
+    const slugs = [...new Set(BUSINESS_SEED.map((b) => b.categorySlug))];
+    const ids = new Map();
+    for (const slug of slugs) ids.set(slug, await findIdBySlug('business', slug));
+    const businesses = await seedBusinesses(BUSINESS_SEED, ids);
+    out(`sample businesses: ${businesses.created} created, ${businesses.skipped} skipped (already present)`);
+  } else {
+    out('sample content skipped (run `npm run seed -- --samples` to add demo listings labelled "Sample data")');
+  }
 
   await mongoose.disconnect();
 }

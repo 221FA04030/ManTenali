@@ -5,6 +5,7 @@ import usersRoutes from './modules/users/users.routes.js';
 import { buildAdminRoutes } from './modules/admin/admin.routes.js';
 import categoriesRoutes from './modules/categories/categories.routes.js';
 import { buildMediaRoutes } from './modules/media/media.routes.js';
+import businessesRoutes from './modules/businesses/businesses.routes.js';
 
 /** Mounts every module under /api/v1. Adding a module = one line here. */
 export function buildRoutes() {
@@ -14,6 +15,7 @@ export function buildRoutes() {
   router.use('/users', usersRoutes);
   router.use('/categories', categoriesRoutes);
   router.use('/media', buildMediaRoutes());
+  router.use('/businesses', businessesRoutes);
   router.use('/admin', buildAdminRoutes());
   return router;
 }

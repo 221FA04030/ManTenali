@@ -58,3 +58,20 @@ Decisions taken while implementing the Phase 1 specification
 | D2.8 | Images are delivered through `cldUrl()` with `f_auto,q_auto` and a width. | Spec performance NFR. |
 | D2.9 | Admin category **screens** come with the other admin tools in Step 10; Step 2 delivers the API, seed and upload component. | Matches the Step 2 deliverables in section 12. |
 | D2.10 | Missing Cloudinary configuration is reported, never bypassed. At startup the server logs `image uploads disabled` with the missing **names**, and `npm run check:media` reports missing names and then verifies the credentials with Cloudinary's authenticated `/ping`. The public 503 message stays generic. | A repeated `POST /media/sign` 503 was caused by `server/.env` having no `CLOUDINARY_*` lines. Diagnosis should not require reading code, and secrets are never printed. |
+
+## Step 3 - Businesses
+
+| # | Decision | Reason |
+|---|----------|--------|
+| D3.1 | Food fields (cuisines, menu, price range, veg-friendly) are left out of Step 3 and added in Step 4. Rating fields exist but stay 0 until reviews (Step 9). | The spec puts the food work in Step 4. |
+| D3.2 | Owners may edit only `description`, `tags`, `contact`, `openingHours` and `photos`. Name, category, kind, address, location, status and owner are admin-only. This is enforced by a strict schema per role **and** again in the service. | FR-BUS-5 ("details, hours and photos"), plus the spec rule that role and ownership are checked in services. |
+| D3.3 | `DELETE /businesses/:id` (archive) is admin-only; admins hide or publish through `PATCH status`. Archived listings can be restored by setting a status again. | FR-BUS-4 gives archiving to admins; soft delete only. |
+| D3.4 | Draft or hidden businesses return **404** (not 403) to the public and to other owners; their owner and admins can open them. | Avoids revealing hidden content (spec: "Resource missing or not visible to caller"). |
+| D3.5 | The slug is set at creation and never changes, even when the name changes. Reserved words (`mine`, `new`, `manage`, `admin`, `search`) are never used as slugs. | Stable links; `/businesses/mine` sits alongside `/businesses/:slug`. |
+| D3.6 | Added `GET /businesses/mine` (owner dashboard) and `GET /admin/businesses` (admin list, any status, search). | The owner and admin screens in Step 3's deliverables need them; the spec's API table has no list for non-published businesses. |
+| D3.7 | "Near me" uses `$geoNear` with a radius (API default 5 km, max 25; the app asks for 10 km) and returns `distanceM`. Distance sort requires coordinates. | FR-BUS-2 and the spec's location parameters. |
+| D3.8 | Opening hours are local "HH:MM" per weekday, evaluated in IST; slots past midnight are supported through a derived `overnight` flag so `openNow` can be an indexed query. | The spec stores times in UTC and displays them in IST; open-now must be correct late at night. |
+| D3.9 | Assigning an owner requires an active user and promotes a plain `user` to `owner`. Sample (seed) businesses can never be verified. | FR-BUS-4, plus the spec rule that seed content is always unverified. |
+| D3.10 | The map point is shown as an address with "View on map" and Directions links (Google Maps URL); no embedded map. | No extra infrastructure or API keys (spec section 13). |
+| D3.11 | `npm run seed -- --samples` adds 8 fictional sample businesses (`isSeed`, unverified, published) with dummy `+91 90000 0000x` numbers. Plain `npm run seed` adds categories only. | Spec: seed is for development and demos only and must not leak into production by accident. |
+| D3.12 | The Vite dev/preview proxy target can be overridden with `API_PROXY_TARGET` (a Node-side variable, never exposed to the browser). | Lets a second local API (tests, demos) run without disturbing the main dev server. |

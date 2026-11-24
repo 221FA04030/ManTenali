@@ -10,8 +10,17 @@ const NotFoundPage = lazy(() => import('../features/static/pages/NotFoundPage.js
 const PlaceholderPage = lazy(() => import('../features/static/pages/PlaceholderPage.jsx'));
 const LoginPage = lazy(() => import('../features/auth/pages/LoginPage.jsx'));
 const ProfilePage = lazy(() => import('../features/profile/pages/ProfilePage.jsx'));
+const BusinessListPage = lazy(() => import('../features/businesses/pages/BusinessListPage.jsx'));
+const BusinessDetailPage = lazy(() => import('../features/businesses/pages/BusinessDetailPage.jsx'));
+const ManageHomePage = lazy(() => import('../features/manage/pages/ManageHomePage.jsx'));
+const ManageBusinessPage = lazy(() => import('../features/manage/pages/ManageBusinessPage.jsx'));
+const AdminHomePage = lazy(() => import('../features/admin/pages/AdminHomePage.jsx'));
+const AdminBusinessesPage = lazy(() => import('../features/admin/pages/AdminBusinessesPage.jsx'));
+const AdminBusinessFormPage = lazy(() => import('../features/admin/pages/AdminBusinessFormPage.jsx'));
 
 const placeholder = (titleKey) => <PlaceholderPage titleKey={titleKey} />;
+const ownerOrAdmin = (el) => <RequireAuth roles={['owner', 'admin']}>{el}</RequireAuth>;
+const adminOnly = (el) => <RequireAuth roles={['admin']}>{el}</RequireAuth>;
 
 /** Route table (spec section 10). Placeholders are replaced step by step. */
 export const routes = [
@@ -20,8 +29,8 @@ export const routes = [
     children: [
       { index: true, element: <HomePage /> },
       { path: 'explore', element: <ExplorePage /> },
-      { path: 'businesses', element: placeholder('pages.businesses') },
-      { path: 'businesses/:slug', element: placeholder('pages.businesses') },
+      { path: 'businesses', element: <BusinessListPage /> },
+      { path: 'businesses/:slug', element: <BusinessDetailPage /> },
       { path: 'food', element: placeholder('pages.food') },
       { path: 'offers', element: placeholder('pages.offers') },
       { path: 'offers/:id', element: placeholder('pages.offers') },
@@ -44,15 +53,13 @@ export const routes = [
         path: 'profile/reviews',
         element: <RequireAuth>{placeholder('profile.myReviews')}</RequireAuth>,
       },
-      {
-        path: 'manage/*',
-        element: <RequireAuth roles={['owner', 'admin']}>{placeholder('profile.myBusinesses')}</RequireAuth>,
-      },
+      { path: 'manage', element: ownerOrAdmin(<ManageHomePage />) },
+      { path: 'manage/businesses/:slug', element: ownerOrAdmin(<ManageBusinessPage />) },
       { path: 'login', element: <LoginPage /> },
-      {
-        path: 'admin/*',
-        element: <RequireAuth roles={['admin']}>{placeholder('pages.admin')}</RequireAuth>,
-      },
+      { path: 'admin', element: adminOnly(<AdminHomePage />) },
+      { path: 'admin/businesses', element: adminOnly(<AdminBusinessesPage />) },
+      { path: 'admin/businesses/new', element: adminOnly(<AdminBusinessFormPage />) },
+      { path: 'admin/businesses/:slug/edit', element: adminOnly(<AdminBusinessFormPage />) },
       { path: 'about', element: <AboutPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],

@@ -21,6 +21,37 @@ export async function createUser(overrides = {}) {
   return user.toObject();
 }
 
+/** Insert a category directly. */
+export async function createCategory(overrides = {}) {
+  counter += 1;
+  const { Category } = await import('../modules/categories/categories.model.js');
+  const c = await Category.create({
+    name: { en: `Category ${counter}` },
+    slug: `category-${counter}`,
+    type: 'business',
+    ...overrides,
+  });
+  return c.toObject();
+}
+
+/** Insert a business directly (published by default). */
+export async function createBusiness(overrides = {}) {
+  counter += 1;
+  const { Business } = await import('../modules/businesses/businesses.model.js');
+  const categoryId = overrides.categoryId ?? (await createCategory())._id;
+  const b = await Business.create({
+    name: `Business ${counter}`,
+    slug: `business-${counter}`,
+    categoryId,
+    kind: 'shop',
+    address: { line: 'Main Road', area: 'Main Road' },
+    location: { type: 'Point', coordinates: [80.6444, 16.2379] },
+    status: 'published',
+    ...overrides,
+  });
+  return b.toObject();
+}
+
 /** A supertest agent that sends the allowed Origin and carries the session cookie. */
 export function agentFor(app) {
   return request.agent(app).set('Origin', TEST_ORIGIN);
