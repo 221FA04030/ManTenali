@@ -18,6 +18,7 @@ import { useAuth } from '../../auth/AuthContext.jsx';
 import { authApi } from '../../auth/api.js';
 import { useLocationContext } from '../../../app/providers/LocationProvider.jsx';
 import { AvatarField } from '../components/AvatarField.jsx';
+import { cldUrl } from '../../../lib/cloudinary.js';
 
 const schema = z.object({
   name: z.string().trim().min(2, 'auth.v.name').max(80, 'auth.v.name'),
@@ -27,7 +28,7 @@ const schema = z.object({
 
 export function Avatar({ user, size = 'h-16 w-16 text-xl' }) {
   if (user.avatarUrl) {
-    return <img src={user.avatarUrl} alt="" className={`${size} rounded-full object-cover ring-4 ring-white`} />;
+    return <img src={cldUrl(user.avatarUrl, { w: 128, h: 128 })} alt="" className={`${size} rounded-full object-cover ring-4 ring-white`} />;
   }
   const initials = user.name
     .split(/\s+/)

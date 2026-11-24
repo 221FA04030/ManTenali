@@ -16,7 +16,8 @@
     "build": "npm run build -w client",
     "format": "prettier --write \"server/src/**/*.js\" \"client/src/**/*.{js,jsx,css,json}\"",
     "seed": "npm run seed -w server",
-    "seed:admin": "npm run seed:admin -w server"
+    "seed:admin": "npm run seed:admin -w server",
+    "check:media": "npm run check:media -w server"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",

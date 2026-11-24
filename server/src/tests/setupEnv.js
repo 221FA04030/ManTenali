@@ -7,3 +7,6 @@ process.env.CLIENT_ORIGIN = 'http://localhost:5173';
 process.env.JWT_SECRET = 'test-only-jwt-secret-not-used-anywhere-else-0123456789';
 process.env.JWT_EXPIRES_IN = '7d';
 process.env.GOOGLE_CLIENT_ID = 'test-google-client-id.apps.googleusercontent.com';
+process.env.CLOUDINARY_CLOUD_NAME = 'test-cloud';
+process.env.CLOUDINARY_API_KEY = '123456789012345';
+process.env.CLOUDINARY_API_SECRET = 'test-only-cloudinary-secret';

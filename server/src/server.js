@@ -2,6 +2,7 @@ import { loadEnv, EnvValidationError } from './config/env.js';
 import { connectDb, disconnectDb, redactUri } from './config/db.js';
 import { createLogger } from './common/utils/logger.js';
 import { createApp } from './app.js';
+import { missingCloudinaryVars } from './common/integrations/cloudinary.js';
 
 async function main() {
   let env;
@@ -20,6 +21,15 @@ async function main() {
     level: env.LOG_LEVEL ?? (env.isProduction ? 'info' : 'debug'),
     pretty: !env.isProduction,
   });
+
+  // Make a missing image-upload configuration obvious at startup (names only, never values).
+  const missingMedia = missingCloudinaryVars(env);
+  if (missingMedia.length) {
+    logger.warn(
+      { missing: missingMedia },
+      'image uploads disabled: set these in server/.env and restart (POST /media/sign returns 503 until then)',
+    );
+  }
 
   try {
     await connectDb(env.MONGODB_URI, logger);

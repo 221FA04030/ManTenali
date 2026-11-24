@@ -37,6 +37,15 @@ const envSchema = z.object({
     .default('7d'),
   COOKIE_DOMAIN: z.string().optional().transform((v) => v || undefined),
   GOOGLE_CLIENT_ID: z.string().optional().transform((v) => v || undefined),
+
+  // Step 2 - media (optional: uploads are disabled until all three are set)
+  CLOUDINARY_CLOUD_NAME: z
+    .string()
+    .optional()
+    .transform((v) => v || undefined)
+    .pipe(z.string().regex(/^[a-z0-9_-]+$/i, 'must be a Cloudinary cloud name').optional()),
+  CLOUDINARY_API_KEY: z.string().optional().transform((v) => v || undefined),
+  CLOUDINARY_API_SECRET: z.string().optional().transform((v) => v || undefined),
 });
 
 export class EnvValidationError extends Error {

@@ -43,6 +43,18 @@ describe('PATCH /users/me', () => {
     expect(res.status).toBe(400);
   });
 
+  it('accepts avatars only from the project Cloudinary avatars folder', async () => {
+    const { agent } = await loginAs(app);
+    const good = 'https://res.cloudinary.com/test-cloud/image/upload/v1/mana-tenali/avatars/me.jpg';
+    const ok = await agent.patch('/api/v1/users/me').send({ avatarUrl: good });
+    expect(ok.status).toBe(200);
+    expect(ok.body.data.avatarUrl).toBe(good);
+    const external = await agent.patch('/api/v1/users/me').send({ avatarUrl: 'https://example.com/me.jpg' });
+    expect(external.status).toBe(400);
+    const cleared = await agent.patch('/api/v1/users/me').send({ avatarUrl: null });
+    expect(cleared.body.data.avatarUrl).toBeNull();
+  });
+
   it('requires login', async () => {
     const res = await request(app).patch('/api/v1/users/me').set('Origin', TEST_ORIGIN).send({ name: 'Anon' });
     expect(res.status).toBe(401);

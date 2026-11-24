@@ -43,3 +43,18 @@ Decisions taken while implementing the Phase 1 specification
 | D1.10 | `?next=` after login accepts only same-app relative paths. | Prevents open redirects. |
 | D1.11 | The language chosen in the drawer is also saved to the profile when logged in; on login the UI switches to the user's saved language. | FR-PRO-1 (language preference). |
 | D1.12 | `avatarUrl` accepts any https URL in Step 1; Step 2 restricts it to the project's Cloudinary account. | Upload signing arrives in Step 2. |
+
+## Step 2 - Categories and media
+
+| # | Decision | Reason |
+|---|----------|--------|
+| D2.1 | Category `name` is bilingual `{ en, te }` (English required). `slug` and `type` never change after creation; admins deactivate instead of deleting. | Spec data model; references and links stay stable. |
+| D2.2 | `GET /categories` returns active categories only; admins can pass `includeInactive=true` for the management screen. | Public lists must show only active data. |
+| D2.3 | `npm run seed` seeds the reference categories (business, event and news) with English and Telugu names. It is idempotent and never overwrites admin edits, and it refuses production without `--confirm-production`. | Spec seed script; safe to re-run. |
+| D2.4 | Cloudinary signing is implemented with Node `crypto` (SHA-1 per Cloudinary docs) in `common/integrations/cloudinary.js`; no SDK dependency. | Thin wrapper, smaller dependency surface; the secret never leaves the server. |
+| D2.5 | `CLOUDINARY_*` variables are **optional**. Until all three are set, `POST /media/sign` returns 503 `SERVICE_UNAVAILABLE` and the UI says uploads aren't available yet. | The owner has not configured Cloudinary yet; everything else must keep working. |
+| D2.6 | Upload purposes decide the role, folder and limits. `avatar`: any logged-in user, 2 MB, stored at most 600 px. `business_photo` / `offer_image`: owner or admin, 5 MB. `event_banner` / `news_cover`: admin only, 5 MB. All purposes: JPG/PNG/WebP only, stored at most 1600 px. | FR-MED-1, plus the authorization matrix. Cloudinary's signed upload has no per-upload byte limit, so the signed `allowed_formats` and a `c_limit` incoming transformation cap what is stored, and the client checks the byte size before uploading. |
+| D2.7 | Services accept an image only if its URL is on our Cloudinary account **and** its `publicId` is in the folder for that purpose (`assertOwnImage`). Avatars set through `PATCH /users/me` follow the same rule; a Google profile photo is only stored at Google sign-in. | Spec: "rejects URLs that are not on the configured Cloudinary account". |
+| D2.8 | Images are delivered through `cldUrl()` with `f_auto,q_auto` and a width. | Spec performance NFR. |
+| D2.9 | Admin category **screens** come with the other admin tools in Step 10; Step 2 delivers the API, seed and upload component. | Matches the Step 2 deliverables in section 12. |
+| D2.10 | Missing Cloudinary configuration is reported, never bypassed. At startup the server logs `image uploads disabled` with the missing **names**, and `npm run check:media` reports missing names and then verifies the credentials with Cloudinary's authenticated `/ping`. The public 503 message stays generic. | A repeated `POST /media/sign` 503 was caused by `server/.env` having no `CLOUDINARY_*` lines. Diagnosis should not require reading code, and secrets are never printed. |

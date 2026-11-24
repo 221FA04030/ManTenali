@@ -194,13 +194,23 @@
     "myBusinessesHint": "Edit your business details and offers",
     "adminHint": "Moderation, content and users",
     "photo": "Profile photo",
-    "photoSet": "Your profile photo is set.",
-    "photoNone": "No profile photo yet.",
     "deleteNote": "To delete your account, contact the Mana Tenali team from the About page."
   },
   "roles": {
     "user": "User",
     "owner": "Business owner",
     "admin": "Admin"
+  },
+  "upload": {
+    "choose": "Choose photo",
+    "change": "Change photo",
+    "remove": "Remove",
+    "uploading": "Uploading…",
+    "hint": "JPG, PNG or WebP, up to {{mb}} MB.",
+    "noFile": "Choose an image file.",
+    "badType": "Only JPG, PNG or WebP images are allowed.",
+    "tooBig": "This image is larger than {{mb}} MB.",
+    "failed": "Upload failed. Please try again.",
+    "notConfigured": "Photo uploads are not available yet."
   }
 }

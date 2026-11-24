@@ -18,6 +18,34 @@ The client proxies `/api` to the API in development, so the session cookie is sa
 `MONGODB_URI` is read **only** from `server/.env` (git-ignored). It is validated at startup,
 never logged and never sent to the client. Tests do not need it - they use an in-memory MongoDB.
 
+### First-time data
+
+```bash
+npm run seed:admin   # creates the first admin from ADMIN_SEED_EMAIL / ADMIN_SEED_PASSWORD in server/.env
+npm run seed         # reference categories (safe to re-run; never overwrites admin edits)
+```
+
+### Images (Cloudinary)
+
+Photo uploads use **Cloudinary** (signed direct uploads). Add these three variables to `server/.env`
+(values from Cloudinary Console -> Settings -> API Keys; no quotes or spaces):
+
+```
+CLOUDINARY_CLOUD_NAME=...
+CLOUDINARY_API_KEY=...
+CLOUDINARY_API_SECRET=...
+```
+
+Then restart the server (`npm run dev` reads `server/.env` only when it starts) and verify:
+
+```bash
+npm run check:media   # reports missing variable names, then checks the credentials with Cloudinary
+```
+
+Until all three are set, everything else works but `POST /api/v1/media/sign` returns
+`503 SERVICE_UNAVAILABLE`, the upload button shows "Photo uploads are not available yet", and the server
+logs `image uploads disabled` with the missing names at startup. The secret never leaves the server.
+
 ### Common commands
 
 | Command | What it does |
@@ -26,6 +54,7 @@ never logged and never sent to the client. Tests do not need it - they use an in
 | `npm test` | Server (Vitest + Supertest + mongodb-memory-server) and client (Vitest + Testing Library) tests |
 | `npm run lint` | ESLint for server and client |
 | `npm run build` | Production build of the web app (`client/dist`) |
+| `npm run check:media` | Check the Cloudinary (image upload) configuration |
 
 The first server test run downloads a MongoDB binary for `mongodb-memory-server` (cached afterwards).
 

@@ -4,6 +4,7 @@ import { AppError } from '../../common/errors/index.js';
 import { getPagination, buildMeta } from '../../common/utils/pagination.js';
 import { ROLES } from '../../config/constants.js';
 import { escapeRegex } from '../../common/utils/validators.js';
+import { assertOwnImageUrl } from '../media/media.service.js';
 
 const BCRYPT_COST = 12;
 
@@ -115,6 +116,8 @@ export async function findOrCreateFromGoogle({ googleId, email, emailVerified, n
 }
 
 export async function updateSelf(id, changes) {
+  // Avatars must be uploaded through our signed Cloudinary flow (spec security checklist).
+  if (changes.avatarUrl) assertOwnImageUrl(changes.avatarUrl, 'avatar');
   const update = {};
   const unset = {};
   for (const [key, value] of Object.entries(changes)) {

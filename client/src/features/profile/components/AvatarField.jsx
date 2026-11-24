@@ -1,12 +1,17 @@
 import { useTranslation } from 'react-i18next';
+import { ImageUpload } from '../../../components/ui/ImageUpload.jsx';
 
-/**
- * Avatar picker. Step 1 shows the current photo only; Step 2 replaces the body
- * with the signed Cloudinary image upload component.
- */
-export function AvatarField({ value }) {
+/** Profile photo: signed Cloudinary upload; saves the URL on the profile. */
+export function AvatarField({ value, onChange, busy }) {
   const { t } = useTranslation();
   return (
-    <p className="text-sm text-ink-muted">{value ? t('profile.photoSet') : t('profile.photoNone')}</p>
+    <ImageUpload
+      purpose="avatar"
+      shape="round"
+      value={value}
+      disabled={busy}
+      alt={t('profile.photo')}
+      onChange={(image) => onChange(image?.url ?? null)}
+    />
   );
 }
