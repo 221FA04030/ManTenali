@@ -1,0 +1,66 @@
+/* Only the Latin and Telugu subsets are bundled. */
+@import '@fontsource/noto-sans/latin-400.css';
+@import '@fontsource/noto-sans/latin-500.css';
+@import '@fontsource/noto-sans/latin-600.css';
+@import '@fontsource/noto-sans/latin-700.css';
+@import '@fontsource/noto-sans-telugu/telugu-400.css';
+@import '@fontsource/noto-sans-telugu/telugu-600.css';
+@import '@fontsource/noto-sans-telugu/telugu-700.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-brand-50 font-sans text-ink antialiased;
+  }
+  /* Telugu glyphs have tall vowel signs - give them more room. */
+  html[lang='te'] body {
+    line-height: 1.6;
+  }
+  html[lang='te'] .leading-tight,
+  html[lang='te'] .leading-snug {
+    line-height: 1.45;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-700 ring-offset-2;
+  }
+}
+
+@layer components {
+  .page-pad {
+    @apply px-4;
+  }
+  .section-title {
+    @apply text-lg font-bold text-ink;
+  }
+}
+
+@layer utilities {
+  .pb-nav {
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

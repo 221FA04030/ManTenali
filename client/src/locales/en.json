@@ -1,0 +1,216 @@
+{
+  "app": {
+    "name": "Mana Tenali",
+    "tagline": "Your Tenali, In One App",
+    "skipToContent": "Skip to content"
+  },
+  "nav": {
+    "home": "Home",
+    "explore": "Explore",
+    "suggest": "Suggest",
+    "saved": "Saved",
+    "profile": "Profile",
+    "main": "Main navigation",
+    "back": "Go back"
+  },
+  "menu": {
+    "open": "Open menu",
+    "close": "Close menu",
+    "title": "Menu",
+    "language": "Language",
+    "login": "Log in or sign up",
+    "profile": "My profile",
+    "about": "About Mana Tenali",
+    "admin": "Admin",
+    "logout": "Log out"
+  },
+  "header": {
+    "notifications": "Today in Tenali updates"
+  },
+  "search": {
+    "placeholder": "Search in Tenali...",
+    "label": "Search Mana Tenali",
+    "submit": "Search"
+  },
+  "tiles": {
+    "news": "News & Updates",
+    "shops": "Local Shops",
+    "food": "Food & Hotels",
+    "bus": "Bus Tracking",
+    "events": "Events",
+    "jobs": "Jobs",
+    "services": "Services",
+    "more": "More",
+    "offers": "Offers"
+  },
+  "home": {
+    "categoriesLabel": "Browse categories",
+    "bannerTitle": "What's Happening in Tenali?",
+    "bannerSubtitle": "Events • News • Offers • Updates",
+    "viewNow": "View Now",
+    "todayTitle": "Today in Tenali",
+    "nearbyTitle": "Nearby businesses",
+    "offersTitle": "Active offers",
+    "eventsTitle": "Upcoming events",
+    "newsTitle": "Latest news"
+  },
+  "explore": {
+    "title": "Explore Tenali",
+    "subtitle": "All in one place",
+    "shops": {
+      "title": "Local Shops & Businesses",
+      "subtitle": "Stores, services, and offers near you"
+    },
+    "food": {
+      "title": "Food & Restaurants",
+      "subtitle": "Hotels, tiffins, cafés, and more"
+    },
+    "offers": {
+      "title": "Offers & Deals",
+      "subtitle": "Discounts from local businesses"
+    },
+    "news": {
+      "title": "News & Updates",
+      "subtitle": "Local news, traffic, power and water notices"
+    },
+    "events": {
+      "title": "Events & Activities",
+      "subtitle": "Fairs, cultural events, programs"
+    },
+    "transport": {
+      "title": "Transport",
+      "subtitle": "Buses, routes, live tracking"
+    },
+    "publicServices": {
+      "title": "Public Services",
+      "subtitle": "Municipality, bills, complaints"
+    },
+    "health": {
+      "title": "Health & Hospitals",
+      "subtitle": "Hospitals, clinics, pharmacies"
+    },
+    "education": {
+      "title": "Education",
+      "subtitle": "Schools, colleges, coaching"
+    },
+    "realEstate": {
+      "title": "Real Estate",
+      "subtitle": "Plots, houses, rentals"
+    },
+    "jobs": {
+      "title": "Jobs & Internships",
+      "subtitle": "Local job opportunities"
+    }
+  },
+  "badge": {
+    "soon": "Soon",
+    "comingSoon": "Coming soon",
+    "verified": "Verified",
+    "sample": "Sample data"
+  },
+  "common": {
+    "viewAll": "View All",
+    "loading": "Loading...",
+    "retry": "Try again",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "next": "Next",
+    "previous": "Previous",
+    "pageOf": "Page {{page}} of {{total}}",
+    "updated": "Updated {{time}}",
+    "english": "English",
+    "telugu": "తెలుగు"
+  },
+  "states": {
+    "emptyTitle": "Nothing here yet",
+    "emptyBody": "Check back soon - new listings are added regularly.",
+    "errorTitle": "Something went wrong",
+    "errorBody": "We couldn't load this. Please check your connection and try again.",
+    "buildingTitle": "This section is being built",
+    "buildingBody": "It will be available in the app very soon.",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "The page you are looking for doesn't exist.",
+    "goHome": "Go to Home"
+  },
+  "pages": {
+    "businesses": "Local Shops & Businesses",
+    "food": "Food & Restaurants",
+    "offers": "Offers & Deals",
+    "events": "Events & Activities",
+    "news": "News & Updates",
+    "search": "Search",
+    "profile": "Profile",
+    "saved": "Saved",
+    "login": "Log in",
+    "suggest": "Suggest",
+    "admin": "Admin",
+    "about": "About"
+  },
+  "about": {
+    "body": "Mana Tenali is a local discovery and community app for Tenali, Andhra Pradesh. Find shops, food, offers, events and local news - with sources and update times shown so you know what to trust."
+  },
+  "errors": {
+    "VALIDATION_ERROR": "Please check the highlighted fields.",
+    "UNAUTHENTICATED": "Please log in to continue.",
+    "FORBIDDEN": "You don't have permission to do that.",
+    "NOT_FOUND": "We couldn't find that.",
+    "CONFLICT": "That already exists.",
+    "RATE_LIMITED": "Too many attempts. Please wait a moment and try again.",
+    "NETWORK_ERROR": "Can't reach the server. Check your internet connection.",
+    "SERVICE_UNAVAILABLE": "The service is temporarily unavailable.",
+    "INTERNAL_ERROR": "Something went wrong. Please try again."
+  },
+  "auth": {
+    "login": "Log in",
+    "register": "Sign up",
+    "createAccount": "Create account",
+    "name": "Full name",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "or": "or",
+    "badCredentials": "Email or password is incorrect.",
+    "welcome": "Welcome, {{name}}!",
+    "privacyNote": "We only use your account to save favorites, write reviews and report problems. Your location is never stored.",
+    "forbiddenTitle": "Not allowed",
+    "v": {
+      "email": "Enter a valid email address.",
+      "passwordRequired": "Enter your password.",
+      "passwordLength": "Password must be 8 to 72 characters.",
+      "name": "Name must be 2 to 80 characters."
+    }
+  },
+  "profile": {
+    "details": "Your details",
+    "area": "Preferred area",
+    "areaHint": "Used to show nearby places when location is off.",
+    "noArea": "No preference",
+    "saved": "Saved",
+    "savedHint": "Businesses, offers and events you saved",
+    "myReviews": "My reviews",
+    "myReviewsHint": "Ratings you have written",
+    "myBusinesses": "My businesses",
+    "myBusinessesHint": "Edit your business details and offers",
+    "adminHint": "Moderation, content and users",
+    "photo": "Profile photo",
+    "deleteNote": "To delete your account, contact the Mana Tenali team from the About page."
+  },
+  "roles": {
+    "user": "User",
+    "owner": "Business owner",
+    "admin": "Admin"
+  },
+  "upload": {
+    "choose": "Choose photo",
+    "change": "Change photo",
+    "remove": "Remove",
+    "uploading": "Uploading…",
+    "hint": "JPG, PNG or WebP, up to {{mb}} MB.",
+    "noFile": "Choose an image file.",
+    "badType": "Only JPG, PNG or WebP images are allowed.",
+    "tooBig": "This image is larger than {{mb}} MB.",
+    "failed": "Upload failed. Please try again.",
+    "notConfigured": "Photo uploads are not available yet."
+  }
+}
