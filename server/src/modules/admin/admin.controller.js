@@ -1,6 +1,7 @@
 import * as usersService from '../users/users.service.js';
 import * as businessesService from '../businesses/businesses.service.js';
 import * as eventsService from '../events/events.service.js';
+import * as newsService from '../news/news.service.js';
 import { ok } from '../../common/utils/response.js';
 
 /**
@@ -68,4 +69,14 @@ export async function requestEventChanges(req, res) {
 export async function listEvents(req, res) {
   const { items, meta } = await eventsService.adminList(req.validated.query);
   return ok(res, items, meta);
+}
+
+// News management (FR-NEWS-3)
+export async function listNews(req, res) {
+  const { items, meta } = await newsService.adminList(req.validated.query);
+  return ok(res, items, meta);
+}
+
+export async function getNews(req, res) {
+  return ok(res, await newsService.adminGet(req.validated.params.id));
 }

@@ -12,6 +12,7 @@ import { Business } from '../../modules/businesses/businesses.model.js';
 import { Offer } from '../../modules/offers/offers.model.js';
 import { Event } from '../../modules/events/events.model.js';
 import { EventEvidence } from '../../modules/events/evidence.model.js';
+import { News } from '../../modules/news/news.model.js';
 
 const demoScript = fileURLToPath(new URL('../demo.js', import.meta.url));
 const counts = async () => ({
@@ -20,6 +21,7 @@ const counts = async () => ({
   offers: await Offer.countDocuments(),
   events: await Event.countDocuments(),
   evidence: await EventEvidence.countDocuments(),
+  news: await News.countDocuments(),
 });
 const login = async (app, email, password) => {
   const agent = request.agent(app);
@@ -86,7 +88,7 @@ describe('demo data load', () => {
     expect(first.evidence).toBeGreaterThanOrEqual(5);
     const before = await counts();
     const second = await seedDemo();
-    expect(second).toEqual({ users: 0, businesses: 0, offers: 0, events: 0, evidence: 0 });
+    expect(second).toEqual({ users: 0, businesses: 0, offers: 0, events: 0, evidence: 0, news: 0 });
     expect(await counts()).toEqual(before);
   });
 
@@ -96,6 +98,9 @@ describe('demo data load', () => {
     expect([...(await statuses(Business))].sort()).toEqual(['archived', 'draft', 'hidden', 'pending', 'published', 'rejected']);
     expect([...(await statuses(Event))].sort()).toEqual(['cancelled', 'changes_requested', 'draft', 'hidden', 'pending_review', 'published', 'rejected', 'withdrawn']);
     expect([...(await statuses(Offer))].sort()).toEqual(['draft', 'hidden', 'published']);
+    expect([...(await statuses(News))].sort()).toEqual(['archived', 'draft', 'hidden', 'published']);
+    expect(await News.exists({ status: 'published', validUntil: { $lt: new Date() } })).toBeTruthy(); // expired notice
+    expect(await News.exists({ isSeed: { $ne: true } })).toBeFalsy();
 
     const now = Date.now();
     const published = await Offer.find({ status: 'published' }).lean();
@@ -143,6 +148,17 @@ describe('demo data load', () => {
     const offerTitles = offers.body.data.map((o) => o.title);
     expect(offerTitles).toContain('Free sweet with family meals (Demo)');
     for (const t of ['expired', 'hidden', 'draft', 'upcoming', 'business hidden']) expect(offerTitles.some((x) => x.includes(`Demo - ${t}`))).toBe(false);
+
+    const news = (await pub('/news?limit=50')).body.data;
+    expect(news[0]).toMatchObject({ isPinned: true });
+    expect(news.map((n) => n.slug)).toContain('demo-heavy-rain-alert');
+    for (const slug of ['demo-expired-power-cut', 'demo-hidden-traffic-diversion', 'demo-draft-sports-meet', 'demo-removed-old-notice']) {
+      expect(news.map((n) => n.slug)).not.toContain(slug);
+    }
+    expect((await pub('/news/demo-expired-power-cut')).body.data).toMatchObject({ isExpired: true });
+    for (const slug of ['demo-hidden-traffic-diversion', 'demo-draft-sports-meet', 'demo-removed-old-notice']) {
+      expect((await pub(`/news/${slug}`)).status).toBe(404);
+    }
 
     const businesses = (await pub('/businesses?limit=50')).body.data.map((b) => b.slug);
     expect(businesses).toContain('demo-padma-andhra-meals');

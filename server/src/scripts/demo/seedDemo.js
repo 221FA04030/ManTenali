@@ -23,6 +23,7 @@ import { seedOffers } from '../../modules/offers/offers.service.js';
 import { Event } from '../../modules/events/events.model.js';
 import { EventEvidence } from '../../modules/events/evidence.model.js';
 import { seedEvents } from '../../modules/events/events.service.js';
+import { seedNews } from '../../modules/news/news.service.js';
 import { seedCategories, seedCategoryTree, findIdBySlug, getParentMap } from '../../modules/categories/categories.service.js';
 import { evidenceFolderFor } from '../../modules/media/media.service.js';
 import { toPoint } from '../../common/utils/geo.js';
@@ -31,7 +32,8 @@ import { CATEGORY_SEED, BUSINESS_CATEGORY_TREE } from '../seedData/categories.js
 import { BUSINESS_SEED } from '../seedData/businesses.js';
 import { OFFER_SEED } from '../seedData/offers.js';
 import { EVENT_SEED } from '../seedData/events.js';
-import { DEMO_USERS, DEMO_BUSINESSES, DEMO_OFFERS, DEMO_EVENTS, DEMO_SUBMISSIONS, EVIDENCE_FIXTURES } from './demoData.js';
+import { NEWS_SEED } from '../seedData/news.js';
+import { DEMO_USERS, DEMO_BUSINESSES, DEMO_OFFERS, DEMO_EVENTS, DEMO_SUBMISSIONS, DEMO_NEWS, EVIDENCE_FIXTURES } from './demoData.js';
 
 const DAY = 86_400_000;
 export const FIXTURES_DIR = fileURLToPath(new URL('./fixtures/', import.meta.url));
@@ -270,7 +272,7 @@ export const readFixture = (path) => readFileSync(path);
 /**
  * Load everything: reference categories, the existing "(Sample)" content
  * (same as `npm run seed -- --samples`) and the demo accounts, businesses,
- * offers, events and private moderation fixtures.
+ * offers, events, news and private moderation fixtures.
  */
 export async function seedDemo({ now = new Date() } = {}) {
   assertDemoTarget();
@@ -294,11 +296,18 @@ export async function seedDemo({ now = new Date() } = {}) {
   const offers = await seedDemoOffers(users.ids, now);
   const events = await seedDemoEvents(users.ids, now);
   const submissions = await seedDemoSubmissions(users.ids, now);
+  const newsCats = new Map();
+  for (const slug of new Set([...NEWS_SEED, ...DEMO_NEWS].map((n) => n.categorySlug).filter(Boolean))) {
+    newsCats.set(slug, await findIdBySlug('news', slug));
+  }
+  const admin = users.ids.get('admin');
+  const news = await seedNews([...NEWS_SEED, ...DEMO_NEWS.map((n) => ({ ...n, createdBy: admin }))], newsCats, now);
   return {
     users: users.created,
     businesses: samples.created + businesses,
     offers: sampleOffers.created + offers,
     events: sampleEvents.created + events + submissions.events,
     evidence: submissions.evidence,
+    news: news.created,
   };
 }

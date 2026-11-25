@@ -35,6 +35,10 @@ const AdminEventSubmissionsPage = lazy(() => import('../features/admin/pages/Adm
 const AdminEventReviewPage = lazy(() => import('../features/admin/pages/AdminEventReviewPage.jsx'));
 const AdminEventsPage = lazy(() => import('../features/admin/pages/AdminEventsPage.jsx'));
 const AdminEventFormPage = lazy(() => import('../features/admin/pages/AdminEventFormPage.jsx'));
+const NewsListPage = lazy(() => import('../features/news/pages/NewsListPage.jsx'));
+const NewsDetailPage = lazy(() => import('../features/news/pages/NewsDetailPage.jsx'));
+const AdminNewsPage = lazy(() => import('../features/admin/pages/AdminNewsPage.jsx'));
+const AdminNewsFormPage = lazy(() => import('../features/admin/pages/AdminNewsFormPage.jsx'));
 
 const placeholder = (titleKey) => <PlaceholderPage titleKey={titleKey} />;
 const signedIn = (el) => <RequireAuth>{el}</RequireAuth>;
@@ -58,8 +62,8 @@ export const routes = [
       { path: 'events/submissions', element: signedIn(<MySubmissionsPage />) },
       { path: 'events/submissions/:id', element: signedIn(<SubmissionPage />) },
       { path: 'events/:slug', element: <EventDetailPage /> },
-      { path: 'news', element: placeholder('pages.news') },
-      { path: 'news/:slug', element: placeholder('pages.news') },
+      { path: 'news', element: <NewsListPage /> },
+      { path: 'news/:slug', element: <NewsDetailPage /> },
       { path: 'search', element: placeholder('pages.search') },
       { path: 'saved', element: placeholder('pages.saved') },
       { path: 'suggest', element: placeholder('pages.suggest') },
@@ -95,6 +99,9 @@ export const routes = [
       { path: 'admin/events', element: adminOnly(<AdminEventsPage />) },
       { path: 'admin/events/new', element: adminOnly(<AdminEventFormPage />) },
       { path: 'admin/events/:id/edit', element: adminOnly(<AdminEventFormPage />) },
+      { path: 'admin/news', element: adminOnly(<AdminNewsPage />) },
+      { path: 'admin/news/new', element: adminOnly(<AdminNewsFormPage />) },
+      { path: 'admin/news/:id/edit', element: adminOnly(<AdminNewsFormPage />) },
       { path: 'about', element: <AboutPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],

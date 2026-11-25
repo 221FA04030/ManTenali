@@ -19,6 +19,7 @@ import {
   requestChangesSchema as eventChangesSchema,
   idParams as eventIdParams,
 } from '../events/events.validation.js';
+import { adminListQuery as newsListQuery, idParams as newsIdParams } from '../news/news.validation.js';
 import * as controller from './admin.controller.js';
 
 /** Everything under /admin requires an authenticated admin. */
@@ -69,5 +70,9 @@ export function buildAdminRoutes() {
     asyncHandler(controller.requestEventChanges),
   );
   router.get('/events', validate({ query: eventListQuery }), asyncHandler(controller.listEvents));
+
+  // News management list and editing view (writes go through /news)
+  router.get('/news', validate({ query: newsListQuery }), asyncHandler(controller.listNews));
+  router.get('/news/:id', validate({ params: newsIdParams }), asyncHandler(controller.getNews));
   return router;
 }

@@ -23,7 +23,7 @@ never logged and never sent to the client. Tests do not need it - they use an in
 ```bash
 npm run seed:admin   # creates the first admin from ADMIN_SEED_EMAIL / ADMIN_SEED_PASSWORD in server/.env
 npm run seed         # reference categories (safe to re-run; never overwrites admin edits)
-npm run seed -- --samples   # also adds demo businesses, offers and events labelled "Sample data" (local dev/test only; always refused in production)
+npm run seed -- --samples   # also adds demo businesses, offers, events and news labelled "Sample data" (local dev/test only; always refused in production)
 ```
 
 ### Local demo with sample data (development only)
@@ -50,7 +50,7 @@ Safety:
 
 | Role | Email | Password | Use it to test |
 |------|-------|----------|----------------|
-| Admin | `admin@demo.example` | `DemoAdmin#2026` | Admin pages: business and event review, categories, events, verify |
+| Admin | `admin@demo.example` | `DemoAdmin#2026` | Admin pages: business and event review, categories, events, news, verify |
 | Owner | `owner@demo.example` | `DemoOwner#2026` | Padma's businesses (approved, draft), menus, offers in every state |
 | Owner | `owner2@demo.example` | `DemoOwner#2026` | Suresh's businesses (approved, hidden, archived); Telugu interface |
 | User | `user@demo.example` | `DemoUser#2026` | Pending business submission; event submissions with private evidence |
@@ -67,6 +67,7 @@ What the demo data covers (all names end in "(Demo)" or "(Sample)"; dates are re
 | Offers: live with a coupon, ending today, upcoming, expired, hidden, draft, and a live offer on a hidden business | The offers feed shows only live offers of approved businesses; the owner's offer list groups them by status |
 | Events: upcoming with a linked business and booking link, all-day over 2 days, workshop tomorrow, past (10 days ago), cancelled (with reason), hidden, draft | Event filters, "Show past events", the cancelled label, IST times, admin event management |
 | Submissions: pending review, changes requested, rejected, withdrawn, and an approved community event, each with private evidence | Submitter and admin moderation flows; evidence is visible only to the submitter and admins |
+| News: 3 "(Sample)" items plus pinned water notice, weather alert, announcement, local news, an expired power cut, and hidden, draft and removed items | Type filter, pinned first, "show until" times, the expired label on old links, admin news management |
 
 Private evidence fixtures are synthetic: a placeholder poster (`demo-poster.png`) and a one-page PDF
 (`demo-venue-letter.pdf`) labelled "not a real document", in `server/src/scripts/demo/fixtures/`.
@@ -134,6 +135,20 @@ Offer dates are date-only and use India time: valid from 00:00 IST on the start 
 Event times are entered and shown in India time (IST). Evidence files are private: they are never returned by public
 endpoints, and only the submitter and admins can open them. Run `npm run cleanup:evidence` (dry run) and
 `npm run cleanup:evidence -- --apply` to delete evidence 180 days after the final decision.
+
+### News and notices (API summary)
+
+| Method | Path | Access | Purpose |
+|--------|------|--------|---------|
+| GET | `/api/v1/news` | Public | Published items that haven't expired, pinned first, newest next; filters `type` (`news`, `traffic`, `weather`, `power`, `water`, `announcement`), `categoryId`; paginated |
+| GET | `/api/v1/news/:slug` | Public (admins can preview other statuses) | Detail with source, published and updated times; an expired notice opens labelled "expired" |
+| POST | `/api/v1/news` | Admin | Create (`status`: `draft` or `published`; optional `isPinned`, `validUntil`) |
+| PATCH | `/api/v1/news/:id` | Admin | Edit, publish, unpublish (draft), hide, pin or unpin |
+| DELETE | `/api/v1/news/:id` | Admin | Remove (soft: the record is kept and unpinned) |
+| GET | `/api/v1/admin/news[/:id]` | Admin | Management list (any status; filters `status`, `type`, `q`) and editing view |
+
+Every item names its source. "Show until" (`validUntil`) is entered in India time (IST, `YYYY-MM-DDTHH:mm`);
+after it passes, the item drops out of lists. At most 5 live items can be pinned at once.
 
 ### Images (Cloudinary)
 

@@ -734,5 +734,78 @@
       "admin": "Added by admin",
       "community": "Community submission"
     }
+  },
+  "news": {
+    "type": "Type",
+    "allTypes": "All",
+    "types": {
+      "news": "News",
+      "traffic": "Traffic",
+      "weather": "Weather",
+      "power": "Power cut",
+      "water": "Water supply",
+      "announcement": "Announcement"
+    },
+    "pinned": "Pinned",
+    "until": "Until {{time}}",
+    "source": "Source: {{name}}",
+    "published": "Published {{time}}",
+    "expired": "Expired",
+    "expiredTitle": "This notice has expired",
+    "expiredBody": "It was valid until {{time}} and is no longer listed.",
+    "openSource": "Open the source",
+    "emptyTitle": "No news right now",
+    "emptyBody": "News and local notices will appear here.",
+    "emptyTypeBody": "Nothing of this type right now. Try All.",
+    "count_one": "{{count}} item",
+    "count_other": "{{count}} items",
+    "notFound": "News item not found",
+    "notFoundBody": "It may have been removed.",
+    "adminPreview": "Admin preview: this item is not public.",
+    "f": {
+      "title": "Headline",
+      "summary": "Summary",
+      "summaryHint": "One or two sentences shown on cards.",
+      "body": "Full text",
+      "bodyHint": "Plain text. Line breaks are kept.",
+      "noCategory": "No category",
+      "trust": "Source and validity",
+      "sourceName": "Source name",
+      "sourcePlaceholder": "e.g. Tenali Municipality",
+      "sourceHint": "Shown with every item so readers know where it came from.",
+      "sourceUrl": "Source link",
+      "validUntil": "Show until (IST)",
+      "validUntilHint": "Optional. After this time the item stops showing in lists.",
+      "validUntilSuggest": "Notices like this usually end. Set when it should stop showing.",
+      "clearValidUntil": "Clear time",
+      "cover": "Cover image",
+      "pin": "Pin to the top",
+      "pinHint": "Pinned items come first and feed the home banner (at most {{max}})."
+    },
+    "v": {
+      "title": "Enter a headline (at least 3 characters).",
+      "summary": "Write a short summary (at least 10 characters).",
+      "source": "Name the source.",
+      "sourceUrl": "Use a full https:// link.",
+      "validUntil": "Choose a date and time.",
+      "validUntilPast": "Choose a time in the future.",
+      "validUntilFar": "Choose a time within one year."
+    }
+  },
+  "newsAdmin": {
+    "title": "News & notices",
+    "hint": "Create, edit, pin, hide and remove news items",
+    "new": "New news item",
+    "edit": "Edit news item",
+    "search": "Search news",
+    "emptyTitle": "No news items",
+    "view": "View",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "pinnedDone": "Pinned to the top",
+    "unpinnedDone": "Unpinned",
+    "removed": "News item removed",
+    "removeTitle": "Remove this news item?",
+    "removeBody": "\"{{name}}\" will be removed from the app. The record is kept."
   }
 }

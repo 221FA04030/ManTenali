@@ -2,7 +2,7 @@
  * Development/demo seed: `npm run seed`
  *
  * Always seeds reference categories (safe and idempotent).
- * With --samples it also adds SAMPLE content (businesses, offers, events), always flagged
+ * With --samples it also adds SAMPLE content (businesses, offers, events, news), always flagged
  * isSeed = true, never verified, and shown as "Sample data" in the app:
  *   npm run seed -- --samples
  * Refuses NODE_ENV=production unless --confirm-production is passed, and then
@@ -16,10 +16,12 @@ import { seedCategories, seedCategoryTree, findIdBySlug, getParentMap } from '..
 import { seedBusinesses, getIdsBySlugs } from '../modules/businesses/businesses.service.js';
 import { seedOffers } from '../modules/offers/offers.service.js';
 import { seedEvents } from '../modules/events/events.service.js';
+import { seedNews } from '../modules/news/news.service.js';
 import { CATEGORY_SEED, BUSINESS_CATEGORY_TREE } from './seedData/categories.js';
 import { BUSINESS_SEED } from './seedData/businesses.js';
 import { OFFER_SEED } from './seedData/offers.js';
 import { EVENT_SEED } from './seedData/events.js';
+import { NEWS_SEED } from './seedData/news.js';
 
 const out = (msg) => process.stdout.write(`${msg}\n`);
 const fail = (msg) => {
@@ -71,6 +73,10 @@ async function main() {
     for (const slug of new Set(EVENT_SEED.map((e) => e.categorySlug))) eventCats.set(slug, await findIdBySlug('event', slug));
     const events = await seedEvents(EVENT_SEED, eventCats);
     out(`sample events: ${events.created} created, ${events.skipped} skipped (already present)`);
+    const newsCats = new Map();
+    for (const slug of new Set(NEWS_SEED.map((n) => n.categorySlug).filter(Boolean))) newsCats.set(slug, await findIdBySlug('news', slug));
+    const news = await seedNews(NEWS_SEED, newsCats);
+    out(`sample news: ${news.created} created, ${news.skipped} skipped (already present)`);
   } else {
     out('sample content skipped (run `npm run seed -- --samples` to add demo listings labelled "Sample data")');
   }

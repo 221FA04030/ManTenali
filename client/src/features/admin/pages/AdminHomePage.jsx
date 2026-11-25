@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { CalendarCheck, CalendarDays, ClipboardCheck, FolderTree, Store } from 'lucide-react';
+import { CalendarCheck, CalendarDays, ClipboardCheck, FolderTree, Newspaper, Store } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { ListRow } from '../../../components/ui/ListRow.jsx';
 
@@ -21,6 +21,9 @@ export default function AdminHomePage() {
         </li>
         <li>
           <ListRow icon={CalendarDays} title={t('eventAdmin.title')} subtitle={t('eventAdmin.hint')} to="/admin/events" />
+        </li>
+        <li>
+          <ListRow icon={Newspaper} title={t('newsAdmin.title')} subtitle={t('newsAdmin.hint')} to="/admin/news" />
         </li>
         <li>
           <ListRow icon={FolderTree} title={t('categoriesAdmin.title')} subtitle={t('categoriesAdmin.hint')} to="/admin/categories" />

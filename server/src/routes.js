@@ -8,6 +8,7 @@ import { buildMediaRoutes } from './modules/media/media.routes.js';
 import { buildBusinessesRoutes } from './modules/businesses/businesses.routes.js';
 import { buildOffersRoutes, buildBusinessOffersRoutes } from './modules/offers/offers.routes.js';
 import { buildEventsRoutes } from './modules/events/events.routes.js';
+import { buildNewsRoutes } from './modules/news/news.routes.js';
 
 /** Mounts every module under /api/v1. Adding a module = one line here. */
 export function buildRoutes() {
@@ -21,6 +22,7 @@ export function buildRoutes() {
   router.use('/businesses', buildBusinessOffersRoutes()); // GET /businesses/:id/offers
   router.use('/offers', buildOffersRoutes());
   router.use('/events', buildEventsRoutes());
+  router.use('/news', buildNewsRoutes());
   router.use('/admin', buildAdminRoutes());
   return router;
 }

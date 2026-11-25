@@ -291,6 +291,93 @@ export const DEMO_EVENTS = [
 /* --------------------- PRIVATE moderation fixtures --------------------- */
 // Community submissions with synthetic evidence. Evidence metadata points at
 // the fixture files in ./fixtures; it is private and never in public APIs.
+/* ------------------------------- news ------------------------------- */
+// Hours are relative to the run time; a negative validForHours means already expired.
+export const DEMO_NEWS = [
+  {
+    slug: 'demo-water-supply-ward-12',
+    status: 'published',
+    isPinned: true,
+    title: 'No water supply in ward 12 tomorrow morning (Demo)',
+    summary: 'Pipeline repair near the canal: no supply from 6 am to 11 am. Store water tonight. Demo notice.',
+    body: 'Wards affected: 12 and parts of 13.\nTankers will be available near the market. Demo notice.',
+    type: 'water',
+    categorySlug: 'civic',
+    sourceName: 'Municipal water works (Demo)',
+    publishedHoursAgo: 3,
+    validForHours: 28,
+  },
+  {
+    slug: 'demo-heavy-rain-alert',
+    status: 'published',
+    title: 'Heavy rain expected this evening (Demo)',
+    summary: 'Thunderstorms likely after 5 pm. Avoid low-lying roads near the canal. Demo weather notice.',
+    type: 'weather',
+    sourceName: 'District disaster management (Demo)',
+    sourceUrl: 'https://example.com/weather',
+    publishedHoursAgo: 1,
+    validForHours: 12,
+  },
+  {
+    slug: 'demo-collector-office-holiday',
+    status: 'published',
+    title: 'Government offices closed on Friday (Demo)',
+    summary: 'Offices and schools are closed for the local holiday. Banks follow their own calendar. Demo announcement.',
+    type: 'announcement',
+    categorySlug: 'civic',
+    sourceName: 'Revenue division office (Demo)',
+    publishedHoursAgo: 20,
+  },
+  {
+    slug: 'demo-new-bakery-opens',
+    status: 'published',
+    title: 'Padma Home Bakery plans a Main Road outlet (Demo)',
+    summary: 'A local home bakery will open its first shop next month. Demo local business news.',
+    body: 'Demo news item for testing the news detail page.\nIt has more than one paragraph.',
+    type: 'news',
+    categorySlug: 'local-business',
+    sourceName: 'Mana Tenali desk (Demo)',
+    publishedHoursAgo: 50,
+  },
+  {
+    slug: 'demo-expired-power-cut',
+    status: 'published',
+    title: 'Power cut in Chinaravuru (Demo - expired)',
+    summary: 'This notice ended yesterday, so it is no longer listed. Its link still opens with an "Expired" label. Demo notice.',
+    type: 'power',
+    sourceName: 'Electricity sub-division office (Demo)',
+    publishedHoursAgo: 40,
+    validForHours: -16,
+  },
+  {
+    slug: 'demo-hidden-traffic-diversion',
+    status: 'hidden',
+    title: 'Traffic diversion near the bus stand (Demo - hidden)',
+    summary: 'Hidden by an admin; never public. Demo notice.',
+    type: 'traffic',
+    sourceName: 'Tenali Traffic Police (Demo)',
+    publishedHoursAgo: 30,
+  },
+  {
+    slug: 'demo-draft-sports-meet',
+    status: 'draft',
+    title: 'District sports meet results (Demo - draft)',
+    summary: 'Draft news item that only admins can see. Demo news.',
+    type: 'news',
+    categorySlug: 'sports',
+    sourceName: 'Mana Tenali desk (Demo)',
+  },
+  {
+    slug: 'demo-removed-old-notice',
+    status: 'archived',
+    title: 'Old bus timing change (Demo - removed)',
+    summary: 'Removed by an admin; the record is kept but never shown. Demo notice.',
+    type: 'announcement',
+    sourceName: 'APSRTC depot (Demo)',
+    publishedHoursAgo: 200,
+  },
+];
+
 export const EVIDENCE_FIXTURES = {
   poster: { file: 'demo-poster.png', format: 'png', kind: 'poster', width: 360, height: 480, pages: null },
   letter: { file: 'demo-venue-letter.pdf', format: 'pdf', kind: 'venue_confirmation', pages: 1 },
