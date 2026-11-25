@@ -24,11 +24,12 @@ function TowerArt() {
 }
 
 /** Green promo banner card ("What's Happening in Tenali?"). */
-export function Banner({ title, subtitle, ctaLabel, to, imageUrl, imageAlt = '' }) {
+export function Banner({ title, subtitle, eyebrow, ctaLabel, to, imageUrl, imageAlt = '' }) {
   return (
     <div className="relative flex min-h-[150px] overflow-hidden rounded-card bg-banner-green text-white shadow-lift">
       <div className="relative z-10 flex flex-1 flex-col justify-center gap-1.5 p-5 pr-2">
-        <h3 className="text-xl font-bold leading-tight">{title}</h3>
+        {eyebrow && <p className="text-xs font-semibold uppercase tracking-wide text-white/80">{eyebrow}</p>}
+        <h3 className="line-clamp-3 text-xl font-bold leading-tight">{title}</h3>
         {subtitle && <p className="line-clamp-2 text-sm text-white/90">{subtitle}</p>}
         {to && ctaLabel && (
           <Link

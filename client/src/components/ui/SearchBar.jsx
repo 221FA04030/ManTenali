@@ -5,9 +5,10 @@ import { cn } from '../../lib/cn.js';
 
 /**
  * Rounded white search pill. Voice input is intentionally omitted in Phase 1
- * (spec section 11). Calls onSubmit(query) with the trimmed text.
+ * (spec section 11). Calls onSubmit(query) with the trimmed text and the
+ * optional onChange(text) while typing (search suggestions).
  */
-export function SearchBar({ defaultValue = '', onSubmit, autoFocus, className }) {
+export function SearchBar({ defaultValue = '', onSubmit, onChange, autoFocus, className }) {
   const { t } = useTranslation();
   const [value, setValue] = useState(defaultValue);
   return (
@@ -30,7 +31,10 @@ export function SearchBar({ defaultValue = '', onSubmit, autoFocus, className })
         id="mt-search"
         type="search"
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value);
+          onChange?.(e.target.value);
+        }}
         placeholder={t('search.placeholder')}
         autoFocus={autoFocus}
         enterKeyHint="search"

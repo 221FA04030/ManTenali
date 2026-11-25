@@ -39,6 +39,7 @@ const NewsListPage = lazy(() => import('../features/news/pages/NewsListPage.jsx'
 const NewsDetailPage = lazy(() => import('../features/news/pages/NewsDetailPage.jsx'));
 const AdminNewsPage = lazy(() => import('../features/admin/pages/AdminNewsPage.jsx'));
 const AdminNewsFormPage = lazy(() => import('../features/admin/pages/AdminNewsFormPage.jsx'));
+const SearchPage = lazy(() => import('../features/search/pages/SearchPage.jsx'));
 
 const placeholder = (titleKey) => <PlaceholderPage titleKey={titleKey} />;
 const signedIn = (el) => <RequireAuth>{el}</RequireAuth>;
@@ -64,7 +65,7 @@ export const routes = [
       { path: 'events/:slug', element: <EventDetailPage /> },
       { path: 'news', element: <NewsListPage /> },
       { path: 'news/:slug', element: <NewsDetailPage /> },
-      { path: 'search', element: placeholder('pages.search') },
+      { path: 'search', element: <SearchPage /> },
       { path: 'saved', element: placeholder('pages.saved') },
       { path: 'suggest', element: placeholder('pages.suggest') },
       {

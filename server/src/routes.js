@@ -9,6 +9,8 @@ import { buildBusinessesRoutes } from './modules/businesses/businesses.routes.js
 import { buildOffersRoutes, buildBusinessOffersRoutes } from './modules/offers/offers.routes.js';
 import { buildEventsRoutes } from './modules/events/events.routes.js';
 import { buildNewsRoutes } from './modules/news/news.routes.js';
+import { buildSearchRoutes } from './modules/search/search.routes.js';
+import { buildHomeRoutes } from './modules/home/home.routes.js';
 
 /** Mounts every module under /api/v1. Adding a module = one line here. */
 export function buildRoutes() {
@@ -23,6 +25,8 @@ export function buildRoutes() {
   router.use('/offers', buildOffersRoutes());
   router.use('/events', buildEventsRoutes());
   router.use('/news', buildNewsRoutes());
+  router.use('/search', buildSearchRoutes());
+  router.use('/home', buildHomeRoutes());
   router.use('/admin', buildAdminRoutes());
   return router;
 }

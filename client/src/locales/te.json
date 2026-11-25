@@ -30,7 +30,52 @@
   "search": {
     "placeholder": "తెనాలిలో వెతకండి...",
     "label": "మన తెనాలిలో వెతకండి",
-    "submit": "వెతకండి"
+    "submit": "వెతకండి",
+    "suggestions": "సూచనలు",
+    "suggestCategory": "విభాగం",
+    "typeLabel": "ఫలితాలు చూపించు",
+    "tabs": {
+      "all": "అన్నీ",
+      "business": "వ్యాపారాలు",
+      "offer": "ఆఫర్లు",
+      "event": "కార్యక్రమాలు",
+      "news": "వార్తలు"
+    },
+    "sortLabel": "ఫలితాల క్రమం",
+    "sort": {
+      "relevance": "సరైన ఫలితాలు ముందు",
+      "distance": "దగ్గరవి ముందు"
+    },
+    "startTitle": "మన తెనాలిలో వెతకండి",
+    "startBody": "దుకాణాలు, ఆహారం, ఆఫర్లు, కార్యక్రమాలు, స్థానిక వార్తలు ఒకే చోట.",
+    "tooShortTitle": "ఇంకా టైప్ చేయండి",
+    "tooShortBody": "వెతకడానికి కనీసం {{min}} అక్షరాలు టైప్ చేయండి.",
+    "noResultsTitle": "“{{q}}” కి ఫలితాలు లేవు",
+    "noResultsBody": "స్పెల్లింగ్ చూడండి, తక్కువ పదాలు వాడండి, లేదా వేరే ప్రాంతం ఎంచుకోండి.",
+    "fuzzy": "“{{q}}” కి ఖచ్చితమైన ఫలితాలు లేవు. దగ్గరి ఫలితాలు చూపిస్తున్నాం.",
+    "groups": {
+      "business_one": "వ్యాపారాలు ({{count}})",
+      "business_other": "వ్యాపారాలు ({{count}})",
+      "offer_one": "ఆఫర్లు ({{count}})",
+      "offer_other": "ఆఫర్లు ({{count}})",
+      "event_one": "కార్యక్రమాలు ({{count}})",
+      "event_other": "కార్యక్రమాలు ({{count}})",
+      "news_one": "వార్తలు ({{count}})",
+      "news_other": "వార్తలు ({{count}})"
+    },
+    "seeAll": {
+      "business_one": "{{count}} వ్యాపారం చూడండి",
+      "business_other": "మొత్తం {{count}} వ్యాపారాలు చూడండి",
+      "offer_one": "{{count}} ఆఫర్ చూడండి",
+      "offer_other": "మొత్తం {{count}} ఆఫర్లు చూడండి",
+      "event_one": "{{count}} కార్యక్రమం చూడండి",
+      "event_other": "మొత్తం {{count}} కార్యక్రమాలు చూడండి",
+      "news_one": "{{count}} వార్త చూడండి",
+      "news_other": "మొత్తం {{count}} వార్తలు చూడండి"
+    },
+    "resultCount_one": "{{count}} ఫలితం",
+    "resultCount_other": "{{count}} ఫలితాలు",
+    "capped": "ఉత్తమ ఫలితాలు చూపిస్తున్నాం. మరో పదం జోడిస్తే ఫలితాలు తగ్గుతాయి."
   },
   "tiles": {
     "news": "వార్తలు & అప్‌డేట్స్",
@@ -52,7 +97,15 @@
     "nearbyTitle": "దగ్గరలోని వ్యాపారాలు",
     "offersTitle": "ప్రస్తుత ఆఫర్లు",
     "eventsTitle": "రాబోయే కార్యక్రమాలు",
-    "newsTitle": "తాజా వార్తలు"
+    "newsTitle": "తాజా వార్తలు",
+    "nearbyArea": "{{area}} లోని వ్యాపారాలు",
+    "popularTitle": "తెనాలిలోని వ్యాపారాలు",
+    "noUpdates": "ప్రస్తుతం అప్‌డేట్స్ లేవు. తర్వాత మళ్లీ చూడండి.",
+    "nextEvent": "తదుపరి కార్యక్రమం",
+    "banner": {
+      "event": "కార్యక్రమం",
+      "offer": "ఆఫర్"
+    }
   },
   "explore": {
     "title": "తెనాలిని అన్వేషించండి",

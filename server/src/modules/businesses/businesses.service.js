@@ -6,7 +6,8 @@ import { assertOwnImages } from '../media/media.service.js';
 import { AppError } from '../../common/errors/index.js';
 import { getPagination, buildMeta } from '../../common/utils/pagination.js';
 import { generateUniqueSlug } from '../../common/utils/slug.js';
-import { toPoint, fromPoint, kmToMeters, clampRadiusKm } from '../../common/utils/geo.js';
+import { toPoint, fromPoint, kmToMeters, clampRadiusKm, distanceMeters } from '../../common/utils/geo.js';
+import { matchFilter, relevance, rankPage, CANDIDATE_LIMIT } from '../../common/utils/textSearch.js';
 import { isOpenAt, openNowFilter } from '../../common/utils/hours.js';
 import { escapeRegex } from '../../common/utils/validators.js';
 import { ROLES } from '../../config/constants.js';
@@ -297,6 +298,62 @@ export async function listPublic(query, now = new Date()) {
 
   const categories = await categoryMapFor(items);
   return { items: items.map((b) => toCard(b, categories, now)), meta: buildMeta({ page, limit, total }) };
+}
+
+/* ----------------------------- search (Step 8) ----------------------------- */
+
+const SEARCH_FIELDS = ['name', 'tags', 'description', 'address.area', 'food.cuisines'];
+
+/**
+ * FR-SRCH-1/2: published businesses matching every query word (name, tags,
+ * description, area, cuisines) or whose main/sub category matches the query.
+ * Optional area / near-me filter; relevance or distance order. Same card shape
+ * as the business list. `categoryIds` come from categoriesService.findMatching.
+ */
+export async function searchPublic({ tokens, fuzzy = false, query = '', categoryIds = [], area, lat, lng, radiusKm, sort, page = 1, limit = 20 }, now = new Date()) {
+  const catIds = categoryIds.map((id) => new mongoose.Types.ObjectId(id));
+  const alsoMatch = catIds.length ? [{ categoryId: { $in: catIds } }, { subcategoryId: { $in: catIds } }] : [];
+  const filter = { status: S.PUBLISHED, ...matchFilter(tokens, SEARCH_FIELDS, { fuzzy, alsoMatch }) };
+  if (area) filter['address.area'] = area;
+  const here = lat !== undefined && lng !== undefined ? { lat, lng } : null;
+  if (here) filter.location = { $geoWithin: { $centerSphere: [[lng, lat], kmToMeters(clampRadiusKm(radiusKm)) / 6_378_100] } };
+
+  const candidates = await Business.find(filter)
+    .select(`${CARD_FIELDS} tags description`)
+    .slice('photos', 1)
+    .sort({ isVerified: -1, ratingAvg: -1, updatedAt: -1, _id: 1 })
+    .limit(CANDIDATE_LIMIT)
+    .lean();
+  const catSet = new Set(catIds.map(String));
+  const rows = candidates.map((b, order) => ({
+    b,
+    order,
+    distanceM: here && b.location ? distanceMeters(here, fromPoint(b.location)) : undefined,
+    score: relevance(
+      tokens,
+      {
+        primary: b.name,
+        secondary: [...(b.tags ?? []), b.description, b.address?.area, ...(b.food?.cuisines ?? [])],
+        categoryMatch: catSet.has(String(b.categoryId)) || catSet.has(String(b.subcategoryId)),
+      },
+      { fuzzy, query },
+    ),
+  }));
+  const ranked = rankPage(rows, { page, limit, byDistance: sort === 'distance' && Boolean(here) });
+  const items = ranked.page.map((r) => ({ ...r.b, ...(r.distanceM !== undefined ? { distanceM: r.distanceM } : {}) }));
+  const categories = await categoryMapFor(items);
+  return { items: items.map((b) => toCard(b, categories, now)), total: ranked.total, capped: ranked.capped };
+}
+
+/** FR-SRCH-3: names of published businesses for autocomplete (word-start match). */
+export async function suggestNames(tokens, { limit = 5 } = {}) {
+  if (!tokens.length) return [];
+  const items = await Business.find({ status: S.PUBLISHED, ...matchFilter(tokens, ['name']) })
+    .select('name slug address.area')
+    .sort({ isVerified: -1, ratingAvg: -1, name: 1 })
+    .limit(limit)
+    .lean();
+  return items.map((b) => ({ id: String(b._id), name: b.name, slug: b.slug, area: b.address?.area ?? null }));
 }
 
 /**

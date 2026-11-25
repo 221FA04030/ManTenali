@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { Category, NESTED_TYPES } from './categories.model.js';
 import { AppError } from '../../common/errors/index.js';
 import { slugify } from '../../common/utils/slug.js';
+import { matchFilter } from '../../common/utils/textSearch.js';
 
 export function toDTO(c) {
   return {
@@ -125,6 +126,18 @@ export async function getSummariesByIds(ids) {
   if (!unique.length) return new Map();
   const items = await Category.find({ _id: { $in: unique } }).lean();
   return new Map(items.map((c) => [String(c._id), toSummary(c)]));
+}
+
+/**
+ * Search (Step 8): ACTIVE categories of a type whose English or Telugu name
+ * matches every query word (see common/utils/textSearch.js). Returns
+ * { id, name, slug, parentId } ordered as the app lists them.
+ */
+export async function findMatching(type, tokens, { fuzzy = false, limit = 20 } = {}) {
+  if (!tokens.length) return [];
+  const filter = { type, isActive: true, ...matchFilter(tokens, ['name.en', 'name.te'], { fuzzy }) };
+  const items = await Category.find(filter).sort({ sortOrder: 1, 'name.en': 1 }).limit(limit).lean();
+  return items.map((c) => ({ ...toSummary(c), parentId: c.parentId ? String(c.parentId) : null }));
 }
 
 /** Resolve a category slug (used by seed and friendly list filters). */

@@ -7,7 +7,8 @@ import { assertOwnImage } from '../media/media.service.js';
 import { AppError } from '../../common/errors/index.js';
 import { getPagination, buildMeta } from '../../common/utils/pagination.js';
 import { generateUniqueSlug } from '../../common/utils/slug.js';
-import { toPoint, fromPoint, kmToMeters, clampRadiusKm } from '../../common/utils/geo.js';
+import { toPoint, fromPoint, kmToMeters, clampRadiusKm, distanceMeters } from '../../common/utils/geo.js';
+import { matchFilter, relevance, rankPage, CANDIDATE_LIMIT } from '../../common/utils/textSearch.js';
 import { istDateTime, istStartOfDay, istEndOfDay, toIstDateTime } from '../../common/utils/dates.js';
 import { escapeRegex } from '../../common/utils/validators.js';
 import { getEnv } from '../../config/env.js';
@@ -167,6 +168,59 @@ export async function listPublic(query, now = new Date()) {
   ]);
   const lk = await lookups(items);
   return { items: items.map((e) => toPublicDTO(e, lk)), meta: buildMeta({ page, limit, total }) };
+}
+
+/* ----------------------------- search and home (Step 8) ----------------------------- */
+
+const SEARCH_FIELDS = ['title', 'description', 'venue.name', 'venue.area', 'organizerName'];
+
+/**
+ * FR-SRCH-1/2: public events (published, or cancelled with its label) that
+ * haven't ended, matching every query word (title, description, venue,
+ * organiser) or whose category matches the query (C6: public statuses only).
+ * Area / near-me filters; relevance or distance order (events without a map
+ * point sort last by distance).
+ */
+export async function searchPublic({ tokens, fuzzy = false, query = '', categoryIds = [], area, lat, lng, radiusKm, sort, page = 1, limit = 20 }, now = new Date()) {
+  const alsoMatch = categoryIds.length ? [{ categoryId: { $in: categoryIds } }] : [];
+  const filter = { status: { $in: PUBLIC_STATUSES }, endAt: { $gte: now }, ...matchFilter(tokens, SEARCH_FIELDS, { fuzzy, alsoMatch }) };
+  if (area) filter['venue.area'] = area;
+  const here = lat !== undefined && lng !== undefined ? { lat, lng } : null;
+  if (here) filter.location = { $geoWithin: { $centerSphere: [[lng, lat], kmToMeters(clampRadiusKm(radiusKm)) / 6_378_100] } };
+  const candidates = await Event.find(filter)
+    .select('-moderationLog -review -submittedBy -createdBy')
+    .sort({ startAt: 1, _id: 1 })
+    .limit(CANDIDATE_LIMIT)
+    .lean();
+  const catSet = new Set(categoryIds.map(String));
+  const rows = candidates.map((e, order) => ({
+    e,
+    order,
+    distanceM: here && e.location ? distanceMeters(here, fromPoint(e.location)) : undefined,
+    score: relevance(
+      tokens,
+      { primary: e.title, secondary: [e.description, e.venue?.name, e.venue?.area, e.organizerName], categoryMatch: catSet.has(String(e.categoryId)) },
+      { fuzzy, query },
+    ),
+  }));
+  const ranked = rankPage(rows, { page, limit, byDistance: sort === 'distance' && Boolean(here) });
+  const lk = await lookups(ranked.page.map((r) => r.e));
+  return {
+    items: ranked.page.map((r) => ({ ...toPublicDTO(r.e, lk), ...(r.distanceM !== undefined ? { distanceM: r.distanceM } : {}) })),
+    total: ranked.total,
+    capped: ranked.capped,
+  };
+}
+
+/** Home feed: the next published events that haven't ended (never cancelled ones), soonest first. */
+export async function nextUpcoming(limit = 3, now = new Date()) {
+  const items = await Event.find({ status: S.PUBLISHED, endAt: { $gte: now } })
+    .select('-moderationLog -review -submittedBy -createdBy')
+    .sort({ startAt: 1, _id: 1 })
+    .limit(limit)
+    .lean();
+  const lk = await lookups(items);
+  return items.map((e) => toPublicDTO(e, lk));
 }
 
 /**

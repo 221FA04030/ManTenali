@@ -151,6 +151,20 @@ Every item names its source. "Show until" (`validUntil`) is entered in India tim
 after it passes, the item drops out of lists. At most 5 published, unexpired items can be pinned at once
 (pinned drafts and hidden items don't count). "Updated" shows the last content edit, not pinning or status changes.
 
+### Search and Home feed (API summary)
+
+| Method | Path | Access | Purpose |
+|--------|------|--------|---------|
+| GET | `/api/v1/search?q=` | Public | One query across businesses, offers, events and news. `type=all` (default) returns up to 5 per type with `counts`; `type=business\|offer\|event\|news` returns one page (`page`, `limit`, `meta`). Filters `area`, `lat`/`lng`/`radiusKm`; `sort=relevance\|distance` (distance needs a location) |
+| GET | `/api/v1/search/suggest?q=` | Public | Autocomplete: published business names and active business categories |
+| GET | `/api/v1/home` | Public | Home feed: `banner` (up to 5: pinned news, next events, offers ending soon), `today` (latest notices + next event), `nearby` businesses (`lat`/`lng` or `area`, falling back to all of Tenali), `offers`, `events`, `news` |
+
+Search matches every word at the start of a word (so "biry" finds "Biryani"), in English or Telugu, and also
+matches category names. Only public items are returned, using each module's own rules (approved businesses, live
+offers of approved businesses, upcoming published or cancelled events, unexpired news). When nothing matches, it
+retries allowing one typo per word and says so (`fuzzy: true`). News is town-wide, so area and Near me filters
+don't apply to it. Search has its own rate limit (60 requests per minute per IP).
+
 ### Images (Cloudinary)
 
 Photo uploads use **Cloudinary** (signed direct uploads). Add these three variables to `server/.env`

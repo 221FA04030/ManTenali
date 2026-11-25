@@ -1,4 +1,4 @@
-import { News, NEWS_STATUS, MAX_PINNED } from './news.model.js';
+import { News, NEWS_STATUS, MAX_PINNED, NOTICE_TYPES } from './news.model.js';
 import * as categoriesService from '../categories/categories.service.js';
 import { assertOwnImage } from '../media/media.service.js';
 import { AppError } from '../../common/errors/index.js';
@@ -6,6 +6,7 @@ import { getPagination, buildMeta } from '../../common/utils/pagination.js';
 import { generateUniqueSlug } from '../../common/utils/slug.js';
 import { istDateTime, toIstDateTime } from '../../common/utils/dates.js';
 import { escapeRegex } from '../../common/utils/validators.js';
+import { matchFilter, relevance, rankPage, CANDIDATE_LIMIT } from '../../common/utils/textSearch.js';
 import { getEnv } from '../../config/env.js';
 import { ROLES } from '../../config/constants.js';
 
@@ -185,6 +186,54 @@ export async function getBySlug(slug, user) {
   const dto = toPublicDTO(n, await categoriesFor([n]), { withBody: true });
   return isAdmin(user) ? { ...dto, status: n.status } : dto;
 }
+
+/* ----------------------------- search and home (Step 8) ----------------------------- */
+
+/**
+ * FR-SRCH-1: published, unexpired items whose title, summary or source matches
+ * every query word, or whose category matches the query. News is town-wide
+ * (no place), so area / near-me filters don't apply. Relevance, then pinned
+ * and newest first.
+ */
+export async function searchPublic({ tokens, fuzzy = false, query = '', categoryIds = [], page = 1, limit = 20 }, now = new Date()) {
+  const alsoMatch = categoryIds.length ? [{ categoryId: { $in: categoryIds } }] : [];
+  const filter = { $and: [{ status: S.PUBLISHED }, notExpired(now), matchFilter(tokens, ['title', 'summary', 'sourceName'], { fuzzy, alsoMatch })] };
+  const candidates = await News.find(filter).select('-body -createdBy -updatedBy').sort({ isPinned: -1, publishedAt: -1, _id: -1 }).limit(CANDIDATE_LIMIT).lean();
+  const catSet = new Set(categoryIds.map(String));
+  const rows = candidates.map((n, order) => ({
+    n,
+    order,
+    score: relevance(tokens, { primary: n.title, secondary: [n.summary, n.sourceName], categoryMatch: catSet.has(String(n.categoryId)) }, { fuzzy, query }),
+  }));
+  const ranked = rankPage(rows, { page, limit });
+  const categories = await categoriesFor(ranked.page.map((r) => r.n));
+  return { items: ranked.page.map((r) => toPublicDTO(r.n, categories, { now })), total: ranked.total, capped: ranked.capped };
+}
+
+/** Home banner: published, unexpired pinned items, newest first. */
+export async function listPinned(limit = MAX_PINNED, now = new Date()) {
+  const items = await News.find({ status: S.PUBLISHED, isPinned: true, ...notExpired(now) })
+    .select('-body -createdBy -updatedBy')
+    .sort({ publishedAt: -1, _id: -1 })
+    .limit(limit)
+    .lean();
+  const categories = await categoriesFor(items);
+  return items.map((n) => toPublicDTO(n, categories, { now }));
+}
+
+/** "Today in Tenali": latest published, unexpired items of the given types, newest first. */
+export async function latestByTypes(types, limit = 4, now = new Date()) {
+  const items = await News.find({ status: S.PUBLISHED, type: { $in: types }, ...notExpired(now) })
+    .select('-body -createdBy -updatedBy')
+    .sort({ publishedAt: -1, _id: -1 })
+    .limit(limit)
+    .lean();
+  const categories = await categoriesFor(items);
+  return items.map((n) => toPublicDTO(n, categories, { now }));
+}
+
+/** "Today in Tenali" notices: traffic, weather, power, water and announcements. */
+export const latestNotices = (limit = 4, now = new Date()) => latestByTypes(NOTICE_TYPES, limit, now);
 
 /* ----------------------------- admin (FR-NEWS-3) ----------------------------- */
 

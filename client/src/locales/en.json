@@ -30,7 +30,52 @@
   "search": {
     "placeholder": "Search in Tenali...",
     "label": "Search Mana Tenali",
-    "submit": "Search"
+    "submit": "Search",
+    "suggestions": "Suggestions",
+    "suggestCategory": "Category",
+    "typeLabel": "Show results for",
+    "tabs": {
+      "all": "All",
+      "business": "Businesses",
+      "offer": "Offers",
+      "event": "Events",
+      "news": "News"
+    },
+    "sortLabel": "Sort results",
+    "sort": {
+      "relevance": "Best match",
+      "distance": "Nearest first"
+    },
+    "startTitle": "Search Mana Tenali",
+    "startBody": "Find shops, food, offers, events and local news in one place.",
+    "tooShortTitle": "Keep typing",
+    "tooShortBody": "Type at least {{min}} characters to search.",
+    "noResultsTitle": "No results for “{{q}}”",
+    "noResultsBody": "Check the spelling, use fewer words, or try another area.",
+    "fuzzy": "No exact matches for “{{q}}”. Showing close matches.",
+    "groups": {
+      "business_one": "Businesses ({{count}})",
+      "business_other": "Businesses ({{count}})",
+      "offer_one": "Offers ({{count}})",
+      "offer_other": "Offers ({{count}})",
+      "event_one": "Events ({{count}})",
+      "event_other": "Events ({{count}})",
+      "news_one": "News ({{count}})",
+      "news_other": "News ({{count}})"
+    },
+    "seeAll": {
+      "business_one": "See {{count}} business",
+      "business_other": "See all {{count}} businesses",
+      "offer_one": "See {{count}} offer",
+      "offer_other": "See all {{count}} offers",
+      "event_one": "See {{count}} event",
+      "event_other": "See all {{count}} events",
+      "news_one": "See {{count}} news item",
+      "news_other": "See all {{count}} news items"
+    },
+    "resultCount_one": "{{count}} result",
+    "resultCount_other": "{{count}} results",
+    "capped": "Showing the best matches. Add a word to narrow the search."
   },
   "tiles": {
     "news": "News & Updates",
@@ -52,7 +97,15 @@
     "nearbyTitle": "Nearby businesses",
     "offersTitle": "Active offers",
     "eventsTitle": "Upcoming events",
-    "newsTitle": "Latest news"
+    "newsTitle": "Latest news",
+    "nearbyArea": "Businesses in {{area}}",
+    "popularTitle": "Businesses in Tenali",
+    "noUpdates": "No updates right now. Check back later.",
+    "nextEvent": "Next event",
+    "banner": {
+      "event": "Event",
+      "offer": "Offer"
+    }
   },
   "explore": {
     "title": "Explore Tenali",

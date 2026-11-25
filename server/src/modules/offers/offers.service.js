@@ -4,6 +4,7 @@ import { assertOwnImage } from '../media/media.service.js';
 import { AppError } from '../../common/errors/index.js';
 import { getPagination, buildMeta } from '../../common/utils/pagination.js';
 import { addOneYear, istEndOfDay, istStartOfDay, istToday, toIstDate } from '../../common/utils/dates.js';
+import { matchFilter, relevance, rankPage, CANDIDATE_LIMIT } from '../../common/utils/textSearch.js';
 import { getEnv } from '../../config/env.js';
 import { ROLES } from '../../config/constants.js';
 
@@ -139,6 +140,28 @@ export async function listPublic(query, now = new Date()) {
     items: items.map((o) => toDTO(o, businesses.get(String(o.businessId)), { now })),
     meta: buildMeta({ page, limit, total }),
   };
+}
+
+/**
+ * FR-SRCH-1/2 (Step 8): currently valid offers of PUBLISHED businesses whose
+ * title, discount label or description matches every query word. Area and
+ * near-me filters apply through the offer's business. Relevance order, then
+ * ending soonest (offers have no location of their own, so no distance sort).
+ */
+export async function searchPublic({ tokens, fuzzy = false, query = '', area, lat, lng, radiusKm, page = 1, limit = 20 }, now = new Date()) {
+  const filter = { ...validNow(now), ...matchFilter(tokens, ['title', 'discountLabel', 'description'], { fuzzy }) };
+  const candidates = await Offer.find(filter).sort({ validTo: 1, _id: 1 }).limit(CANDIDATE_LIMIT).lean();
+  const businessIds = [...new Set(candidates.map((o) => String(o.businessId)))];
+  const published = businessIds.length
+    ? new Set((await businessesService.findPublishedIds({ ids: businessIds, area, lat, lng, radiusKm })).map(String))
+    : new Set();
+  const rows = candidates
+    .filter((o) => published.has(String(o.businessId)))
+    .map((o, order) => ({ o, order, score: relevance(tokens, { primary: o.title, secondary: [o.discountLabel, o.description] }, { fuzzy, query }) }));
+  const ranked = rankPage(rows, { page, limit });
+  const items = ranked.page.map((r) => r.o);
+  const businesses = await businessesService.getSummariesByIds([...new Set(items.map((o) => String(o.businessId)))]);
+  return { items: items.map((o) => toDTO(o, businesses.get(String(o.businessId)), { now })), total: ranked.total, capped: ranked.capped };
 }
 
 /** GET /businesses/:id/offers - a published business's currently valid offers (ending soonest first). */
