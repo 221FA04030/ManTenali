@@ -11,6 +11,14 @@ import {
   submissionsQuery,
   idParams as businessIdParams,
 } from '../businesses/businesses.validation.js';
+import {
+  queueQuery as eventQueueQuery,
+  adminListQuery as eventListQuery,
+  approveSchema as eventApproveSchema,
+  rejectSchema as eventRejectSchema,
+  requestChangesSchema as eventChangesSchema,
+  idParams as eventIdParams,
+} from '../events/events.validation.js';
 import * as controller from './admin.controller.js';
 
 /** Everything under /admin requires an authenticated admin. */
@@ -41,5 +49,25 @@ export function buildAdminRoutes() {
     validate({ params: businessIdParams, body: rejectSchema }),
     asyncHandler(controller.rejectSubmission),
   );
+
+  // Events: moderation queue for community submissions + management list
+  router.get('/event-submissions', validate({ query: eventQueueQuery }), asyncHandler(controller.eventQueue));
+  router.get('/event-submissions/:id', validate({ params: eventIdParams }), asyncHandler(controller.eventForReview));
+  router.post(
+    '/event-submissions/:id/approve',
+    validate({ params: eventIdParams, body: eventApproveSchema }),
+    asyncHandler(controller.approveEvent),
+  );
+  router.post(
+    '/event-submissions/:id/reject',
+    validate({ params: eventIdParams, body: eventRejectSchema }),
+    asyncHandler(controller.rejectEvent),
+  );
+  router.post(
+    '/event-submissions/:id/request-changes',
+    validate({ params: eventIdParams, body: eventChangesSchema }),
+    asyncHandler(controller.requestEventChanges),
+  );
+  router.get('/events', validate({ query: eventListQuery }), asyncHandler(controller.listEvents));
   return router;
 }

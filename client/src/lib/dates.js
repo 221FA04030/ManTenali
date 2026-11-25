@@ -51,3 +51,17 @@ export function formatIsoDate(value, lang = 'en') {
     year: 'numeric',
   }).format(new Date(Date.UTC(y, mo - 1, d)));
 }
+
+/** "18:30" part of "YYYY-MM-DDTHH:mm" -> "6:30 pm" (already IST; no shift). */
+export function formatLocalTime(local, lang = 'en') {
+  const m = /T(\d{2}):(\d{2})$/.exec(String(local ?? ''));
+  if (!m) return '';
+  return new Intl.DateTimeFormat(lang === 'te' ? 'te-IN' : 'en-IN', { hour: 'numeric', minute: '2-digit', timeZone: 'UTC' }).format(
+    new Date(Date.UTC(2023, 0, 1, Number(m[1]), Number(m[2]))),
+  );
+}
+
+/** Current IST date-time as "YYYY-MM-DDTHH:mm" (for datetime-local inputs). */
+export function istNowLocal(now = new Date()) {
+  return new Date(now.getTime() + 330 * 60_000).toISOString().slice(0, 16);
+}

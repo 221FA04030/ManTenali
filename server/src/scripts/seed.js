@@ -2,7 +2,7 @@
  * Development/demo seed: `npm run seed`
  *
  * Always seeds reference categories (safe and idempotent).
- * With --samples it also adds SAMPLE content (businesses, offers), always flagged
+ * With --samples it also adds SAMPLE content (businesses, offers, events), always flagged
  * isSeed = true, never verified, and shown as "Sample data" in the app:
  *   npm run seed -- --samples
  * Refuses NODE_ENV=production unless --confirm-production is passed, and then
@@ -15,9 +15,11 @@ import { redactUri } from '../config/db.js';
 import { seedCategories, seedCategoryTree, findIdBySlug, getParentMap } from '../modules/categories/categories.service.js';
 import { seedBusinesses, getIdsBySlugs } from '../modules/businesses/businesses.service.js';
 import { seedOffers } from '../modules/offers/offers.service.js';
+import { seedEvents } from '../modules/events/events.service.js';
 import { CATEGORY_SEED, BUSINESS_CATEGORY_TREE } from './seedData/categories.js';
 import { BUSINESS_SEED } from './seedData/businesses.js';
 import { OFFER_SEED } from './seedData/offers.js';
+import { EVENT_SEED } from './seedData/events.js';
 
 const out = (msg) => process.stdout.write(`${msg}\n`);
 const fail = (msg) => {
@@ -65,6 +67,10 @@ async function main() {
     const offers = await seedOffers(OFFER_SEED, await getIdsBySlugs(OFFER_SEED.map((o) => o.businessSlug)));
     out(`sample businesses: ${businesses.created} created, ${businesses.skipped} skipped (already present)`);
     out(`sample offers: ${offers.created} created, ${offers.skipped} skipped (already present)`);
+    const eventCats = new Map();
+    for (const slug of new Set(EVENT_SEED.map((e) => e.categorySlug))) eventCats.set(slug, await findIdBySlug('event', slug));
+    const events = await seedEvents(EVENT_SEED, eventCats);
+    out(`sample events: ${events.created} created, ${events.skipped} skipped (already present)`);
   } else {
     out('sample content skipped (run `npm run seed -- --samples` to add demo listings labelled "Sample data")');
   }

@@ -130,3 +130,39 @@ The owner approved adding business self-submission to Phase 1, overriding spec �
 | D5.12 | Not included here: claim or "show offer" tracking and analytics (Step 9), Home and search integration (Step 8). | Owner scope instruction. |
 | D5.13 | **Review fix:** the "end date can't be in the past" rule applies only when the end date **changes**. Before the fix, an expired offer couldn't be edited (for example to fix a typo), because the form re-sends its unchanged end date; the server now agrees with the client. | Found in the final Step 5 review; covered by a regression test that fails without the fix. |
 | D5.14 | **Why the limit is concurrency-safe:** every write that would add a live or scheduled offer is saved first, then the business's offers are counted, and the write is undone if the count is over 10. For any set of accepted offers, consider the one whose count ran last: by then every accepted offer had been written and none had been undone, so its count was at least the number accepted, and it was ≤ 10. So more than 10 can never be accepted. The worst case is a few simultaneous requests all being refused near the limit (safe). Tested with 20 simultaneous creates, 15 simultaneous publishes and mixed requests. A MongoDB transaction isn't needed, so the same code works on the in-memory test database and on Atlas. | Requirement: the limit must be safe against simultaneous requests. |
+
+## Step 6 - Events (community submissions with private evidence; approved spec change)
+
+The owner approved community-submitted, admin-approved events. The spec changes below (C1–C6) override the Phase 1 spec where they conflict.
+
+**Approved spec changes**
+
+| # | Change | Spec text it overrides |
+|---|--------|------------------------|
+| C1 | **New FR-EVT-4:** signed-in users submit events with evidence; events stay private until approved. **New FR-EVT-5:** admins approve, reject or request changes, and every decision is audited. Permissions-table row becomes: users submit; admins approve and publish. | FR-EVT-3, the permissions table and §1 ("content at launch is posted by admins"). |
+| C2 | Event statuses are `draft`, `pending_review`, `changes_requested`, `rejected`, `withdrawn`, `published`, `cancelled`, `hidden` and `archived`. | The spec's `draft \| published \| cancelled \| hidden`. |
+| C3 | `PATCH /events/:id` with `status: hidden` hides an event (reversible); `DELETE /events/:id` removes it (`archived`, soft delete, record and history kept). | The spec's "DELETE hides". |
+| C4 | FR-MED-1 gains a private upload type, `event_evidence`, which is the only type that accepts PDF. | FR-MED-1 (public images only). |
+| C5 | Event banners stay admin-only; submitters can't upload a public banner. The admin chooses a banner when approving. | — (keeps the spec; recorded because submitters now create events). |
+| C6 | Step 8 (search, Home) and Step 9 (reports, favourites) must show events with public statuses only (`published`, `cancelled`), as with offers. | Rule for later steps. |
+
+**Implementation decisions**
+
+| # | Decision | Reason |
+|---|----------|--------|
+| D6.1 | Submitting requires a signed-in account. The server sets `status`, `source: community`, `submittedBy`, `submittedAt` and `revision`; the strict schema rejects `status`, `source`, `submittedBy`, `review`, `isSeed` and `bannerImage` sent by a submitter. | Owner decision 1; never trust client-set approval fields. |
+| D6.2 | Times are entered in IST as date and time (`YYYY-MM-DDTHH:mm`) and stored in UTC. All-day events run from 00:00 to 23:59:59.999 IST. The end can't be before the start, an event lasts at most 90 days, and a new event can't already be over. Responses include `startLocal` / `endLocal` (IST) so the client never converts time zones. | Owner decisions 2 and 9. |
+| D6.3 | Evidence: 1–5 files per event, JPG/PNG/WebP up to 5 MB and PDF up to 10 MB with at most 20 pages. Files are uploaded straight to Cloudinary as **private** assets in the submitter's own folder (`mana-tenali/evidence/u_<userId>`) with a server-chosen random name. Before attaching, the server looks each file up with Cloudinary's Admin API and checks the folder, delivery type, format, size and page count; files that fail are deleted. | Owner decision 4; the client is never trusted about what was uploaded. |
+| D6.4 | Evidence lives in its own collection (`event_evidence`) and never appears in public responses. Responses never include storage ids, even for the submitter. Only the submitter and admins can get access links: `POST …/evidence/:id/access` returns 5-minute signed links (`Cache-Control: no-store`), and anyone else gets 404. | Privacy requirement: evidence is visible only to the submitter and admins. |
+| D6.5 | Images can be previewed (shown only as an `<img>`); PDFs are download-only, because PDF previews of private files weren't confirmed on the current Cloudinary plan. | Owner decision 13. |
+| D6.6 | The submitter can edit and change evidence while the event is `pending_review` or `changes_requested`, and must keep at least one file. Resubmitting from `changes_requested` returns it to the queue with `revision + 1`, keeping the original `submittedAt` so its place in the queue is kept. Rejected, withdrawn and archived are final. | Owner decision; fair queue order. |
+| D6.7 | Approve, reject and request changes work only from `pending_review` (otherwise 409). Approving needs an event that hasn't ended and accepts an optional banner; rejecting needs a 5–1000 character reason; requesting changes needs a 5–1000 character note. The reason or note is shown to the submitter. There are no admin-only notes in Phase 1. | Owner decision 11. |
+| D6.8 | Admin status changes: `published` from draft, cancelled or hidden; `cancelled` from published (with an optional public reason); `hidden` from published or cancelled. A submission under review can't change status through `PATCH` (409); admin edits are logged as `edited_by_admin`. Every action is written to `moderationLog` (capped at 100 entries). | C2, C3; audit trail. |
+| D6.9 | Public lists show `published` and `cancelled` events until they end. Cancelled events keep a "Cancelled" label and reason. "Show past events" adds events that ended in the last 90 days, sorted newest first. Date filters match events that overlap the chosen range. | Owner decisions 6 and 7. |
+| D6.10 | Limits: 3 submissions per user per IST day (429) and 5 open submissions (pending or changes requested) per user (409). | Owner decision 10; spam protection. |
+| D6.11 | The map point is optional. Choosing a linked business fills in its location when no point is set. A linked business must be published, and public responses include it only while it stays published. | Owner decision 8; module boundaries (events depend on businesses, never the reverse). |
+| D6.12 | Evidence retention: `npm run cleanup:evidence` (dry run; `-- --apply` deletes) removes evidence files of community events 180 days after the final decision (approved, rejected, withdrawn or removed). Metadata is kept and marked removed. Pending and changes-requested submissions are never touched. The script prints counts only. | Owner decision 5; data minimisation. |
+| D6.13 | `npm run seed -- --samples` adds 2 sample events (dates relative to the run day); `seedEvents()` refuses production with no override. | Owner rule: sample data stays in local development and testing. |
+| D6.14 | Slugs `submissions`, `mine`, `new`, `admin` and `submit` are reserved so event URLs can't collide with the submission routes. | Routing safety. |
+| D6.15 | **Fix found by the tests:** progress events from an upload could arrive before React re-rendered, which dropped the progress update. The uploader now tracks the latest list itself. | Found while writing the upload-progress test. |
+

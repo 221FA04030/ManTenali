@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Globe, Info, LogIn, LogOut, Plus, ShieldCheck, Store, User, X } from 'lucide-react';
+import { CalendarPlus, Globe, Info, LogIn, LogOut, Plus, ShieldCheck, Store, User, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useMenu } from '../../app/MenuContext.jsx';
 import { useAuth } from '../../features/auth/AuthContext.jsx';
@@ -111,6 +111,10 @@ export function MenuDrawer() {
               {t('profile.myBusinesses')}
             </Link>
           )}
+          <Link to={user ? '/events/submissions' : '/events/submit'} className={linkCls} onClick={closeMenu}>
+            <CalendarPlus className="h-5 w-5 text-brand-700" aria-hidden="true" />
+            {user ? t('events.mySubmissions') : t('events.submitTitle')}
+          </Link>
           <Link to="/about" className={linkCls} onClick={closeMenu}>
             <Info className="h-5 w-5 text-brand-700" aria-hidden="true" />
             {t('menu.about')}

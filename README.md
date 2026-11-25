@@ -23,7 +23,7 @@ never logged and never sent to the client. Tests do not need it - they use an in
 ```bash
 npm run seed:admin   # creates the first admin from ADMIN_SEED_EMAIL / ADMIN_SEED_PASSWORD in server/.env
 npm run seed         # reference categories (safe to re-run; never overwrites admin edits)
-npm run seed -- --samples   # also adds demo businesses labelled "Sample data" (local dev/test only; always refused in production)
+npm run seed -- --samples   # also adds demo businesses, offers and events labelled "Sample data" (local dev/test only; always refused in production)
 ```
 
 ### Upgrading an existing database to two-level categories
@@ -67,6 +67,27 @@ Only approved (`published`) businesses appear in public lists, filters and detai
 
 Offer dates are date-only and use India time: valid from 00:00 IST on the start date to 23:59 IST on the end date.
 
+### Events (API summary)
+
+| Method | Path | Access | Purpose |
+|--------|------|--------|---------|
+| GET | `/api/v1/events` | Public | Upcoming published and cancelled events; filters `from`/`to` (IST dates), `categoryId`, `area`, `lat`/`lng`/`radiusKm`, `includePast=true` (last 90 days); paginated |
+| GET | `/api/v1/events/:slug` | Public (admins can preview other statuses) | Event detail |
+| POST | `/api/v1/events/submissions` | Signed in | Submit an event with 1–5 private evidence files (goes to review) |
+| GET | `/api/v1/events/submissions/mine` | Signed in | Your submissions and their status |
+| GET / PATCH | `/api/v1/events/submissions/:id` | Submitter | View; edit while pending or changes requested |
+| POST | `/api/v1/events/submissions/:id/resubmit` \| `withdraw` | Submitter | Resubmit after changes are requested, or withdraw |
+| POST / DELETE | `/api/v1/events/submissions/:id/evidence[/:evidenceId]` | Submitter | Add or remove evidence (at least one file stays) |
+| POST | `/api/v1/events/submissions/:id/evidence/:evidenceId/access` | Submitter / Admin | 5-minute private preview (images) and download links |
+| GET | `/api/v1/admin/event-submissions[/:id]` | Admin | Review queue (pending oldest first) and full review view |
+| POST | `/api/v1/admin/event-submissions/:id/approve` \| `reject` \| `request-changes` | Admin | Decide (`reason` / `note` required for reject and request changes) |
+| GET | `/api/v1/admin/events` | Admin | All events, any status |
+| POST / PATCH / DELETE | `/api/v1/events[/:id]` | Admin | Create; edit, publish, cancel (with reason) or hide; remove (soft) |
+
+Event times are entered and shown in India time (IST). Evidence files are private: they are never returned by public
+endpoints, and only the submitter and admins can open them. Run `npm run cleanup:evidence` (dry run) and
+`npm run cleanup:evidence -- --apply` to delete evidence 180 days after the final decision.
+
 ### Images (Cloudinary)
 
 Photo uploads use **Cloudinary** (signed direct uploads). Add these three variables to `server/.env`
@@ -97,6 +118,7 @@ logs `image uploads disabled` with the missing names at startup. The secret neve
 | `npm run lint` | ESLint for server and client |
 | `npm run build` | Production build of the web app (`client/dist`) |
 | `npm run check:media` | Check the Cloudinary (image upload) configuration |
+| `npm run cleanup:evidence` | Evidence retention: dry run; add `-- --apply` to delete files 180 days after the final decision |
 
 The first server test run downloads a MongoDB binary for `mongodb-memory-server` (cached afterwards).
 

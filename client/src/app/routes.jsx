@@ -26,6 +26,15 @@ const OffersFeedPage = lazy(() => import('../features/offers/pages/OffersFeedPag
 const OfferDetailPage = lazy(() => import('../features/offers/pages/OfferDetailPage.jsx'));
 const ManageOffersPage = lazy(() => import('../features/offers/pages/ManageOffersPage.jsx'));
 const OfferEditorPage = lazy(() => import('../features/offers/pages/OfferEditorPage.jsx'));
+const EventsListPage = lazy(() => import('../features/events/pages/EventsListPage.jsx'));
+const EventDetailPage = lazy(() => import('../features/events/pages/EventDetailPage.jsx'));
+const SubmitEventPage = lazy(() => import('../features/events/pages/SubmitEventPage.jsx'));
+const MySubmissionsPage = lazy(() => import('../features/events/pages/MySubmissionsPage.jsx'));
+const SubmissionPage = lazy(() => import('../features/events/pages/SubmissionPage.jsx'));
+const AdminEventSubmissionsPage = lazy(() => import('../features/admin/pages/AdminEventSubmissionsPage.jsx'));
+const AdminEventReviewPage = lazy(() => import('../features/admin/pages/AdminEventReviewPage.jsx'));
+const AdminEventsPage = lazy(() => import('../features/admin/pages/AdminEventsPage.jsx'));
+const AdminEventFormPage = lazy(() => import('../features/admin/pages/AdminEventFormPage.jsx'));
 
 const placeholder = (titleKey) => <PlaceholderPage titleKey={titleKey} />;
 const signedIn = (el) => <RequireAuth>{el}</RequireAuth>;
@@ -44,8 +53,11 @@ export const routes = [
       { path: 'food', element: <FoodListPage /> },
       { path: 'offers', element: <OffersFeedPage /> },
       { path: 'offers/:id', element: <OfferDetailPage /> },
-      { path: 'events', element: placeholder('pages.events') },
-      { path: 'events/:slug', element: placeholder('pages.events') },
+      { path: 'events', element: <EventsListPage /> },
+      { path: 'events/submit', element: signedIn(<SubmitEventPage />) },
+      { path: 'events/submissions', element: signedIn(<MySubmissionsPage />) },
+      { path: 'events/submissions/:id', element: signedIn(<SubmissionPage />) },
+      { path: 'events/:slug', element: <EventDetailPage /> },
       { path: 'news', element: placeholder('pages.news') },
       { path: 'news/:slug', element: placeholder('pages.news') },
       { path: 'search', element: placeholder('pages.search') },
@@ -78,6 +90,11 @@ export const routes = [
       { path: 'admin/submissions', element: adminOnly(<AdminSubmissionsPage />) },
       { path: 'admin/submissions/:id', element: adminOnly(<AdminSubmissionDetailPage />) },
       { path: 'admin/categories', element: adminOnly(<AdminCategoriesPage />) },
+      { path: 'admin/event-submissions', element: adminOnly(<AdminEventSubmissionsPage />) },
+      { path: 'admin/event-submissions/:id', element: adminOnly(<AdminEventReviewPage />) },
+      { path: 'admin/events', element: adminOnly(<AdminEventsPage />) },
+      { path: 'admin/events/new', element: adminOnly(<AdminEventFormPage />) },
+      { path: 'admin/events/:id/edit', element: adminOnly(<AdminEventFormPage />) },
       { path: 'about', element: <AboutPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],

@@ -56,6 +56,84 @@ export async function pingCloudinary({ fetchImpl = fetch, timeoutMs = 10_000 } =
   }
 }
 
+/* ---------- private files (event evidence) ---------- */
+
+const API_BASE = 'https://api.cloudinary.com/v1_1';
+
+function requireConfigured() {
+  const config = getCloudinaryConfig();
+  if (!config) {
+    const err = new Error('Cloudinary is not configured');
+    err.code = 'CLOUDINARY_NOT_CONFIGURED';
+    throw err;
+  }
+  return config;
+}
+
+/**
+ * Look up an uploaded file through the Admin API (authoritative size, format,
+ * page count, delivery type). Returns null when it doesn't exist.
+ * Never logs or returns credentials.
+ */
+export async function getResource({ publicId, resourceType = 'image', type = 'private' }, { fetchImpl = fetch } = {}) {
+  const { cloudName, apiKey, apiSecret } = requireConfigured();
+  const path = `${API_BASE}/${encodeURIComponent(cloudName)}/resources/${resourceType}/${type}/${publicId
+    .split('/')
+    .map(encodeURIComponent)
+    .join('/')}?pages=true`;
+  const res = await fetchImpl(path, {
+    headers: { Authorization: `Basic ${Buffer.from(`${apiKey}:${apiSecret}`).toString('base64')}` },
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Cloudinary lookup failed (${res.status})`);
+  const r = await res.json();
+  return {
+    publicId: r.public_id,
+    resourceType: r.resource_type,
+    type: r.type,
+    format: r.format,
+    bytes: r.bytes,
+    width: r.width ?? null,
+    height: r.height ?? null,
+    pages: r.pages ?? null,
+  };
+}
+
+/** Delete a file (best effort). Returns true when Cloudinary confirms. */
+export async function destroyAsset({ publicId, resourceType = 'image', type = 'private' }, { fetchImpl = fetch } = {}) {
+  const { cloudName, apiKey, apiSecret } = requireConfigured();
+  const params = { public_id: publicId, timestamp: Math.floor(Date.now() / 1000), type };
+  const body = new URLSearchParams({ ...params, api_key: apiKey, signature: signParams(params, apiSecret) });
+  const res = await fetchImpl(`${API_BASE}/${encodeURIComponent(cloudName)}/${resourceType}/destroy`, {
+    method: 'POST',
+    body,
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!res.ok) return false;
+  const json = await res.json().catch(() => ({}));
+  return json.result === 'ok' || json.result === 'not found';
+}
+
+/**
+ * Time-limited link to a PRIVATE file (Cloudinary "private download URL").
+ * `attachment: true` forces a download instead of displaying it.
+ */
+export function privateDownloadUrl({ publicId, format, resourceType = 'image', expiresInSeconds = 300, attachment = false, now = Date.now() }) {
+  const { cloudName, apiKey, apiSecret } = requireConfigured();
+  const timestamp = Math.floor(now / 1000);
+  const params = {
+    public_id: publicId,
+    format,
+    type: 'private',
+    timestamp,
+    expires_at: timestamp + expiresInSeconds,
+    ...(attachment ? { attachment: 'true' } : {}),
+  };
+  const query = new URLSearchParams({ ...params, api_key: apiKey, signature: signParams(params, apiSecret) });
+  return { url: `${API_BASE}/${encodeURIComponent(cloudName)}/${resourceType}/download?${query}`, expiresAt: new Date((timestamp + expiresInSeconds) * 1000) };
+}
+
 /** Base URL every delivered image from our account starts with. */
 export function deliveryPrefix(cloudName) {
   return `https://res.cloudinary.com/${cloudName}/image/upload/`;

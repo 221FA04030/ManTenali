@@ -18,7 +18,8 @@
     "seed": "npm run seed -w server",
     "seed:admin": "npm run seed:admin -w server",
     "check:media": "npm run check:media -w server",
-    "migrate:categories": "npm run migrate:categories -w server"
+    "migrate:categories": "npm run migrate:categories -w server",
+    "cleanup:evidence": "npm run cleanup:evidence -w server"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",

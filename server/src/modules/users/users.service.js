@@ -209,3 +209,9 @@ export async function upsertAdmin({ email, password, name = 'Mana Tenali Admin' 
 export async function countUsers() {
   return User.countDocuments();
 }
+
+/** Admin-only contact details (name + email) for moderation screens. Never use in public responses. */
+export async function getAdminContactsByIds(ids) {
+  const users = await User.find({ _id: { $in: ids } }).select('name email').lean();
+  return new Map(users.map((u) => [String(u._id), { id: String(u._id), name: u.name, email: u.email ?? null }]));
+}

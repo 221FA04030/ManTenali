@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { AppError } from '../../common/errors/index.js';
 import {
   getCloudinaryConfig,
@@ -22,7 +23,27 @@ export const UPLOAD_PURPOSES = Object.freeze({
   event_banner: { folder: 'events', roles: [ROLES.ADMIN], maxBytes: 5 * 1024 * 1024, maxDim: 1600 },
   news_cover: { folder: 'news', roles: [ROLES.ADMIN], maxBytes: 5 * 1024 * 1024, maxDim: 1600 },
 });
-export const PURPOSE_LIST = Object.freeze(Object.keys(UPLOAD_PURPOSES));
+/**
+ * PRIVATE evidence for event submissions (Step 6). Stored with Cloudinary's
+ * "private" delivery type: never reachable through public image URLs, only via
+ * short-lived signed download links issued by the events module. Each user
+ * uploads into their own folder with a random file id.
+ */
+export const EVIDENCE = Object.freeze({
+  purpose: 'event_evidence',
+  folder: 'evidence',
+  roles: [ROLES.USER, ROLES.OWNER, ROLES.ADMIN],
+  formats: ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
+  types: ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+  maxImageBytes: 5 * 1024 * 1024,
+  maxPdfBytes: 10 * 1024 * 1024,
+  maxPdfPages: 20,
+});
+
+/** Folder that holds one user's private evidence uploads. */
+export const evidenceFolderFor = (userId) => `${ROOT_FOLDER}/${EVIDENCE.folder}/u_${userId}`;
+
+export const PURPOSE_LIST = Object.freeze([...Object.keys(UPLOAD_PURPOSES), EVIDENCE.purpose]);
 
 const PUBLIC_ID_RX = /^[A-Za-z0-9/_-]{1,200}$/;
 
@@ -39,6 +60,7 @@ export const folderFor = (purpose) => `${ROOT_FOLDER}/${UPLOAD_PURPOSES[purpose]
  * The file never passes through our API.
  */
 export function signUpload(user, purpose, now = Date.now()) {
+  if (purpose === EVIDENCE.purpose) return signEvidenceUpload(user, now);
   const rule = UPLOAD_PURPOSES[purpose];
   if (!rule) throw AppError.validation('Unknown upload purpose.');
   if (!rule.roles.includes(user.role)) throw AppError.forbidden('You cannot upload this kind of image.');
@@ -58,6 +80,29 @@ export function signUpload(user, purpose, now = Date.now()) {
     signature: signParams(params, apiSecret),
     maxBytes: rule.maxBytes,
     allowedTypes: ALLOWED_TYPES,
+  };
+}
+
+/** Signed parameters for a PRIVATE evidence upload into the caller's own folder. */
+function signEvidenceUpload(user, now) {
+  if (!EVIDENCE.roles.includes(user.role)) throw AppError.forbidden('You cannot upload evidence.');
+  const { cloudName, apiKey, apiSecret } = requireConfig();
+  const params = {
+    timestamp: Math.floor(now / 1000),
+    folder: evidenceFolderFor(user.id),
+    public_id: randomUUID().replace(/-/g, ''),
+    type: 'private',
+    allowed_formats: EVIDENCE.formats.join(','),
+  };
+  return {
+    uploadUrl: uploadUrl(cloudName),
+    cloudName,
+    apiKey,
+    params,
+    signature: signParams(params, apiSecret),
+    maxBytes: EVIDENCE.maxPdfBytes,
+    maxImageBytes: EVIDENCE.maxImageBytes,
+    allowedTypes: EVIDENCE.types,
   };
 }
 

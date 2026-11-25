@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { Bookmark, LogOut, Plus, ShieldCheck, Star, Store } from 'lucide-react';
+import { Bookmark, CalendarPlus, LogOut, Plus, ShieldCheck, Star, Store } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { Card } from '../../../components/ui/Card.jsx';
 import { Input } from '../../../components/ui/Input.jsx';
@@ -138,6 +138,9 @@ export default function ProfilePage() {
           </li>
           <li>
             <ListRow icon={Plus} title={t('submit.addYourBusiness')} subtitle={t('submit.addHint')} to="/manage/new" iconSize="md" />
+          </li>
+          <li>
+            <ListRow icon={CalendarPlus} title={t('events.mySubmissions')} subtitle={t('events.mySubmissionsHint')} to="/events/submissions" iconSize="md" />
           </li>
           <li>
             <ListRow icon={Store} title={t('profile.myBusinesses')} subtitle={t('submit.myBusinessesHint')} to="/manage" iconSize="md" />

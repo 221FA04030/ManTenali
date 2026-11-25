@@ -40,3 +40,25 @@ export function addOneYear(value) {
   const [y, mo, d] = DATE_RX.exec(value).slice(1).map(Number);
   return new Date(Date.UTC(y + 1, mo - 1, d)).toISOString().slice(0, 10);
 }
+
+/* ---- date + time (events) ---- */
+
+const DATETIME_RX = /^(\d{4})-(\d{2})-(\d{2})T([01]\d|2[0-3]):([0-5]\d)$/;
+
+/** True for "YYYY-MM-DDTHH:mm" with a real calendar date. */
+export function isIsoDateTime(value) {
+  const m = DATETIME_RX.exec(String(value ?? ''));
+  return Boolean(m) && isIsoDate(`${m[1]}-${m[2]}-${m[3]}`);
+}
+
+/** "YYYY-MM-DDTHH:mm" in IST -> UTC Date. */
+export function istDateTime(value) {
+  const [y, mo, d, h, mi] = DATETIME_RX.exec(value).slice(1).map(Number);
+  return new Date(Date.UTC(y, mo - 1, d, h, mi) - IST_OFFSET_MS);
+}
+
+/** UTC instant -> "YYYY-MM-DDTHH:mm" in IST. */
+export function toIstDateTime(date) {
+  if (!date) return null;
+  return new Date(new Date(date).getTime() + IST_OFFSET_MS).toISOString().slice(0, 16);
+}

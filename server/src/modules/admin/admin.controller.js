@@ -1,5 +1,6 @@
 import * as usersService from '../users/users.service.js';
 import * as businessesService from '../businesses/businesses.service.js';
+import * as eventsService from '../events/events.service.js';
 import { ok } from '../../common/utils/response.js';
 
 /**
@@ -40,4 +41,31 @@ export async function approveSubmission(req, res) {
 
 export async function rejectSubmission(req, res) {
   return ok(res, await businessesService.rejectSubmission(req.user, req.validated.params.id, req.validated.body.reason));
+}
+
+// Event moderation (community submissions) and event management lists
+export async function eventQueue(req, res) {
+  const { items, meta } = await eventsService.queue(req.validated.query);
+  return ok(res, items, meta);
+}
+
+export async function eventForReview(req, res) {
+  return ok(res, await eventsService.getForAdmin(req.validated.params.id));
+}
+
+export async function approveEvent(req, res) {
+  return ok(res, await eventsService.approve(req.user, req.validated.params.id, req.validated.body));
+}
+
+export async function rejectEvent(req, res) {
+  return ok(res, await eventsService.reject(req.user, req.validated.params.id, req.validated.body.reason));
+}
+
+export async function requestEventChanges(req, res) {
+  return ok(res, await eventsService.requestChanges(req.user, req.validated.params.id, req.validated.body.note));
+}
+
+export async function listEvents(req, res) {
+  const { items, meta } = await eventsService.adminList(req.validated.query);
+  return ok(res, items, meta);
 }
