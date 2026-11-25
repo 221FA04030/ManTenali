@@ -73,6 +73,8 @@ describe('/news list and detail', () => {
     expect(within(rain).getByText('Sample data')).toBeInTheDocument();
     expect(within(rain).queryByText(/Until/)).not.toBeInTheDocument();
     expect(screen.getByText('2 items')).toBeInTheDocument();
+    // Not edited since publishing (same content time): no "Updated" on the cards.
+    expect(screen.queryByText(/Updated/)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Traffic' }));
     await waitFor(() => expect(router.state.location.search).toBe('?type=traffic'));
@@ -230,5 +232,32 @@ describe('admin news', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(router.state.location.pathname).toBe('/admin/news'));
     expect(calls.find((c) => c.method === 'PATCH').body).toMatchObject({ title: 'Water supply restored in ward 12', validUntil: null, sourceUrl: null, coverImage: null });
+  });
+
+  it('keeps a category that was deactivated since: shown as inactive, selected and sent back unchanged', async () => {
+    const { calls } = mockApi({
+      'GET /auth/me': () => ok(sampleUser({ role: 'admin' })),
+      'GET /categories': () => ok([{ ...cat, id: 'c2', name: { en: 'Sports', te: 'క్రీడలు' }, slug: 'sports' }]), // "Civic" is no longer active
+      'GET /admin/news/n1': () => ok(adminItem()),
+      'PATCH /news/n1': ({ body }) => ok(adminItem(body)),
+      'GET /admin/news': () => page([]),
+    });
+    renderApp('/admin/news/n1/edit');
+    const user = userEvent.setup();
+    const select = await screen.findByLabelText('Category');
+    await waitFor(() => expect(within(select).getByRole('option', { name: 'Civic (inactive)' })).toBeInTheDocument());
+    expect(select).toHaveValue('c1');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(calls.find((c) => c.method === 'PATCH')?.body).toMatchObject({ categoryId: 'c1' }));
+  });
+
+  it('"Clear time" meets the 44 px tap target', async () => {
+    mockApi({
+      'GET /auth/me': () => ok(sampleUser({ role: 'admin' })),
+      'GET /categories': () => ok([cat]),
+      'GET /admin/news/n1': () => ok(adminItem()),
+    });
+    renderApp('/admin/news/n1/edit');
+    expect(await screen.findByRole('button', { name: 'Clear time' })).toHaveClass('min-h-tap');
   });
 });

@@ -305,6 +305,7 @@ export const DEMO_NEWS = [
     categorySlug: 'civic',
     sourceName: 'Municipal water works (Demo)',
     publishedHoursAgo: 3,
+    editedHoursAgo: 1, // shows a genuine "Updated" time
     validForHours: 28,
   },
   {

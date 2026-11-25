@@ -148,7 +148,8 @@ endpoints, and only the submitter and admins can open them. Run `npm run cleanup
 | GET | `/api/v1/admin/news[/:id]` | Admin | Management list (any status; filters `status`, `type`, `q`) and editing view |
 
 Every item names its source. "Show until" (`validUntil`) is entered in India time (IST, `YYYY-MM-DDTHH:mm`);
-after it passes, the item drops out of lists. At most 5 live items can be pinned at once.
+after it passes, the item drops out of lists. At most 5 published, unexpired items can be pinned at once
+(pinned drafts and hidden items don't count). "Updated" shows the last content edit, not pinning or status changes.
 
 ### Images (Cloudinary)
 

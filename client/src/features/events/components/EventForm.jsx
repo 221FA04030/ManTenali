@@ -6,7 +6,7 @@ import { Card } from '../../../components/ui/Card.jsx';
 import { Input } from '../../../components/ui/Input.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { ImageUpload } from '../../../components/ui/ImageUpload.jsx';
-import { useCategories, categoryName } from '../../categories/api.js';
+import { useCategories, categoryName, withCurrentCategory } from '../../categories/api.js';
 import { businessesApi } from '../../businesses/api.js';
 import { TENALI_AREAS } from '../../../config/areas.js';
 import { getCurrentPosition } from '../../../lib/geo.js';
@@ -99,7 +99,8 @@ export function EventForm({ event, mode = 'submission', onSubmit, submitting, su
   const [s, setS] = useState(() => eventToState(event));
   const [errors, setErrors] = useState({});
   const [locating, setLocating] = useState(false);
-  const { data: categories = [] } = useCategories('event');
+  const { data: activeCategories = [] } = useCategories('event');
+  const categories = withCurrentCategory(activeCategories, event?.category);
   const { data: businesses } = useQuery({
     queryKey: ['businesses', 'list', 'event-link', s.area],
     queryFn: () => businessesApi.list({ area: s.area || undefined, limit: 50 }).then((r) => r.data),
@@ -143,7 +144,7 @@ export function EventForm({ event, mode = 'submission', onSubmit, submitting, su
           <option value="">{t('form.choose')}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
-              {categoryName(c, i18n.language)}
+              {c.inactive ? t('form.inactiveCategory', { name: categoryName(c, i18n.language) }) : categoryName(c, i18n.language)}
             </option>
           ))}
         </Input>

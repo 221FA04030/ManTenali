@@ -431,6 +431,31 @@ describe('admin event management (FR-EVT-3)', () => {
     expect(admin.body.data.map((e) => e.id)).toEqual([id]);
   });
 
+  it('keeps an unchanged category that was deactivated later (admin and submitter edits); a changed one must be active', async () => {
+    const { Category } = await import('../categories/categories.model.js');
+    const { agent } = await loginAs(app, 'admin');
+    const created = await agent.post('/api/v1/events').send(adminBody());
+    const id = created.body.data.id;
+    const sub = await submitAs('user');
+    await Category.updateOne({ _id: eventCat._id }, { isActive: false });
+
+    // The edit forms send every field back, including the unchanged category.
+    const adminEdit = await agent.patch(`/api/v1/events/${id}`).send({ ...adminBody(), title: 'Ugadi Celebrations 2027', categoryId: String(eventCat._id) });
+    expect(adminEdit.status).toBe(200);
+    expect(adminEdit.body.data).toMatchObject({ title: 'Ugadi Celebrations 2027', category: { name: { en: 'Festivals' } } });
+    const subEdit = await sub.agent.patch(`/api/v1/events/submissions/${sub.id}`).send({ title: 'Sankranti Kite Festival 2027', categoryId: String(eventCat._id) });
+    expect(subEdit.status).toBe(200);
+    expect(subEdit.body.data.category).toMatchObject({ name: { en: 'Festivals' } });
+
+    const inactive = await createCategory({ type: 'event', slug: 'retired', isActive: false });
+    expect((await agent.patch(`/api/v1/events/${id}`).send({ categoryId: String(inactive._id) })).status).toBe(400);
+    expect((await sub.agent.patch(`/api/v1/events/submissions/${sub.id}`).send({ categoryId: String(inactive._id) })).status).toBe(400);
+    const music = await createCategory({ type: 'event', slug: 'music' });
+    expect((await agent.patch(`/api/v1/events/${id}`).send({ categoryId: String(music._id) })).body.data.category).toMatchObject({ slug: 'music' });
+    expect((await agent.patch(`/api/v1/events/${id}`).send({ categoryId: String(eventCat._id) })).status).toBe(400);
+    expect((await agent.post('/api/v1/events').send(adminBody({ title: 'New with old category' }))).status).toBe(400);
+  });
+
   it('submissions under review can’t change status through PATCH; admin typo fixes are logged', async () => {
     const sub = await submitAs('user');
     const { agent } = await loginAs(app, 'admin');

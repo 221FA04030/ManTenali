@@ -16,7 +16,7 @@ export const NEWS_STATUS = Object.freeze({
 export const NEWS_TYPES = Object.freeze(['news', 'traffic', 'weather', 'power', 'water', 'announcement']);
 export const NOTICE_TYPES = Object.freeze(NEWS_TYPES.filter((t) => t !== 'news'));
 
-/** At most this many pinned items at a time (pinned items feed the home banner, which shows up to 5). */
+/** At most this many published, unexpired pinned items (they feed the home banner, which shows up to 5). */
 export const MAX_PINNED = 5;
 
 const imageSchema = new mongoose.Schema(
@@ -37,6 +37,7 @@ const newsSchema = new mongoose.Schema(
     sourceUrl: { type: String, trim: true, maxlength: 300 },
     publishedAt: { type: Date },
     validUntil: { type: Date }, // time-limited notices stop showing after this
+    contentUpdatedAt: { type: Date }, // last CONTENT edit (shown as "Updated"); pin/status changes don't touch it
     isPinned: { type: Boolean, default: false },
     isSeed: { type: Boolean, default: false },
     status: { type: String, enum: Object.values(NEWS_STATUS), default: NEWS_STATUS.DRAFT },

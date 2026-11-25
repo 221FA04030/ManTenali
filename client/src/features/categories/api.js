@@ -23,6 +23,17 @@ export function useCategories(type, { includeInactive = false, enabled = true } 
 }
 
 /**
+ * Options for an edit form: the active categories plus the item's CURRENT
+ * category when it has since been deactivated (marked `inactive`), so editing
+ * keeps it instead of silently dropping it. The server accepts an unchanged
+ * category; choosing a different one must be active.
+ */
+export function withCurrentCategory(active = [], current) {
+  if (!current?.id || active.some((c) => c.id === current.id)) return active;
+  return [...active, { ...current, inactive: true }];
+}
+
+/**
  * Flat list (with parentId) -> [{ ...main, children: [...subs] }], keeping
  * server order. Subcategories whose main category is missing are dropped.
  */

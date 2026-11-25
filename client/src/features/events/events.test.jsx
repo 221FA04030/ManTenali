@@ -360,6 +360,25 @@ describe('admin moderation', () => {
     await waitFor(() => expect(calls.find((c) => c.path.endsWith('/request-changes'))?.body).toEqual({ note: 'Add the venue letter.' }));
   });
 
+  it('editing keeps a category that was deactivated since: shown as inactive, selected and sent back', async () => {
+    const { calls } = mockApi({
+      'GET /auth/me': () => ok(sampleUser({ role: 'admin' })),
+      'GET /categories': () => ok([{ ...cat, id: 'c2', name: { en: 'Music', te: 'సంగీతం' }, slug: 'music' }]), // "Festival" is no longer active
+      'GET /businesses': () => page([]),
+      'GET /admin/event-submissions/e1': () => ok(review({ status: 'published', source: 'admin', endLocal: '2099-11-30T21:00', startLocal: '2099-11-30T18:00' })),
+      'PATCH /events/e1': ({ body }) => ok(review({ ...body, status: 'published' })),
+      'GET /admin/events': () => page([]),
+    });
+    const { router } = renderApp('/admin/events/e1/edit');
+    const user = userEvent.setup();
+    const select = await screen.findByLabelText('Category *');
+    await waitFor(() => expect(within(select).getByRole('option', { name: 'Festival (inactive)' })).toBeInTheDocument());
+    expect(select).toHaveValue('c1');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(router.state.location.pathname).toBe('/admin/events'));
+    expect(calls.find((c) => c.method === 'PATCH').body).toMatchObject({ categoryId: 'c1' });
+  });
+
   it('cancels a published event with a public reason', async () => {
     const { calls } = mockApi({
       'GET /auth/me': () => ok(sampleUser({ role: 'admin' })),

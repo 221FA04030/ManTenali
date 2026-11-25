@@ -4,7 +4,7 @@ import { Card } from '../../../components/ui/Card.jsx';
 import { Input } from '../../../components/ui/Input.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { ImageUpload } from '../../../components/ui/ImageUpload.jsx';
-import { useCategories, categoryName } from '../../categories/api.js';
+import { useCategories, categoryName, withCurrentCategory } from '../../categories/api.js';
 import { istNowLocal } from '../../../lib/dates.js';
 import { MAX_PINNED, NEWS_TYPE_KEYS, NOTICE_TYPES } from '../api.js';
 
@@ -71,7 +71,8 @@ export function NewsForm({ item, onSubmit, submitting, serverErrors = {} }) {
   const { t, i18n } = useTranslation();
   const [s, setS] = useState(() => newsToState(item));
   const [errors, setErrors] = useState({});
-  const { data: categories = [] } = useCategories('news');
+  const { data: active = [] } = useCategories('news');
+  const categories = withCurrentCategory(active, item?.category);
   const set = (patch) => setS((p) => ({ ...p, ...patch }));
   const field = (name) => ({ value: s[name], onChange: (e) => set({ [name]: e.target.value }) });
   const err = (k) => (errors[k] ? t(errors[k]) : serverErrors[k]);
@@ -109,7 +110,7 @@ export function NewsForm({ item, onSubmit, submitting, serverErrors = {} }) {
           <option value="">{t('news.f.noCategory')}</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>
-              {categoryName(c, i18n.language)}
+              {c.inactive ? t('form.inactiveCategory', { name: categoryName(c, i18n.language) }) : categoryName(c, i18n.language)}
             </option>
           ))}
         </Input>
@@ -128,7 +129,7 @@ export function NewsForm({ item, onSubmit, submitting, serverErrors = {} }) {
             {...field('validUntil')}
           />
           {s.validUntil && (
-            <Button variant="soft" size="sm" className="self-start" onClick={() => set({ validUntil: '' })}>
+            <Button variant="soft" className="self-start" onClick={() => set({ validUntil: '' })}>
               {t('news.f.clearValidUntil')}
             </Button>
           )}

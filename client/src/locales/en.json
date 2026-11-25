@@ -320,7 +320,8 @@
       "phone": "Enter a valid phone number.",
       "website": "Enter a full web address starting with https://",
       "hours": "Give both opening and closing times (and they must differ), or mark the day closed."
-    }
+    },
+    "inactiveCategory": "{{name}} (inactive)"
   },
   "manage": {
     "emptyTitle": "No businesses yet",

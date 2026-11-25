@@ -105,7 +105,8 @@ function log(doc, user, action, fromStatus, toStatus, note) {
 
 /** Validate and apply editable fields (shared by submitters and admins). */
 async function applyFields(doc, input) {
-  if (input.categoryId !== undefined) {
+  // An unchanged category is kept even if it was deactivated later; a new one must be active (D7.14).
+  if (input.categoryId !== undefined && input.categoryId !== String(doc.categoryId ?? '')) {
     await categoriesService.assertActiveCategory(input.categoryId, 'event');
     doc.categoryId = input.categoryId;
   }

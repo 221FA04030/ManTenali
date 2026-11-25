@@ -18,6 +18,25 @@ const isExpired = (n, now = new Date()) => Boolean(n.validUntil) && n.validUntil
 /** Public "not expired" condition: no validUntil, or validUntil still ahead. */
 const notExpired = (now) => ({ $or: [{ validUntil: null }, { validUntil: { $gt: now } }] });
 
+/** Only published, unexpired pinned items use one of the MAX_PINNED slots (drafts and hidden items don't). */
+const usesPinSlot = (n, now = new Date()) => Boolean(n.isPinned) && n.status === S.PUBLISHED && !isExpired(n, now);
+
+/**
+ * Fields whose change counts as a content edit ("Updated" time shown to readers).
+ * Category, pinning and status changes are administrative and don't count.
+ */
+const CONTENT_FIELDS = ['title', 'summary', 'body', 'type', 'sourceName', 'sourceUrl', 'validUntil', 'coverImage'];
+function contentKey(doc) {
+  return JSON.stringify(
+    CONTENT_FIELDS.map((k) => {
+      const v = doc[k];
+      if (v instanceof Date) return v.getTime();
+      if (k === 'coverImage') return v?.publicId ? [v.url, v.publicId] : null;
+      return v || null;
+    }),
+  );
+}
+
 /* ----------------------------- DTOs ----------------------------- */
 
 /** PUBLIC shape (fixed allow-list). Lists omit the body to keep payloads small. */
@@ -34,7 +53,8 @@ function toPublicDTO(n, categories, { withBody = false, now = new Date() } = {})
     sourceName: n.sourceName,
     sourceUrl: n.sourceUrl ?? null,
     publishedAt: n.publishedAt ?? null,
-    updatedAt: n.updatedAt,
+    // "Updated" = last CONTENT edit (D7.13). Administrative changes (pin, hide, publish, category) don't move it.
+    updatedAt: n.contentUpdatedAt ?? n.publishedAt ?? n.createdAt ?? null,
     validUntil: n.validUntil ?? null,
     validUntilLocal: toIstDateTime(n.validUntil),
     isPinned: Boolean(n.isPinned),
@@ -50,6 +70,7 @@ function toAdminDTO(n, categories) {
     status: n.status,
     categoryId: n.categoryId ? String(n.categoryId) : null,
     createdAt: n.createdAt,
+    lastChangedAt: n.updatedAt, // any change, including pinning and status (admin list order)
   };
 }
 
@@ -69,8 +90,14 @@ function resolveValidUntil(local, now = new Date()) {
   return at;
 }
 
+/**
+ * Apply editable fields. Returns true when the CONTENT changed (see CONTENT_FIELDS),
+ * so re-sending unchanged values from the edit form is not an edit.
+ */
 async function applyFields(doc, input) {
-  if (input.categoryId !== undefined) {
+  const before = contentKey(doc);
+  // An unchanged category is kept even if it was deactivated later (D7.14); a new one must be active.
+  if (input.categoryId !== undefined && input.categoryId !== String(doc.categoryId ?? '')) {
     if (input.categoryId === null) doc.categoryId = undefined;
     else {
       await categoriesService.assertActiveCategory(input.categoryId, 'news');
@@ -90,18 +117,17 @@ async function applyFields(doc, input) {
   }
   if (input.body !== undefined) doc.body = input.body || undefined;
   if (input.sourceUrl !== undefined) doc.sourceUrl = input.sourceUrl || undefined;
+  return contentKey(doc) !== before;
 }
 
-/** At most MAX_PINNED live (not removed, not expired) pinned items at a time. */
+/**
+ * Called when an item STARTS using a pin slot (pinned + published + not expired),
+ * whether by pinning, publishing a pinned draft, or extending an expired pinned notice.
+ */
 async function assertPinSlot(excludeId) {
-  const pinned = await News.countDocuments({
-    _id: { $ne: excludeId },
-    isPinned: true,
-    status: { $ne: S.ARCHIVED },
-    ...notExpired(new Date()),
-  });
+  const pinned = await News.countDocuments({ _id: { $ne: excludeId }, isPinned: true, status: S.PUBLISHED, ...notExpired(new Date()) });
   if (pinned >= MAX_PINNED) {
-    throw AppError.conflict(`At most ${MAX_PINNED} items can be pinned. Unpin one first.`);
+    throw AppError.conflict(`At most ${MAX_PINNED} published items can be pinned. Unpin one first.`);
   }
 }
 
@@ -186,14 +212,13 @@ export async function create(admin, input) {
   const doc = new News({ slug: 'pending', createdBy: admin.id, updatedBy: admin.id });
   await applyFields(doc, { ...input, status: undefined, isPinned: undefined });
   doc.status = input.status ?? S.DRAFT;
+  doc.contentUpdatedAt = new Date();
   if (doc.status === S.PUBLISHED) {
     assertPublishable(doc);
-    doc.publishedAt = new Date();
+    doc.publishedAt = doc.contentUpdatedAt;
   }
-  if (input.isPinned) {
-    await assertPinSlot(doc._id);
-    doc.isPinned = true;
-  }
+  doc.isPinned = Boolean(input.isPinned);
+  if (usesPinSlot(doc)) await assertPinSlot(doc._id);
   doc.slug = await slugFor(input.title);
   await doc.save();
   return adminView(doc);
@@ -203,7 +228,8 @@ export async function create(admin, input) {
 export async function update(admin, id, input) {
   const doc = await loadForAdmin(id);
   if (doc.status === S.ARCHIVED) throw AppError.conflict('This news item was removed and can no longer be changed.');
-  await applyFields(doc, input);
+  const hadPinSlot = usesPinSlot(doc);
+  if (await applyFields(doc, input)) doc.contentUpdatedAt = new Date();
   if (input.status !== undefined && input.status !== doc.status) {
     if (input.status === S.PUBLISHED) {
       assertPublishable(doc);
@@ -211,10 +237,8 @@ export async function update(admin, id, input) {
     }
     doc.status = input.status;
   }
-  if (input.isPinned !== undefined && input.isPinned !== doc.isPinned) {
-    if (input.isPinned) await assertPinSlot(doc._id);
-    doc.isPinned = input.isPinned;
-  }
+  if (input.isPinned !== undefined) doc.isPinned = input.isPinned;
+  if (!hadPinSlot && usesPinSlot(doc)) await assertPinSlot(doc._id);
   doc.updatedBy = admin.id;
   await doc.save();
   return adminView(doc);
@@ -235,20 +259,23 @@ export async function remove(admin, id) {
 
 /**
  * Sample news for local development only - refused in production (no override).
- * Idempotent by slug. `publishedHoursAgo` / `validForHours` are relative to `now`.
+ * Idempotent by slug. `publishedHoursAgo`, `editedHoursAgo` and `validForHours` are relative to `now`.
  */
 export async function seedNews(list, categoryIdBySlug = new Map(), now = new Date()) {
   if (getEnv().isProduction) throw new Error('Sample data cannot be seeded in production.');
   let created = 0;
   for (const item of list) {
     if (await News.exists({ slug: item.slug })) continue;
-    const { categorySlug, publishedHoursAgo = 1, validForHours, status = S.PUBLISHED, ...rest } = item;
+    const { categorySlug, publishedHoursAgo = 1, editedHoursAgo, validForHours, status = S.PUBLISHED, ...rest } = item;
     const publishedAt = new Date(now.getTime() - publishedHoursAgo * 3_600_000);
+    const draft = status === S.DRAFT;
     await News.create({
       ...rest,
       status,
       categoryId: categorySlug ? (categoryIdBySlug.get(categorySlug) ?? undefined) : undefined,
-      publishedAt: status === S.DRAFT ? undefined : publishedAt,
+      publishedAt: draft ? undefined : publishedAt,
+      // Content last edited when published, unless the sample says it was edited later.
+      contentUpdatedAt: editedHoursAgo !== undefined ? new Date(now.getTime() - editedHoursAgo * 3_600_000) : draft ? now : publishedAt,
       validUntil: validForHours !== undefined ? new Date(now.getTime() + validForHours * 3_600_000) : undefined,
       isSeed: true,
     });
