@@ -103,6 +103,13 @@ describe('GET /home', () => {
     const fallback = (await home({ area: 'Nowhere' })).body.data.nearby;
     expect(fallback.mode).toBe('all');
     expect(fallback.items.map((b) => b.name).sort()).toEqual(['Far', 'Near']);
+    // At most 3 on Home (mobile page length); the full list stays one tap away ("View All" -> /businesses).
+    for (let i = 0; i < 3; i += 1) await createBusiness({ name: `Extra ${i}`, location: point(16.2381, 80.6446 + i * 0.0001) });
+    const capped = (await home({ lat: 16.2379, lng: 80.6444 })).body.data.nearby;
+    expect(HOME_LIMITS.nearby).toBe(3);
+    expect(capped.items).toHaveLength(3);
+    expect(capped.items[0].name).toBe('Extra 0'); // still nearest first
+    expect((await home({})).body.data.nearby.items).toHaveLength(3);
     expect((await home({ lat: 16.2 })).status).toBe(400);
     expect((await home({ q: 'x' })).status).toBe(400);
   });

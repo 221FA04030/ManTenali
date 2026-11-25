@@ -3,7 +3,7 @@ import * as offersService from '../offers/offers.service.js';
 import * as eventsService from '../events/events.service.js';
 import * as newsService from '../news/news.service.js';
 
-export const HOME_LIMITS = Object.freeze({ banner: 5, bannerNews: 3, notices: 4, nearby: 4, offers: 4, events: 3, news: 3 });
+export const HOME_LIMITS = Object.freeze({ banner: 5, bannerNews: 3, notices: 4, nearby: 3, offers: 4, events: 3, news: 3 });
 const NEAR_ME_KM = 10;
 
 /**
