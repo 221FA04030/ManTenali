@@ -14,7 +14,8 @@
     "seed:admin": "node --env-file-if-exists=.env src/scripts/seedAdmin.js",
     "check:media": "node --env-file-if-exists=.env src/scripts/checkMedia.js",
     "migrate:categories": "node --env-file-if-exists=.env src/scripts/migrateCategories.js",
-    "cleanup:evidence": "node --env-file-if-exists=.env src/scripts/cleanupEvidence.js"
+    "cleanup:evidence": "node --env-file-if-exists=.env src/scripts/cleanupEvidence.js",
+    "demo": "node src/scripts/demo.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

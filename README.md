@@ -26,6 +26,53 @@ npm run seed         # reference categories (safe to re-run; never overwrites ad
 npm run seed -- --samples   # also adds demo businesses, offers and events labelled "Sample data" (local dev/test only; always refused in production)
 ```
 
+### Local demo with sample data (development only)
+
+```bash
+npm install
+npm run demo                  # in-memory database + demo data, API :4055, web app http://localhost:5174
+npm run demo -- --cloudinary  # same, plus uploads and evidence previews via your Cloudinary account
+```
+
+`npm run demo` starts a **throwaway in-memory MongoDB** (`mongodb-memory-server`), loads the demo data,
+then starts the API and the web app. Stop it with Ctrl+C; every change is lost, and the next run starts fresh.
+It runs alongside `npm run dev` (different ports).
+
+Safety:
+- It never reads `MONGODB_URI`, `JWT_SECRET` or Google settings from `server/.env`, so it cannot touch MongoDB Atlas.
+  The loader also refuses any database that isn't a local `mongodb://127.0.0.1` or `localhost`.
+- It refuses to start when `NODE_ENV=production`, in the shell or in `server/.env`. This is an error, not a warning.
+- Re-running the loader never duplicates records; it never deletes or overwrites anything.
+- `--cloudinary` reads only the three `CLOUDINARY_*` values and uploads the two synthetic fixtures as **private** files
+  under fixed names in `mana-tenali/evidence/u_64d0de…` (overwritten on each run, so they don't pile up).
+
+**Demo accounts - development only. Never create these accounts or use these passwords in production.**
+
+| Role | Email | Password | Use it to test |
+|------|-------|----------|----------------|
+| Admin | `admin@demo.example` | `DemoAdmin#2026` | Admin pages: business and event review, categories, events, verify |
+| Owner | `owner@demo.example` | `DemoOwner#2026` | Padma's businesses (approved, draft), menus, offers in every state |
+| Owner | `owner2@demo.example` | `DemoOwner#2026` | Suresh's businesses (approved, hidden, archived); Telugu interface |
+| User | `user@demo.example` | `DemoUser#2026` | Pending business submission; event submissions with private evidence |
+| User | `user2@demo.example` | `DemoUser#2026` | Rejected business; rejected and withdrawn events; Telugu; no access to others' evidence |
+| User (blocked) | `blocked@demo.example` | `DemoUser#2026` | Sign-in is refused for blocked accounts |
+
+What the demo data covers (all names end in "(Demo)" or "(Sample)"; dates are relative to the day you run it):
+
+| Records | Tests |
+|---------|-------|
+| 8 "(Sample)" businesses, 3 offers, 2 events (same as `npm run seed -- --samples`) | Lists, filters, Near me, contact buttons, the "Sample data" badge |
+| Padma Andhra Meals and Padma Juice Corner: approved food businesses with menus, cuisines, price range and veg items; the juice corner is open past midnight | Food filters, menu and veg-only toggle, "open now" across midnight, owner editing |
+| Padma Home Bakery (draft), Anil Tea Stall (pending), Lakshmi Mobile Repairs (rejected, with reason), Suresh Cycle Store (hidden), Suresh Photo Studio (archived) | Only approved listings are public; owners see their own; the admin review queue; resubmitting after rejection |
+| Offers: live with a coupon, ending today, upcoming, expired, hidden, draft, and a live offer on a hidden business | The offers feed shows only live offers of approved businesses; the owner's offer list groups them by status |
+| Events: upcoming with a linked business and booking link, all-day over 2 days, workshop tomorrow, past (10 days ago), cancelled (with reason), hidden, draft | Event filters, "Show past events", the cancelled label, IST times, admin event management |
+| Submissions: pending review, changes requested, rejected, withdrawn, and an approved community event, each with private evidence | Submitter and admin moderation flows; evidence is visible only to the submitter and admins |
+
+Private evidence fixtures are synthetic: a placeholder poster (`demo-poster.png`) and a one-page PDF
+(`demo-venue-letter.pdf`) labelled "not a real document", in `server/src/scripts/demo/fixtures/`.
+Public pages and APIs never include them. Without `--cloudinary`, preview and download links say uploads are not available.
+Images aren't seeded: business and offer cards show the app's built-in placeholders.
+
 ### Upgrading an existing database to two-level categories
 
 If you ran `npm run seed` before business submissions were added:
@@ -118,6 +165,7 @@ logs `image uploads disabled` with the missing names at startup. The secret neve
 | `npm run lint` | ESLint for server and client |
 | `npm run build` | Production build of the web app (`client/dist`) |
 | `npm run check:media` | Check the Cloudinary (image upload) configuration |
+| `npm run demo` | Local demo stack with in-memory data and demo accounts (development only) |
 | `npm run cleanup:evidence` | Evidence retention: dry run; add `-- --apply` to delete files 180 days after the final decision |
 
 The first server test run downloads a MongoDB binary for `mongodb-memory-server` (cached afterwards).

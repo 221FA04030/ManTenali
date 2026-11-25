@@ -19,7 +19,8 @@
     "seed:admin": "npm run seed:admin -w server",
     "check:media": "npm run check:media -w server",
     "migrate:categories": "npm run migrate:categories -w server",
-    "cleanup:evidence": "npm run cleanup:evidence -w server"
+    "cleanup:evidence": "npm run cleanup:evidence -w server",
+    "demo": "node server/src/scripts/demo.js"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",
