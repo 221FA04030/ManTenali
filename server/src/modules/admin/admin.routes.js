@@ -20,6 +20,8 @@ import {
   idParams as eventIdParams,
 } from '../events/events.validation.js';
 import { adminListQuery as newsListQuery, idParams as newsIdParams } from '../news/news.validation.js';
+import { adminListQuery as reportListQuery, actionSchema as reportActionSchema, idParams as reportIdParams } from '../reports/reports.validation.js';
+import { summaryQuery as analyticsSummaryQuery } from '../analytics/analytics.validation.js';
 import * as controller from './admin.controller.js';
 
 /** Everything under /admin requires an authenticated admin. */
@@ -74,5 +76,10 @@ export function buildAdminRoutes() {
   // News management list and editing view (writes go through /news)
   router.get('/news', validate({ query: newsListQuery }), asyncHandler(controller.listNews));
   router.get('/news/:id', validate({ params: newsIdParams }), asyncHandler(controller.getNews));
+
+  // Reports queue (FR-ADM-1) and activity summary (FR-ADM-2). Screens come with Step 10.
+  router.get('/reports', validate({ query: reportListQuery }), asyncHandler(controller.listReports));
+  router.patch('/reports/:id', validate({ params: reportIdParams, body: reportActionSchema }), asyncHandler(controller.actOnReport));
+  router.get('/analytics/summary', validate({ query: analyticsSummaryQuery }), asyncHandler(controller.analyticsSummary));
   return router;
 }

@@ -7,7 +7,6 @@ const HomePage = lazy(() => import('../features/home/pages/HomePage.jsx'));
 const ExplorePage = lazy(() => import('../features/explore/pages/ExplorePage.jsx'));
 const AboutPage = lazy(() => import('../features/static/pages/AboutPage.jsx'));
 const NotFoundPage = lazy(() => import('../features/static/pages/NotFoundPage.jsx'));
-const PlaceholderPage = lazy(() => import('../features/static/pages/PlaceholderPage.jsx'));
 const LoginPage = lazy(() => import('../features/auth/pages/LoginPage.jsx'));
 const ProfilePage = lazy(() => import('../features/profile/pages/ProfilePage.jsx'));
 const BusinessListPage = lazy(() => import('../features/businesses/pages/BusinessListPage.jsx'));
@@ -40,8 +39,10 @@ const NewsDetailPage = lazy(() => import('../features/news/pages/NewsDetailPage.
 const AdminNewsPage = lazy(() => import('../features/admin/pages/AdminNewsPage.jsx'));
 const AdminNewsFormPage = lazy(() => import('../features/admin/pages/AdminNewsFormPage.jsx'));
 const SearchPage = lazy(() => import('../features/search/pages/SearchPage.jsx'));
+const SavedPage = lazy(() => import('../features/favorites/pages/SavedPage.jsx'));
+const SuggestPage = lazy(() => import('../features/reports/pages/SuggestPage.jsx'));
+const MyReviewsPage = lazy(() => import('../features/reviews/pages/MyReviewsPage.jsx'));
 
-const placeholder = (titleKey) => <PlaceholderPage titleKey={titleKey} />;
 const signedIn = (el) => <RequireAuth>{el}</RequireAuth>;
 const ownerOrAdmin = (el) => <RequireAuth roles={['owner', 'admin']}>{el}</RequireAuth>;
 const adminOnly = (el) => <RequireAuth roles={['admin']}>{el}</RequireAuth>;
@@ -66,8 +67,8 @@ export const routes = [
       { path: 'news', element: <NewsListPage /> },
       { path: 'news/:slug', element: <NewsDetailPage /> },
       { path: 'search', element: <SearchPage /> },
-      { path: 'saved', element: placeholder('pages.saved') },
-      { path: 'suggest', element: placeholder('pages.suggest') },
+      { path: 'saved', element: signedIn(<SavedPage />) },
+      { path: 'suggest', element: <SuggestPage /> },
       {
         path: 'profile',
         element: (
@@ -78,7 +79,7 @@ export const routes = [
       },
       {
         path: 'profile/reviews',
-        element: <RequireAuth>{placeholder('profile.myReviews')}</RequireAuth>,
+        element: <RequireAuth><MyReviewsPage /></RequireAuth>,
       },
       { path: 'manage', element: signedIn(<ManageHomePage />) },
       { path: 'manage/new', element: signedIn(<AddBusinessPage />) },

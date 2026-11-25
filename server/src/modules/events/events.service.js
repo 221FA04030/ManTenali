@@ -538,6 +538,30 @@ export async function adminRemove(admin, id) {
   return { id: String(doc._id), status: doc.status };
 }
 
+/* ----------------------------- Step 9: favorites, reports ----------------------------- */
+
+/** Public events by id (published or cancelled, past ones included) as public DTOs (Saved page). */
+export async function getPublicByIds(ids) {
+  if (!ids.length) return new Map();
+  const items = await Event.find({ _id: { $in: ids }, status: { $in: PUBLIC_STATUSES } })
+    .select('-moderationLog -review -submittedBy -createdBy')
+    .lean();
+  const lk = await lookups(items);
+  return new Map(items.map((e) => [String(e._id), toPublicDTO(e, lk)]));
+}
+
+/** Moderation view for reports (any status). Responsible user = the community submitter, if any. */
+export async function moderationInfo(ids) {
+  if (!ids.length) return new Map();
+  const items = await Event.find({ _id: { $in: ids } }).select('title slug status submittedBy').lean();
+  return new Map(
+    items.map((e) => [
+      String(e._id),
+      { title: e.title, slug: e.slug, status: e.status, isPublic: PUBLIC_STATUSES.includes(e.status), responsibleUserId: e.submittedBy ? String(e.submittedBy) : null },
+    ]),
+  );
+}
+
 /* ----------------------------- development seed ----------------------------- */
 
 /** Sample events for local development only - refused in production. Idempotent by slug. */

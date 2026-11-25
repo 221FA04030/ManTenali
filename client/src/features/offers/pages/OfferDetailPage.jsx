@@ -9,6 +9,8 @@ import { ErrorState } from '../../../components/ui/ErrorState.jsx';
 import { EmptyState } from '../../../components/ui/EmptyState.jsx';
 import { cldUrl } from '../../../lib/cloudinary.js';
 import { useOffer } from '../api.js';
+import { useTrackOnce } from '../../../lib/analytics.js';
+import { ItemActions } from '../../engagement/ItemActions.jsx';
 import { CouponCode, EndsIn, OfferStatusBadge, ValidityDates } from '../components/OfferBits.jsx';
 
 /** /offers/:id - full offer (FR-OFF-2): terms, redemption, IST validity, coupon, business. */
@@ -16,6 +18,8 @@ export default function OfferDetailPage() {
   const { id } = useParams();
   const { t } = useTranslation();
   const { data: o, isPending, isError, error, refetch } = useOffer(id);
+  // offer_view counts public views only (not owners previewing drafts or scheduled offers).
+  useTrackOnce('offer_view', 'offer', o && (!o.canManage || o.displayStatus === 'live') ? o.id : undefined);
 
   if (isPending) {
     return (
@@ -65,6 +69,8 @@ export default function OfferDetailPage() {
         {o.image && (
           <img src={cldUrl(o.image.url, { w: 720, h: 405 })} alt="" className="aspect-video w-full rounded-card object-cover shadow-card" />
         )}
+
+        {live && <ItemActions targetType="offer" targetId={o.id} title={o.title} />}
 
         <Card className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-1.5">

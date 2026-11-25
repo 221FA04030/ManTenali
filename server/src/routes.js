@@ -11,6 +11,10 @@ import { buildEventsRoutes } from './modules/events/events.routes.js';
 import { buildNewsRoutes } from './modules/news/news.routes.js';
 import { buildSearchRoutes } from './modules/search/search.routes.js';
 import { buildHomeRoutes } from './modules/home/home.routes.js';
+import { buildFavoritesRoutes } from './modules/favorites/favorites.routes.js';
+import { buildReviewsRoutes, buildBusinessReviewsRoutes } from './modules/reviews/reviews.routes.js';
+import { buildReportsRoutes } from './modules/reports/reports.routes.js';
+import { buildAnalyticsRoutes } from './modules/analytics/analytics.routes.js';
 
 /** Mounts every module under /api/v1. Adding a module = one line here. */
 export function buildRoutes() {
@@ -22,11 +26,16 @@ export function buildRoutes() {
   router.use('/media', buildMediaRoutes());
   router.use('/businesses', buildBusinessesRoutes());
   router.use('/businesses', buildBusinessOffersRoutes()); // GET /businesses/:id/offers
+  router.use('/businesses', buildBusinessReviewsRoutes()); // /businesses/:id/reviews
   router.use('/offers', buildOffersRoutes());
   router.use('/events', buildEventsRoutes());
   router.use('/news', buildNewsRoutes());
   router.use('/search', buildSearchRoutes());
   router.use('/home', buildHomeRoutes());
+  router.use('/favorites', buildFavoritesRoutes());
+  router.use('/reviews', buildReviewsRoutes());
+  router.use('/reports', buildReportsRoutes());
+  router.use('/analytics', buildAnalyticsRoutes());
   router.use('/admin', buildAdminRoutes());
   return router;
 }

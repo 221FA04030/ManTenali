@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FolderTree, Search, SearchX, Sparkles, Store } from 'lucide-react';
@@ -16,6 +16,7 @@ import { chip } from '../../businesses/components/BusinessFilters.jsx';
 import { categoryName } from '../../categories/api.js';
 import { ResultCard } from '../components/ResultCard.jsx';
 import { MIN_QUERY, RESULT_TYPES, SEARCH_TABS, useSearch, useSuggest } from '../api.js';
+import { track } from '../../../lib/analytics.js';
 
 const NEAR_ME_KM = 10;
 
@@ -73,6 +74,12 @@ export default function SearchPage() {
     return p;
   }, [q, type, coords, area, sort]);
   const query = useSearch(params);
+  const tracked = useRef(null);
+  useEffect(() => {
+    if (q.length < MIN_QUERY || tracked.current === q) return;
+    tracked.current = q;
+    track('search'); // anonymous: the words searched for are not sent
+  }, [q]);
   const pages = query.data?.pages ?? [];
   const first = pages[0]?.data;
   const counts = first?.counts;

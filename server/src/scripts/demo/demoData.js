@@ -379,6 +379,29 @@ export const DEMO_NEWS = [
   },
 ];
 
+/* ----------------------- reviews, saved items, reports (Step 9) ----------------------- */
+// Referenced by demo account key and business / offer / event slug or title.
+export const DEMO_REVIEWS = [
+  { user: 'user', business: 'demo-padma-andhra-meals', rating: 5, comment: 'Tasty Andhra meals and quick service. Demo review.' },
+  { user: 'user2', business: 'demo-padma-andhra-meals', rating: 4, comment: 'Good gongura mutton; a little crowded at lunch. Demo review.' },
+  { user: 'owner2', business: 'demo-padma-juice-corner', rating: 4, comment: 'Fresh juices late at night. Demo review.' },
+  { user: 'user', business: 'sample-kothapeta-biryani-house', rating: 4 },
+  { user: 'user2', business: 'sample-kothapeta-biryani-house', rating: 1, comment: 'Hidden by a moderator (Demo).', status: 'hidden' },
+];
+
+export const DEMO_FAVORITES = [
+  { user: 'user', targetType: 'business', business: 'demo-padma-andhra-meals' },
+  { user: 'user', targetType: 'offer', offerTitle: 'Free sweet with family meals (Demo)' },
+  { user: 'user', targetType: 'event', event: 'demo-andhra-food-festival' },
+  { user: 'user', targetType: 'business', business: 'demo-suresh-cycle-store' }, // hidden business: shows as "no longer available"
+];
+
+export const DEMO_REPORTS = [
+  { reporter: 'user2', targetType: 'business', business: 'demo-padma-juice-corner', reason: 'wrong_info', details: 'The phone number on this listing seems wrong. Demo report.' },
+  { reporter: 'user', targetType: 'review', reviewOf: { user: 'user2', business: 'demo-padma-andhra-meals' }, reason: 'offensive', details: 'Demo report on a review.' },
+  { reporter: 'user', targetType: 'suggestion', reason: 'new_business', details: 'Ravi Tea Stall near the bus stand is not listed yet. Demo suggestion.' },
+];
+
 export const EVIDENCE_FIXTURES = {
   poster: { file: 'demo-poster.png', format: 'png', kind: 'poster', width: 360, height: 480, pages: null },
   letter: { file: 'demo-venue-letter.pdf', format: 'pdf', kind: 'venue_confirmation', pages: 1 },

@@ -304,6 +304,15 @@ export async function remove(admin, id) {
   return { id: String(doc._id), status: doc.status };
 }
 
+/* ----------------------------- Step 9: reports ----------------------------- */
+
+/** Moderation view for reports (any status). News is written by admins: no responsible user to block. */
+export async function moderationInfo(ids) {
+  if (!ids.length) return new Map();
+  const items = await News.find({ _id: { $in: ids } }).select('title slug status').lean();
+  return new Map(items.map((n) => [String(n._id), { title: n.title, slug: n.slug, status: n.status, isPublic: n.status === S.PUBLISHED, responsibleUserId: null }]));
+}
+
 /* ----------------------------- development seed ----------------------------- */
 
 /**

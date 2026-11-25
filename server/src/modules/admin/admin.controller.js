@@ -2,6 +2,8 @@ import * as usersService from '../users/users.service.js';
 import * as businessesService from '../businesses/businesses.service.js';
 import * as eventsService from '../events/events.service.js';
 import * as newsService from '../news/news.service.js';
+import * as reportsService from '../reports/reports.service.js';
+import * as analyticsService from '../analytics/analytics.service.js';
 import { ok } from '../../common/utils/response.js';
 
 /**
@@ -79,4 +81,18 @@ export async function listNews(req, res) {
 
 export async function getNews(req, res) {
   return ok(res, await newsService.adminGet(req.validated.params.id));
+}
+
+// Reports queue (FR-ADM-1) and activity summary (FR-ADM-2)
+export async function listReports(req, res) {
+  const { items, meta } = await reportsService.adminList(req.validated.query);
+  return ok(res, items, meta);
+}
+
+export async function actOnReport(req, res) {
+  return ok(res, await reportsService.act(req.user, req.validated.params.id, req.validated.body));
+}
+
+export async function analyticsSummary(req, res) {
+  return ok(res, await analyticsService.summary(req.validated.query));
 }

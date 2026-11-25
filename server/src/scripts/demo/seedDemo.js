@@ -24,6 +24,10 @@ import { Event } from '../../modules/events/events.model.js';
 import { EventEvidence } from '../../modules/events/evidence.model.js';
 import { seedEvents } from '../../modules/events/events.service.js';
 import { seedNews } from '../../modules/news/news.service.js';
+import { Review } from '../../modules/reviews/reviews.model.js';
+import { seedReviews } from '../../modules/reviews/reviews.service.js';
+import { seedFavorites } from '../../modules/favorites/favorites.service.js';
+import { seedReports } from '../../modules/reports/reports.service.js';
 import { seedCategories, seedCategoryTree, findIdBySlug, getParentMap } from '../../modules/categories/categories.service.js';
 import { evidenceFolderFor } from '../../modules/media/media.service.js';
 import { toPoint } from '../../common/utils/geo.js';
@@ -33,7 +37,7 @@ import { BUSINESS_SEED } from '../seedData/businesses.js';
 import { OFFER_SEED } from '../seedData/offers.js';
 import { EVENT_SEED } from '../seedData/events.js';
 import { NEWS_SEED } from '../seedData/news.js';
-import { DEMO_USERS, DEMO_BUSINESSES, DEMO_OFFERS, DEMO_EVENTS, DEMO_SUBMISSIONS, DEMO_NEWS, EVIDENCE_FIXTURES } from './demoData.js';
+import { DEMO_USERS, DEMO_BUSINESSES, DEMO_OFFERS, DEMO_EVENTS, DEMO_SUBMISSIONS, DEMO_NEWS, DEMO_REVIEWS, DEMO_FAVORITES, DEMO_REPORTS, EVIDENCE_FIXTURES } from './demoData.js';
 
 const DAY = 86_400_000;
 export const FIXTURES_DIR = fileURLToPath(new URL('./fixtures/', import.meta.url));
@@ -269,10 +273,49 @@ export function listEvidenceFixtures() {
 
 export const readFixture = (path) => readFileSync(path);
 
+/** Step 9: reviews (ratings recalculated), saved items and open reports for the moderation queue. */
+async function seedDemoEngagement(users) {
+  const slugs = [...DEMO_REVIEWS, ...DEMO_FAVORITES, ...DEMO_REPORTS].map((x) => x.business ?? x.reviewOf?.business).filter(Boolean);
+  const bizIds = await getIdsBySlugs([...new Set(slugs)]);
+  const need = (map, key, what) => {
+    const v = map.get(key);
+    if (!v) throw new Error(`Demo data needs ${what} "${key}"`);
+    return v;
+  };
+  const reviews = await seedReviews(
+    DEMO_REVIEWS.map((r) => ({
+      businessId: need(bizIds, r.business, 'business'),
+      userId: users.get(r.user),
+      rating: r.rating,
+      comment: r.comment,
+      status: r.status ?? 'published',
+    })),
+  );
+  const targetId = async (x) => {
+    if (x.targetType === 'business') return need(bizIds, x.business, 'business');
+    if (x.targetType === 'offer') return (await Offer.findOne({ title: x.offerTitle }).select('_id').lean())?._id;
+    if (x.targetType === 'event') return (await Event.findOne({ slug: x.event }).select('_id').lean())?._id;
+    if (x.targetType === 'review') {
+      const businessId = need(bizIds, x.reviewOf.business, 'business');
+      return (await Review.findOne({ businessId, userId: users.get(x.reviewOf.user) }).select('_id').lean())?._id;
+    }
+    return undefined;
+  };
+  const favorites = await seedFavorites(
+    await Promise.all(DEMO_FAVORITES.map(async (f) => ({ userId: users.get(f.user), targetType: f.targetType, targetId: await targetId(f) }))),
+  );
+  const reports = await seedReports(
+    await Promise.all(
+      DEMO_REPORTS.map(async (r) => ({ reporterId: users.get(r.reporter), targetType: r.targetType, targetId: await targetId(r), reason: r.reason, details: r.details })),
+    ),
+  );
+  return { reviews: reviews.created, favorites: favorites.created, reports: reports.created };
+}
+
 /**
  * Load everything: reference categories, the existing "(Sample)" content
  * (same as `npm run seed -- --samples`) and the demo accounts, businesses,
- * offers, events, news and private moderation fixtures.
+ * offers, events, news, reviews, saved items, reports and private moderation fixtures.
  */
 export async function seedDemo({ now = new Date() } = {}) {
   assertDemoTarget();
@@ -302,6 +345,7 @@ export async function seedDemo({ now = new Date() } = {}) {
   }
   const admin = users.ids.get('admin');
   const news = await seedNews([...NEWS_SEED, ...DEMO_NEWS.map((n) => ({ ...n, createdBy: admin }))], newsCats, now);
+  const engagement = await seedDemoEngagement(users.ids);
   return {
     users: users.created,
     businesses: samples.created + businesses,
@@ -309,5 +353,6 @@ export async function seedDemo({ now = new Date() } = {}) {
     events: sampleEvents.created + events + submissions.events,
     evidence: submissions.evidence,
     news: news.created,
+    ...engagement,
   };
 }

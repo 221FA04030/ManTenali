@@ -684,6 +684,45 @@ export async function findPublishedIds({ ids, categoryId, subcategoryId, area, l
   return found.map((b) => b._id);
 }
 
+/* ----------------------------- Step 9: reviews, favorites, reports ----------------------------- */
+
+/**
+ * Reviews own the rating (spec: "ratingAvg and ratingCount recalculated after
+ * every review change"). Written without touching updatedAt, so a new review
+ * doesn't make the listing look freshly updated.
+ */
+export async function setRating(businessId, { avg, count }) {
+  await Business.updateOne({ _id: businessId }, { $set: { ratingAvg: avg, ratingCount: count } }, { timestamps: false });
+}
+
+/** Whether `user` owns this business (users can't review their own business). */
+export async function isOwnedBy(businessId, userId) {
+  return Boolean(await Business.exists({ _id: businessId, ownerId: userId }));
+}
+
+/** Published businesses as list cards, by id (Saved page). Missing or non-public ids are absent. */
+export async function getPublicCardsByIds(ids, now = new Date()) {
+  if (!ids.length) return new Map();
+  const items = await Business.find({ _id: { $in: ids }, status: S.PUBLISHED }).select(CARD_FIELDS).slice('photos', 1).lean();
+  const categories = await categoryMapFor(items);
+  return new Map(items.map((b) => [String(b._id), toCard(b, categories, now)]));
+}
+
+/**
+ * Moderation view (reports): title, link, status and the responsible user
+ * (the owner), any status. Map id -> { title, slug, status, isPublic, responsibleUserId }.
+ */
+export async function moderationInfo(ids) {
+  if (!ids.length) return new Map();
+  const items = await Business.find({ _id: { $in: ids } }).select('name slug status ownerId').lean();
+  return new Map(
+    items.map((b) => [
+      String(b._id),
+      { title: b.name, slug: b.slug, status: b.status, isPublic: b.status === S.PUBLISHED, responsibleUserId: b.ownerId ? String(b.ownerId) : null },
+    ]),
+  );
+}
+
 /** Business ids by slug (used by the development sample seed). */
 export async function getIdsBySlugs(slugs) {
   const found = await Business.find({ slug: { $in: slugs } }).select('_id slug').lean();

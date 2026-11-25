@@ -303,6 +303,39 @@ export async function hideOffer(user, id) {
   return { id: String(doc._id), status: doc.status };
 }
 
+/* ----------------------------- Step 9: favorites, reports ----------------------------- */
+
+/** Publicly visible offers by id (valid now, business published) as public DTOs (Saved page). */
+export async function getPublicByIds(ids, now = new Date()) {
+  if (!ids.length) return new Map();
+  const items = await Offer.find({ _id: { $in: ids }, ...validNow(now) }).lean();
+  const published = await businessesService.getPublishedIds([...new Set(items.map((o) => String(o.businessId)))]);
+  const visible = items.filter((o) => published.has(String(o.businessId)));
+  const businesses = await businessesService.getSummariesByIds([...new Set(visible.map((o) => String(o.businessId)))]);
+  return new Map(visible.map((o) => [String(o._id), toDTO(o, businesses.get(String(o.businessId)), { now })]));
+}
+
+/** Moderation view for reports (any status). Responsible user = the business owner (via businesses). */
+export async function moderationInfo(ids, now = new Date()) {
+  if (!ids.length) return new Map();
+  const items = await Offer.find({ _id: { $in: ids } }).select('title businessId status validFrom validTo').lean();
+  const owners = await businessesService.moderationInfo([...new Set(items.map((o) => String(o.businessId)))]);
+  return new Map(
+    items.map((o) => {
+      const biz = owners.get(String(o.businessId));
+      return [
+        String(o._id),
+        {
+          title: o.title,
+          status: o.status,
+          isPublic: displayStatus(o, now) === 'live' && Boolean(biz?.isPublic),
+          responsibleUserId: biz?.responsibleUserId ?? null,
+        },
+      ];
+    }),
+  );
+}
+
 /* ----------------------------- development seed ----------------------------- */
 
 /** Sample offers for local development only - always refused in production. */

@@ -11,12 +11,15 @@ import { cldUrl } from '../../../lib/cloudinary.js';
 import { categoryName } from '../../categories/api.js';
 import { useNewsItem } from '../api.js';
 import { NewsMeta, NewsStatusBadge, NewsTypeBadge, formatUntil } from '../components/NewsBits.jsx';
+import { useTrackOnce } from '../../../lib/analytics.js';
+import { ItemActions } from '../../engagement/ItemActions.jsx';
 
 /** /news/:slug - full item with source, published and updated times (FR-NEWS-2). */
 export default function NewsDetailPage() {
   const { slug } = useParams();
   const { t, i18n } = useTranslation();
   const { data: n, isPending, isError, error, refetch } = useNewsItem(slug);
+  useTrackOnce('view', 'news', n && !n.status ? n.id : undefined);
 
   if (isPending) {
     return (
@@ -96,6 +99,8 @@ export default function NewsDetailPage() {
             </a>
           )}
         </Card>
+
+        {!n.status && <ItemActions targetType="news" targetId={n.id} title={n.title} canSave={false} />}
 
         {n.body && (
           <Card>

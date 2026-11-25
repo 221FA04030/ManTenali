@@ -50,7 +50,7 @@ Safety:
 
 | Role | Email | Password | Use it to test |
 |------|-------|----------|----------------|
-| Admin | `admin@demo.example` | `DemoAdmin#2026` | Admin pages: business and event review, categories, events, news, verify |
+| Admin | `admin@demo.example` | `DemoAdmin#2026` | Admin pages: business and event review, categories, events, news, verify; hide reviews; reports API |
 | Owner | `owner@demo.example` | `DemoOwner#2026` | Padma's businesses (approved, draft), menus, offers in every state |
 | Owner | `owner2@demo.example` | `DemoOwner#2026` | Suresh's businesses (approved, hidden, archived); Telugu interface |
 | User | `user@demo.example` | `DemoUser#2026` | Pending business submission; event submissions with private evidence |
@@ -68,6 +68,7 @@ What the demo data covers (all names end in "(Demo)" or "(Sample)"; dates are re
 | Events: upcoming with a linked business and booking link, all-day over 2 days, workshop tomorrow, past (10 days ago), cancelled (with reason), hidden, draft | Event filters, "Show past events", the cancelled label, IST times, admin event management |
 | Submissions: pending review, changes requested, rejected, withdrawn, and an approved community event, each with private evidence | Submitter and admin moderation flows; evidence is visible only to the submitter and admins |
 | News: 3 "(Sample)" items plus pinned water notice, weather alert, announcement, local news, an expired power cut, and hidden, draft and removed items | Type filter, pinned first, "show until" times, the expired label on old links, admin news management |
+| Reviews (Padma Andhra Meals 4.5 from 2; one hidden review), Anil's 4 saved items (one hidden business shown as "no longer available"), 3 open reports including a suggestion | Reviews and ratings, Saved page, Report and Suggest, the admin reports API |
 
 Private evidence fixtures are synthetic: a placeholder poster (`demo-poster.png`) and a one-page PDF
 (`demo-venue-letter.pdf`) labelled "not a real document", in `server/src/scripts/demo/fixtures/`.
@@ -164,6 +165,25 @@ matches category names. Only public items are returned, using each module's own 
 offers of approved businesses, upcoming published or cancelled events, unexpired news). When nothing matches, it
 retries allowing one typo per word and says so (`fuzzy: true`). News is town-wide, so area and Near me filters
 don't apply to it. Search has its own rate limit (60 requests per minute per IP).
+
+### Saved items, reviews, reports and analytics (API summary)
+
+| Method | Path | Access | Purpose |
+|--------|------|--------|---------|
+| GET / POST | `/api/v1/favorites` | Signed in | My saved businesses, offers and events (with their cards; `item: null` once no longer public) / save one (`targetType`, `targetId`) |
+| DELETE | `/api/v1/favorites/:id` | Signed in | Remove one of my saved items |
+| GET | `/api/v1/businesses/:id/reviews` | Public | Published reviews, newest first, paginated |
+| POST | `/api/v1/businesses/:id/reviews` | Signed in | One review per user per business (`rating` 1-5, optional `comment`); not for your own business |
+| GET | `/api/v1/businesses/:id/reviews/mine`, `/api/v1/reviews/mine` | Signed in | My review of a business / all my reviews (profile) |
+| PATCH / DELETE | `/api/v1/reviews/:id` | Author / Admin | Edit or delete my review; an admin's DELETE hides someone else's review |
+| POST | `/api/v1/reports` | Signed in | Report a business, review, offer, event or news item with a reason, or send a suggestion (`targetType: suggestion`) |
+| GET / PATCH | `/api/v1/admin/reports[/:id]` | Admin | Moderation queue; `action`: `dismiss`, `mark_reviewed`, `hide_target`, `block_user`, `hide_and_block` |
+| POST | `/api/v1/analytics/events` | Public | Anonymous activity event: `view`, `contact_click`, `offer_view`, `share`, `search` (strict rate limit) |
+| GET | `/api/v1/admin/analytics/summary?from=&to=` | Admin | Counts by type and IST day, and distinct anonymous sessions (default last 7 days, at most 92) |
+
+Ratings are recalculated from published reviews after every change. Analytics events store only a random
+device id kept in the browser (`mt.sid`): no account, IP address, search words or location, and they are deleted
+automatically after 180 days. The admin screens for the reports queue and metrics come with Step 10.
 
 ### Images (Cloudinary)
 

@@ -88,8 +88,25 @@ describe('demo data load', () => {
     expect(first.evidence).toBeGreaterThanOrEqual(5);
     const before = await counts();
     const second = await seedDemo();
-    expect(second).toEqual({ users: 0, businesses: 0, offers: 0, events: 0, evidence: 0, news: 0 });
+    expect(second).toEqual({ users: 0, businesses: 0, offers: 0, events: 0, evidence: 0, news: 0, reviews: 0, favorites: 0, reports: 0 });
     expect(await counts()).toEqual(before);
+  });
+
+  it('adds reviews (ratings recalculated), saved items and open reports for Step 9', async () => {
+    const summary = await seedDemo();
+    expect(summary).toMatchObject({ reviews: 5, favorites: 4, reports: 3 });
+    const padma = await Business.findOne({ slug: 'demo-padma-andhra-meals' }).lean();
+    expect(padma).toMatchObject({ ratingAvg: 4.5, ratingCount: 2 });
+    const biryani = await Business.findOne({ slug: 'sample-kothapeta-biryani-house' }).lean();
+    expect(biryani).toMatchObject({ ratingAvg: 4, ratingCount: 1 }); // the hidden review does not count
+
+    const user = await login(app, 'user@demo.example', 'DemoUser#2026');
+    const saved = (await user.agent.get('/api/v1/favorites')).body.data;
+    expect(saved).toHaveLength(4);
+    expect(saved.filter((f) => f.item === null)).toHaveLength(1); // the hidden business: "no longer available"
+    const admin = await login(app, 'admin@demo.example', 'DemoAdmin#2026');
+    const queue = (await admin.agent.get('/api/v1/admin/reports')).body.data;
+    expect(queue.map((r) => r.targetType).sort()).toEqual(['business', 'review', 'suggestion']);
   });
 
   it('covers every status the features need, with dates relative to today', async () => {

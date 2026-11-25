@@ -18,6 +18,9 @@ import { categoryName } from '../../categories/api.js';
 import { cldUrl } from '../../../lib/cloudinary.js';
 import { formatDateTime, formatRelative } from '../../../lib/format.js';
 import { directionsUrl } from '../../../lib/geo.js';
+import { track, useTrackOnce } from '../../../lib/analytics.js';
+import { ItemActions } from '../../engagement/ItemActions.jsx';
+import { ReviewsSection } from '../../reviews/components/ReviewsSection.jsx';
 
 function Gallery({ photos, name }) {
   if (!photos?.length) return null;
@@ -43,6 +46,9 @@ export default function BusinessDetailPage() {
   const lang = i18n.language;
   const { data: b, isPending, isError, error, refetch } = useBusiness(slug);
   const { user } = useAuth();
+  // Count public views only (not owner or admin previews of an unpublished listing).
+  const isPublic = Boolean(b) && (!b.status || b.status === 'published');
+  useTrackOnce('view', 'business', isPublic ? b.id : undefined);
 
   if (isPending) {
     return (
@@ -108,13 +114,15 @@ export default function BusinessDetailPage() {
             </p>
           )}
           <div className="mt-1">
-            <ContactActions contact={b.contact} location={b.location} name={b.name} />
+            <ContactActions contact={b.contact} location={b.location} name={b.name} onAction={() => isPublic && track('contact_click', 'business', b.id)} />
           </div>
           <p className="text-xs text-ink-soft">
             {t('common.updated', { time: formatRelative(b.updatedAt, lang) })}
             {b.isVerified && b.verifiedAt && ` • ${t('business.verifiedOn', { date: formatDateTime(b.verifiedAt, lang) })}`}
           </p>
         </Card>
+
+        {isPublic && <ItemActions targetType="business" targetId={b.id} title={b.name} />}
 
         <BusinessOffersSection businessId={b.id} canManage={b.canManage && b.status === 'published'} />
 
@@ -208,6 +216,8 @@ export default function BusinessDetailPage() {
           </h2>
           <HoursTable hours={b.openingHours} />
         </Card>
+
+        {isPublic && <ReviewsSection business={b} />}
       </div>
     </>
   );

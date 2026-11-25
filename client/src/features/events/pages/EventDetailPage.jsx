@@ -12,12 +12,16 @@ import { directionsUrl } from '../../../lib/geo.js';
 import { categoryName } from '../../categories/api.js';
 import { useEvent } from '../api.js';
 import { EventStatusBadge, EventWhen } from '../components/EventBits.jsx';
+import { useTrackOnce } from '../../../lib/analytics.js';
+import { ItemActions } from '../../engagement/ItemActions.jsx';
 
 /** /events/:slug - date, time, venue, map point, banner, booking link, linked business (FR-EVT-2). */
 export default function EventDetailPage() {
   const { slug } = useParams();
   const { t, i18n } = useTranslation();
   const { data: e, isPending, isError, error, refetch } = useEvent(slug);
+  // Admin previews of non-public events carry a status; only public views are counted.
+  useTrackOnce('view', 'event', e && !e.status ? e.id : undefined);
 
   if (isPending) {
     return (
@@ -95,6 +99,8 @@ export default function EventDetailPage() {
             </a>
           )}
         </Card>
+
+        {!e.status && <ItemActions targetType="event" targetId={e.id} title={e.title} />}
 
         {e.description && (
           <Card>

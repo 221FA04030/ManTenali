@@ -861,5 +861,110 @@
     "removed": "News item removed",
     "removeTitle": "Remove this news item?",
     "removeBody": "\"{{name}}\" will be removed from the app. The record is kept."
+  },
+  "saved": {
+    "save": "Save",
+    "savedLabel": "Saved",
+    "added": "Saved",
+    "removed": "Removed from saved",
+    "emptyTitle": "Nothing saved yet",
+    "emptyBody": "Tap Save on a business, offer or event to find it here quickly.",
+    "groups": {
+      "business_one": "Businesses ({{count}})",
+      "business_other": "Businesses ({{count}})",
+      "offer_one": "Offers ({{count}})",
+      "offer_other": "Offers ({{count}})",
+      "event_one": "Events ({{count}})",
+      "event_other": "Events ({{count}})"
+    },
+    "unavailable": "This item is no longer available. It may have ended or been removed.",
+    "unavailableShort": "unavailable item",
+    "remove": "Remove"
+  },
+  "share": {
+    "share": "Share",
+    "copied": "Link copied",
+    "failed": "Could not share. Try again."
+  },
+  "report": {
+    "report": "Report",
+    "send": "Send report",
+    "sent": "Thanks. Our team will review it.",
+    "duplicate": "You have already reported this. Our team will look at it.",
+    "title": {
+      "business": "Report this business",
+      "review": "Report this review",
+      "offer": "Report this offer",
+      "event": "Report this event",
+      "news": "Report this news item"
+    },
+    "reasonLabel": "What is wrong?",
+    "reasons": {
+      "wrong_info": "Wrong or outdated information",
+      "closed": "Permanently closed",
+      "spam": "Spam or advertising",
+      "offensive": "Offensive or abusive",
+      "fraud": "Fake or a scam",
+      "duplicate": "Duplicate",
+      "other": "Something else"
+    },
+    "chooseReason": "Choose a reason.",
+    "details": "More details",
+    "detailsHint": "Optional. What should we check?",
+    "detailsRequired": "Please write at least {{min}} characters.",
+    "privacy": "Reports go to the Mana Tenali team only. The person you report is not told who reported them."
+  },
+  "suggest": {
+    "intro": "Help keep Mana Tenali complete and correct.",
+    "ownBusiness": "List your own business",
+    "ownBusinessHint": "Add your shop or service; it goes live after review",
+    "event": "Submit an event",
+    "eventHint": "Tell us about an event, with proof; it goes live after review",
+    "formTitle": "Suggest something else",
+    "thanks": "Thank you! Our team will read your suggestion.",
+    "another": "Send another",
+    "loginNeeded": "Log in to send a suggestion, so we can follow up if needed.",
+    "kind": "What is it about?",
+    "kinds": {
+      "new_business": "A business that is missing",
+      "correction": "Something that needs correcting",
+      "idea": "An idea for the app"
+    },
+    "details": "Your suggestion",
+    "hints": {
+      "new_business": "Name, area and anything that helps us find it.",
+      "correction": "What is wrong and where you saw it.",
+      "idea": "What would make Mana Tenali more useful for you?"
+    },
+    "send": "Send suggestion"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "starsLabel_one": "{{count}} out of 5 stars",
+    "starsLabel_other": "{{count}} out of 5 stars",
+    "yourRating": "Your rating",
+    "chooseRating": "Choose 1 to 5 stars.",
+    "comment": "Your review",
+    "commentHint": "Optional. Share what others should know.",
+    "post": "Post review",
+    "posted": "Thanks for your review",
+    "updated": "Review updated",
+    "someone": "A Mana Tenali user",
+    "edited": "edited",
+    "yourReview": "Your review",
+    "hiddenNote": "A moderator hid this review. Only you can see it.",
+    "delete": "Delete",
+    "deleted": "Review deleted",
+    "deleteTitle": "Delete your review?",
+    "deleteBody": "Your review will be removed permanently.",
+    "hide": "Hide",
+    "hidden": "Review hidden",
+    "loginToReview": "Log in to write a review",
+    "ownBusiness": "You cannot review your own business.",
+    "none": "No reviews yet. Be the first to share your experience.",
+    "mineEmptyTitle": "No reviews yet",
+    "mineEmptyBody": "Open a business you have visited and share your experience.",
+    "businessUnavailable": "Business no longer listed",
+    "hiddenBadge": "Hidden by a moderator"
   }
 }

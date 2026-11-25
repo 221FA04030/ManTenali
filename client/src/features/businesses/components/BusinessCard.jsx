@@ -9,6 +9,7 @@ import { categoryName } from '../../categories/api.js';
 import { categoryIcon } from '../../../lib/categoryIcons.js';
 import { cldUrl } from '../../../lib/cloudinary.js';
 import { formatDistance, formatRelative } from '../../../lib/format.js';
+import { track } from '../../../lib/analytics.js';
 
 /** Business card: photo, name, badges, distance, freshness and one-tap contact. */
 export function BusinessCard({ business: b }) {
@@ -63,7 +64,7 @@ export function BusinessCard({ business: b }) {
         </div>
       </Link>
       <div className="border-t border-brand-100 px-3 py-2.5">
-        <ContactActions contact={b.contact} location={b.location} name={b.name} size="sm" />
+        <ContactActions contact={b.contact} location={b.location} name={b.name} size="sm" onAction={() => track('contact_click', 'business', b.id)} />
       </div>
     </article>
   );
