@@ -11,6 +11,7 @@ import { EmptyState } from '../../../components/ui/EmptyState.jsx';
 import { ContactActions } from '../components/ContactActions.jsx';
 import { HoursTable } from '../components/HoursTable.jsx';
 import { MenuView } from '../../food/components/MenuView.jsx';
+import { BusinessOffersSection } from '../../offers/components/BusinessOffersSection.jsx';
 import { PriceRange, VegFriendlyBadge } from '../../food/components/FoodBits.jsx';
 import { useBusiness } from '../api.js';
 import { categoryName } from '../../categories/api.js';
@@ -114,6 +115,8 @@ export default function BusinessDetailPage() {
             {b.isVerified && b.verifiedAt && ` • ${t('business.verifiedOn', { date: formatDateTime(b.verifiedAt, lang) })}`}
           </p>
         </Card>
+
+        <BusinessOffersSection businessId={b.id} canManage={b.canManage && b.status === 'published'} />
 
         {b.food && (
           <Card className="flex flex-col gap-3">

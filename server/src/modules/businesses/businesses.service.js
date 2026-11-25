@@ -607,6 +607,32 @@ export async function getPublishedIds(ids) {
   return new Set(found.map((b) => String(b._id)));
 }
 
+/**
+ * IDs of PUBLISHED businesses matching optional filters - lets other modules
+ * (offers) filter by category, area or distance without copying business
+ * data. `ids` restricts the search to those businesses.
+ */
+export async function findPublishedIds({ ids, categoryId, subcategoryId, area, lat, lng, radiusKm } = {}) {
+  const filter = { status: S.PUBLISHED };
+  if (ids) filter._id = { $in: ids };
+  if (categoryId) filter.categoryId = categoryId;
+  if (subcategoryId) filter.subcategoryId = subcategoryId;
+  if (area) filter['address.area'] = area;
+  if (lat !== undefined && lng !== undefined) {
+    filter.location = {
+      $geoWithin: { $centerSphere: [[lng, lat], kmToMeters(clampRadiusKm(radiusKm)) / 6_378_100] },
+    };
+  }
+  const found = await Business.find(filter).select('_id').lean();
+  return found.map((b) => b._id);
+}
+
+/** Business ids by slug (used by the development sample seed). */
+export async function getIdsBySlugs(slugs) {
+  const found = await Business.find({ slug: { $in: slugs } }).select('_id slug').lean();
+  return new Map(found.map((b) => [b.slug, b._id]));
+}
+
 /** Small summaries for cards in other modules (offers, favorites, events). */
 export async function getSummariesByIds(ids, { publishedOnly = true } = {}) {
   const filter = { _id: { $in: ids } };

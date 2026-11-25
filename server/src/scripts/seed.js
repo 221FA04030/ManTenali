@@ -2,7 +2,7 @@
  * Development/demo seed: `npm run seed`
  *
  * Always seeds reference categories (safe and idempotent).
- * With --samples it also adds SAMPLE content (businesses...), always flagged
+ * With --samples it also adds SAMPLE content (businesses, offers), always flagged
  * isSeed = true, never verified, and shown as "Sample data" in the app:
  *   npm run seed -- --samples
  * Refuses NODE_ENV=production unless --confirm-production is passed, and then
@@ -13,9 +13,11 @@ import mongoose from 'mongoose';
 import { loadEnv } from '../config/env.js';
 import { redactUri } from '../config/db.js';
 import { seedCategories, seedCategoryTree, findIdBySlug, getParentMap } from '../modules/categories/categories.service.js';
-import { seedBusinesses } from '../modules/businesses/businesses.service.js';
+import { seedBusinesses, getIdsBySlugs } from '../modules/businesses/businesses.service.js';
+import { seedOffers } from '../modules/offers/offers.service.js';
 import { CATEGORY_SEED, BUSINESS_CATEGORY_TREE } from './seedData/categories.js';
 import { BUSINESS_SEED } from './seedData/businesses.js';
+import { OFFER_SEED } from './seedData/offers.js';
 
 const out = (msg) => process.stdout.write(`${msg}\n`);
 const fail = (msg) => {
@@ -60,7 +62,9 @@ async function main() {
       ids.set(slug, { id, parentId });
     }
     const businesses = await seedBusinesses(BUSINESS_SEED, ids);
+    const offers = await seedOffers(OFFER_SEED, await getIdsBySlugs(OFFER_SEED.map((o) => o.businessSlug)));
     out(`sample businesses: ${businesses.created} created, ${businesses.skipped} skipped (already present)`);
+    out(`sample offers: ${offers.created} created, ${offers.skipped} skipped (already present)`);
   } else {
     out('sample content skipped (run `npm run seed -- --samples` to add demo listings labelled "Sample data")');
   }

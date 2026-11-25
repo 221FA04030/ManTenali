@@ -22,9 +22,14 @@ const AdminSubmissionsPage = lazy(() => import('../features/admin/pages/AdminSub
 const AdminSubmissionDetailPage = lazy(() => import('../features/admin/pages/AdminSubmissionDetailPage.jsx'));
 const AdminCategoriesPage = lazy(() => import('../features/admin/pages/AdminCategoriesPage.jsx'));
 const FoodListPage = lazy(() => import('../features/food/pages/FoodListPage.jsx'));
+const OffersFeedPage = lazy(() => import('../features/offers/pages/OffersFeedPage.jsx'));
+const OfferDetailPage = lazy(() => import('../features/offers/pages/OfferDetailPage.jsx'));
+const ManageOffersPage = lazy(() => import('../features/offers/pages/ManageOffersPage.jsx'));
+const OfferEditorPage = lazy(() => import('../features/offers/pages/OfferEditorPage.jsx'));
 
 const placeholder = (titleKey) => <PlaceholderPage titleKey={titleKey} />;
 const signedIn = (el) => <RequireAuth>{el}</RequireAuth>;
+const ownerOrAdmin = (el) => <RequireAuth roles={['owner', 'admin']}>{el}</RequireAuth>;
 const adminOnly = (el) => <RequireAuth roles={['admin']}>{el}</RequireAuth>;
 
 /** Route table (spec section 10). Placeholders are replaced step by step. */
@@ -37,8 +42,8 @@ export const routes = [
       { path: 'businesses', element: <BusinessListPage /> },
       { path: 'businesses/:slug', element: <BusinessDetailPage /> },
       { path: 'food', element: <FoodListPage /> },
-      { path: 'offers', element: placeholder('pages.offers') },
-      { path: 'offers/:id', element: placeholder('pages.offers') },
+      { path: 'offers', element: <OffersFeedPage /> },
+      { path: 'offers/:id', element: <OfferDetailPage /> },
       { path: 'events', element: placeholder('pages.events') },
       { path: 'events/:slug', element: placeholder('pages.events') },
       { path: 'news', element: placeholder('pages.news') },
@@ -61,6 +66,10 @@ export const routes = [
       { path: 'manage', element: signedIn(<ManageHomePage />) },
       { path: 'manage/new', element: signedIn(<AddBusinessPage />) },
       { path: 'manage/businesses/:id', element: signedIn(<ManageBusinessPage />) },
+      // Offers management: owners (own businesses) and admins (any); the server enforces ownership.
+      { path: 'manage/businesses/:businessId/offers', element: ownerOrAdmin(<ManageOffersPage />) },
+      { path: 'manage/businesses/:businessId/offers/new', element: ownerOrAdmin(<OfferEditorPage />) },
+      { path: 'manage/offers/:offerId/edit', element: ownerOrAdmin(<OfferEditorPage />) },
       { path: 'login', element: <LoginPage /> },
       { path: 'admin', element: adminOnly(<AdminHomePage />) },
       { path: 'admin/businesses', element: adminOnly(<AdminBusinessesPage />) },

@@ -53,6 +53,20 @@ npm run migrate:categories -- --apply       # moves business category references
 
 Only approved (`published`) businesses appear in public lists, filters and detail pages.
 
+### Offers (API summary)
+
+| Method | Path | Access | Purpose |
+|--------|------|--------|---------|
+| GET | `/api/v1/offers` | Public | Live offers of published businesses; filters `businessId`, `categoryId`, `subcategoryId`, `area`, `lat`/`lng`/`radiusKm`; `sort=endingSoon\|newest`; paginated |
+| GET | `/api/v1/offers/:id` | Public (owner/admin see their non-public offers) | Offer detail with business summary |
+| GET | `/api/v1/businesses/:id/offers?limit=` | Public | A business's live offers (default 5, max 20) |
+| GET | `/api/v1/offers/mine?businessId=` | Owner / Admin | All offers of a managed business with derived status |
+| POST | `/api/v1/offers` | Owner / Admin | Create (`status`: `draft` or `published`) |
+| PATCH | `/api/v1/offers/:id` | Owner / Admin | Edit, publish, unpublish or hide |
+| DELETE | `/api/v1/offers/:id` | Owner / Admin | Hide (the record is kept) |
+
+Offer dates are date-only and use India time: valid from 00:00 IST on the start date to 23:59 IST on the end date.
+
 ### Images (Cloudinary)
 
 Photo uploads use **Cloudinary** (signed direct uploads). Add these three variables to `server/.env`

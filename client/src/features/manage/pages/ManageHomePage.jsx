@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CircleX, Pencil, Plus, Send, ShieldCheck, Store } from 'lucide-react';
+import { CircleX, Pencil, Plus, Send, ShieldCheck, Store, TicketPercent } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { ListSkeleton } from '../../../components/ui/Skeleton.jsx';
 import { EmptyState } from '../../../components/ui/EmptyState.jsx';
@@ -85,6 +85,11 @@ export default function ManageHomePage() {
                       <button type="button" className={actionCls} disabled={submit.isPending} onClick={() => submit.mutate(b.id)}>
                         <Send className="h-4 w-4" aria-hidden="true" /> {b.status === 'rejected' ? t('submit.resubmit') : t('submit.submitForReview')}
                       </button>
+                    )}
+                    {b.status === 'published' && (user.role === 'owner' || user.role === 'admin') && (
+                      <Link to={`/manage/businesses/${b.id}/offers`} className={actionCls}>
+                        <TicketPercent className="h-4 w-4" aria-hidden="true" /> {t('offers.title')}
+                      </Link>
                     )}
                     {b.status === 'published' && (
                       <Link to={`/businesses/${b.slug}`} className={actionCls}>

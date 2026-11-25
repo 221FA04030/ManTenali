@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Archive, BadgeCheck, Eye, EyeOff, Pencil, Plus, Search, Store } from 'lucide-react';
+import { Archive, BadgeCheck, Eye, EyeOff, Pencil, Plus, Search, Store, TicketPercent } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { Input } from '../../../components/ui/Input.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
@@ -135,6 +135,11 @@ export default function AdminBusinessesPage() {
                   <Link to={`/admin/businesses/${b.slug}/edit`} className={actionBtn}>
                     <Pencil className="h-4 w-4" aria-hidden="true" /> {t('business.edit')}
                   </Link>
+                  {b.status !== 'archived' && (
+                    <Link to={`/manage/businesses/${b.id}/offers`} className={actionBtn}>
+                      <TicketPercent className="h-4 w-4" aria-hidden="true" /> {t('offers.title')}
+                    </Link>
+                  )}
                   {b.status !== 'archived' && (
                     <>
                       {b.status === 'pending' || b.status === 'rejected' ? (
