@@ -15,6 +15,7 @@ import { buildFavoritesRoutes } from './modules/favorites/favorites.routes.js';
 import { buildReviewsRoutes, buildBusinessReviewsRoutes } from './modules/reviews/reviews.routes.js';
 import { buildReportsRoutes } from './modules/reports/reports.routes.js';
 import { buildAnalyticsRoutes } from './modules/analytics/analytics.routes.js';
+import { buildPostsRoutes, buildCommentsRoutes } from './modules/community/community.routes.js';
 
 /** Mounts every module under /api/v1. Adding a module = one line here. */
 export function buildRoutes() {
@@ -36,6 +37,8 @@ export function buildRoutes() {
   router.use('/reviews', buildReviewsRoutes());
   router.use('/reports', buildReportsRoutes());
   router.use('/analytics', buildAnalyticsRoutes());
+  router.use('/posts', buildPostsRoutes());
+  router.use('/comments', buildCommentsRoutes());
   router.use('/admin', buildAdminRoutes());
   return router;
 }

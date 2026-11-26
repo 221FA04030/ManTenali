@@ -2,6 +2,7 @@ import { Favorite, MAX_FAVORITES } from './favorites.model.js';
 import * as businessesService from '../businesses/businesses.service.js';
 import * as offersService from '../offers/offers.service.js';
 import * as eventsService from '../events/events.service.js';
+import * as communityService from '../community/community.service.js';
 import { AppError } from '../../common/errors/index.js';
 import { getEnv } from '../../config/env.js';
 
@@ -10,6 +11,7 @@ const PUBLIC_LOOKUP = {
   business: (ids, now) => businessesService.getPublicCardsByIds(ids, now),
   offer: (ids, now) => offersService.getPublicByIds(ids, now),
   event: (ids) => eventsService.getPublicByIds(ids),
+  post: (ids) => communityService.getPublicByIds(ids),
 };
 
 function toDTO(f, item) {

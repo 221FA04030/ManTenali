@@ -22,6 +22,7 @@ export const UPLOAD_PURPOSES = Object.freeze({
   offer_image: { folder: 'offers', roles: [ROLES.OWNER, ROLES.ADMIN], maxBytes: 5 * 1024 * 1024, maxDim: 1600 },
   event_banner: { folder: 'events', roles: [ROLES.ADMIN], maxBytes: 5 * 1024 * 1024, maxDim: 1600 },
   news_cover: { folder: 'news', roles: [ROLES.ADMIN], maxBytes: 5 * 1024 * 1024, maxDim: 1600 },
+  post_photo: { folder: 'posts', roles: [ROLES.USER, ROLES.OWNER, ROLES.ADMIN], maxBytes: 5 * 1024 * 1024, maxDim: 1600 },
 });
 /**
  * PRIVATE evidence for event submissions (Step 6). Stored with Cloudinary's

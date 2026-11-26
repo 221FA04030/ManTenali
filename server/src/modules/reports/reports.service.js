@@ -5,6 +5,7 @@ import * as offersService from '../offers/offers.service.js';
 import * as eventsService from '../events/events.service.js';
 import * as newsService from '../news/news.service.js';
 import * as usersService from '../users/users.service.js';
+import * as communityService from '../community/community.service.js';
 import { AppError } from '../../common/errors/index.js';
 import { getPagination, buildMeta } from '../../common/utils/pagination.js';
 import { getEnv } from '../../config/env.js';
@@ -24,6 +25,8 @@ const INFO = {
   offer: (ids) => offersService.moderationInfo(ids),
   event: (ids) => eventsService.moderationInfo(ids),
   news: (ids) => newsService.moderationInfo(ids),
+  post: (ids) => communityService.moderationInfo(ids),
+  comment: (ids) => communityService.commentModerationInfo(ids),
 };
 
 /** Hiding goes through each module's own admin action, so its rules and history apply. */
@@ -33,6 +36,8 @@ const HIDE = {
   offer: (admin, id) => offersService.hideOffer(admin, id),
   event: (admin, id) => eventsService.adminUpdate(admin, id, { status: 'hidden' }),
   news: (admin, id) => newsService.update(admin, id, { status: 'hidden' }),
+  post: (admin, id) => communityService.hide(admin, id),
+  comment: (admin, id) => communityService.hideComment(admin, id),
 };
 
 /* ----------------------------- users ----------------------------- */

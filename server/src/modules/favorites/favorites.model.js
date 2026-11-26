@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 /** FR-FAV-1 targets. News is not saveable in Phase 1 (spec section 7). */
-export const FAVORITE_TYPES = Object.freeze(['business', 'offer', 'event']);
+export const FAVORITE_TYPES = Object.freeze(['business', 'offer', 'event', 'post']);
 /** Most saved items per user (keeps GET /favorites one small request). */
 export const MAX_FAVORITES = 200;
 

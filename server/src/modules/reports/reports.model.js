@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
  * Reports (spec section 7, FR-REP-1) and suggestions from the "Suggest" button
  * (decision U1 / D0.13: "stored as a report for admins ... needs a general targetType").
  */
-export const CONTENT_TARGETS = Object.freeze(['business', 'review', 'offer', 'event', 'news']);
+export const CONTENT_TARGETS = Object.freeze(['business', 'review', 'offer', 'event', 'news', 'post', 'comment']);
 export const REPORT_TARGETS = Object.freeze([...CONTENT_TARGETS, 'suggestion']);
 
 export const CONTENT_REASONS = Object.freeze(['wrong_info', 'closed', 'spam', 'offensive', 'fraud', 'duplicate', 'other']);
