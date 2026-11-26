@@ -64,12 +64,12 @@ function PostForm({ post, business, onDone }) {
       <Card className="flex flex-col gap-4">
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-sm font-semibold text-ink">{t('community.f.kind')}</legend>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {POST_KINDS.map(({ key, icon: Icon }) => (
               <label
                 key={key}
                 className={cn(
-                  'flex min-h-[64px] cursor-pointer flex-col items-center justify-center gap-1 rounded-xl px-2 text-center text-[13px] font-semibold ring-1 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-700',
+                  'flex min-h-tap cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-[15px] font-semibold ring-1 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-700 sm:min-h-[64px] sm:flex-col sm:justify-center sm:gap-1 sm:px-2 sm:text-center sm:text-[13px]',
                   s.kind === key ? 'bg-brand-700 text-white ring-brand-700' : 'bg-white text-ink ring-brand-200 hover:bg-brand-50',
                 )}
               >

@@ -19,7 +19,7 @@ upload the original photo.
 | Event banner | Admin → Events → New/Edit, or when approving a submission | Admins | 5 MB | Landscape 16:9, at least 1280 × 720 | Event page banner, event card thumbnail, Home banner |
 | News cover | Admin → News → New/Edit | Admins | 5 MB | Landscape 16:9, at least 1280 × 720 | News page |
 | Community post photo | Community → Write a post | Any signed-in user | 5 MB | Any; landscape works best | Feed card and post page |
-| Profile photo | Profile → Photo | Any signed-in user | 2 MB | Square, at least 400 × 400 | Profile, posts and comments |
+| Profile photo | Profile → "Profile photo" | Any signed-in user | 2 MB | Square, at least 400 × 400 | Profile, posts and comments |
 
 ### Most useful first
 

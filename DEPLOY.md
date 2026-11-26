@@ -6,14 +6,19 @@ uptime is watched by **UptimeRobot**.
 
 Nothing secret is stored in the repository. Every secret is typed once into the Vercel or Render dashboard.
 
-## 0. Before you start: one domain
+## 0. Before you start: choose how the app reaches the API
 
-The app and the API **must share one registrable domain**, for example `manatenali.in` (app) and
-`api.manatenali.in` (API). The session cookie is `SameSite=Lax`, and browsers only send it between sites under
-the same domain. The default `*.vercel.app` and `*.onrender.com` addresses are different sites, so **sign-in will
-not work across them**. Buy the domain first and use it for both.
+The session cookie is `SameSite=Lax`, so the browser must see the app and the API as the **same site**.
+There are two supported setups:
 
-Below, `manatenali.in` stands for your domain.
+- **A. One address, API proxied by Vercel (the current deployment).** The app is served from one
+  address (today `https://manatenali.vercel.app`) and `client/vercel.json` rewrites every `/api/...`
+  request to the Render service. The browser only ever talks to the Vercel address, so the cookie is a
+  plain first-party cookie and no custom domain is needed. See section 8.
+- **B. Your own domain for both.** For example `manatenali.in` (app) and `api.manatenali.in` (API). The
+  default `*.vercel.app` and `*.onrender.com` addresses are different sites, so with this setup sign-in only
+  works once both use the same registrable domain. Sections 2 to 4 describe this setup, with
+  `manatenali.in` standing for your domain.
 
 ## 1. MongoDB Atlas
 
@@ -100,7 +105,59 @@ Google Cloud Console > APIs & Services > Credentials > OAuth client (Web): add `
 `.github/workflows/ci.yml` runs lint, all tests, the build and a dependency audit on every pull request and on
 `main`. In GitHub > Settings > Branches, protect `main` and require the **CI** check (spec section 13).
 
+## 8. Current deployment: Vercel proxy in front of Render (setup A)
+
+This is how the live app is set up (commit `1f5a329`):
+
+```
+browser --https--> manatenali.vercel.app --(Vercel rewrite)--> mantenali-3.onrender.com --> API
+                   /api/* only                                  Render's own proxy
+```
+
+- `client/vercel.json` rewrites `/api/:path*` to `https://mantenali-3.onrender.com/api/:path*`; every other
+  path serves the single-page app. If the Render address changes, update that rewrite.
+- **Vercel environment:** leave `VITE_API_URL` **unset**, so the app calls the default `/api/v1` on its own
+  address. Setting it to the Render address would bypass the proxy and break sign-in.
+- **Render environment:**
+  - `CLIENT_ORIGIN=https://manatenali.vercel.app`: the address people open. The API rejects writes whose
+    `Origin` is not in this list.
+  - `COOKIE_DOMAIN` **empty**: the cookie then belongs to the Vercel address only. A value such as
+    `.vercel.app` is a public suffix and browsers refuse it.
+- **CSP:** the API is same-origin here, so `connect-src 'self'` already covers it. Only Cloudinary uploads,
+  Google sign-in and Sentry need extra `connect-src` hosts (see section 4, step 5).
+- **Google sign-in:** add `https://manatenali.vercel.app` to the OAuth client's authorised JavaScript origins.
+- **Health check through the proxy:** `https://manatenali.vercel.app/api/v1/health`. UptimeRobot can watch
+  this address, or the Render address directly.
+
+### `TRUST_PROXY` with two proxies: not yet verified
+
+`render.yaml` sets `TRUST_PROXY=1`, which was correct when browsers called Render directly (Render runs one
+proxy in front of the service). With the Vercel rewrite there are two proxies, and the right value depends on
+what Vercel sends to Render in `X-Forwarded-For`. Neither Vercel nor Render documents this for external
+rewrites, so it has **not** been verified:
+
+- If Vercel sends the visitor's address and Render appends Vercel's, the right value is `2`.
+- If Vercel does not pass the visitor's address on, the API cannot see it. Every visitor then shares Vercel's
+  few outgoing addresses.
+
+Why it matters: per-address rate limits (sign-in, sign-up, posting, reports) use this value. With `1` behind
+the Vercel proxy, the API probably sees Vercel's address, so busy periods could throttle unrelated people
+together. A value that is too high lets a visitor fake their address and get round the limits. **Do not change
+it by guessing.**
+
+To verify it safely, without touching production:
+
+1. Deploy a throwaway Render web service (not the production one) that responds with its request headers.
+2. Point a Vercel **preview** deployment's `/api/:path*` rewrite at it, and open the preview from a phone on
+   mobile data.
+3. Read `X-Forwarded-For`: count the addresses after the phone's public address. That count, plus one, is
+   the hop count. Set `TRUST_PROXY` to that number in the Render dashboard, then delete the throwaway service.
+
+If the phone's address does not appear at all, keep `TRUST_PROXY=1`. Per-person limits would then need a
+different key, such as the signed-in user, or setup B.
+
 ## Updating
 
 Merge to `main`: Render redeploys the API (it waits for the health check before switching traffic) and Vercel
-rebuilds the app. Run `npm run check:launch` against production after changes to categories or admins.
+rebuilds the app. Both happen automatically on every push to `main` (`autoDeploy: true` in `render.yaml`, and
+Vercel's Git integration). Run `npm run check:launch` against production after changes to categories or admins.

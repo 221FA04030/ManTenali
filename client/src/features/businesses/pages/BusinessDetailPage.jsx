@@ -32,7 +32,7 @@ import { ReviewsSection } from '../../reviews/components/ReviewsSection.jsx';
 function NoPhotosCover({ icon, manageTo }) {
   const { t } = useTranslation();
   return (
-    <div className="flex aspect-[21/9] w-full flex-col items-center justify-center gap-2 rounded-card bg-gradient-to-br from-brand-100 to-brand-50 ring-1 ring-brand-100">
+    <div className="flex aspect-[21/9] max-h-48 w-full flex-col items-center justify-center gap-2 rounded-card bg-gradient-to-br from-brand-100 to-brand-50 ring-1 ring-brand-100">
       <IconBubble icon={icon} size="lg" />
       <p className="text-sm font-medium text-ink-muted">{t('business.noPhotos')}</p>
       {manageTo && (

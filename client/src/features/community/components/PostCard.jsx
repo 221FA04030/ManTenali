@@ -31,28 +31,35 @@ export function KindBadge({ kind }) {
   );
 }
 
-/** Name, time and badges above a post. */
+/**
+ * Name, time and area above a post, with the type and sample badges on their
+ * own row so the name never gets squeezed on narrow cards.
+ */
 export function PostHeader({ post }) {
   const { t, i18n } = useTranslation();
   return (
     <div className="flex items-start gap-3">
       <Avatar person={post.author} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate font-bold text-ink">{post.author?.name ?? t('community.someone')}</span>
-        <span className="flex flex-wrap items-center gap-x-2 text-[13px] text-ink-muted">
-          <time dateTime={post.createdAt}>{formatRelative(post.createdAt, i18n.language)}</time>
-          {post.editedAt && <span>· {t('community.edited')}</span>}
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="truncate font-bold leading-snug text-ink">{post.author?.name ?? t('community.someone')}</span>
+        <span className="flex flex-wrap items-center gap-x-1.5 text-[13px] leading-snug text-ink-muted">
+          <time dateTime={post.createdAt} className="whitespace-nowrap">
+            {formatRelative(post.createdAt, i18n.language)}
+          </time>
+          {post.editedAt && <span className="whitespace-nowrap">· {t('community.edited')}</span>}
           {post.area && (
-            <span className="inline-flex items-center gap-0.5">
-              · <MapPin className="h-3.5 w-3.5" aria-hidden="true" /> {post.area}
+            <span className="inline-flex min-w-0 items-center gap-0.5">
+              <span aria-hidden="true">·</span>
+              <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span className="truncate">{post.area}</span>
             </span>
           )}
         </span>
+        <span className="flex flex-wrap gap-1">
+          <KindBadge kind={post.kind} />
+          {post.isSeed && <SampleBadge />}
+        </span>
       </div>
-      <span className="flex shrink-0 flex-wrap justify-end gap-1">
-        <KindBadge kind={post.kind} />
-        {post.isSeed && <SampleBadge />}
-      </span>
     </div>
   );
 }
@@ -67,9 +74,9 @@ export function LinkedBusiness({ business }) {
       className="flex min-h-tap items-center gap-2 rounded-xl bg-brand-50 px-3 py-2 text-sm font-semibold text-brand-800 ring-1 ring-brand-100 hover:bg-brand-100"
     >
       <Store className="h-4 w-4 shrink-0" aria-hidden="true" />
-      <span className="truncate">{business.name}</span>
+      <span className="min-w-0 truncate">{business.name}</span>
       {business.isVerified && <BadgeCheck className="h-4 w-4 shrink-0" aria-label={t('badge.verified')} />}
-      {business.area && <span className="ml-auto shrink-0 text-xs font-medium text-ink-muted">{business.area}</span>}
+      {business.area && <span className="ml-auto min-w-0 max-w-[40%] shrink truncate text-xs font-medium text-ink-muted">{business.area}</span>}
     </Link>
   );
 }
@@ -93,14 +100,15 @@ export function LikeButton({ post }) {
       onClick={onClick}
       disabled={like.isPending}
       aria-pressed={post.likedByMe}
-      aria-label={t(post.likedByMe ? 'community.unlike' : 'community.like', { count: post.likeCount })}
       className={cn(
         'inline-flex min-h-tap items-center gap-1.5 rounded-full px-3 text-sm font-semibold transition-colors hover:bg-brand-50 disabled:opacity-60',
         post.likedByMe ? 'text-red-700' : 'text-ink-muted',
       )}
     >
       <Heart className={cn('h-5 w-5', post.likedByMe && 'fill-current')} aria-hidden="true" />
-      {post.likeCount}
+      {/* Name "Like, 2 likes" (one string, includes the visible number - WCAG 2.5.3); liked state is aria-pressed. */}
+      <span aria-hidden="true">{post.likeCount}</span>
+      <span className="sr-only">{t('community.likeName', { count: post.likeCount })}</span>
     </button>
   );
 }
@@ -125,10 +133,10 @@ export function PostCard({ post, headingLevel = 'h3' }) {
         <Link
           to={`/community/${post.id}#comments`}
           className="inline-flex min-h-tap items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-ink-muted hover:bg-brand-50"
-          aria-label={t('community.commentsCount', { count: post.commentCount })}
         >
           <MessageCircle className="h-5 w-5" aria-hidden="true" />
-          {post.commentCount}
+          <span aria-hidden="true">{post.commentCount}</span>
+          <span className="sr-only">{t('community.commentsName', { count: post.commentCount })}</span>
         </Link>
       </div>
     </article>

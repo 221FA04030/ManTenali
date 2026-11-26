@@ -95,7 +95,7 @@ try {
   const env = loadEnv();
   await mongoose.connect(env.MONGODB_URI);
   const summary = await seedDemo();
-  out(`demo data: ${summary.users} accounts, ${summary.businesses} businesses, ${summary.offers} offers, ${summary.events} events, ${summary.news} news items, ${summary.reviews} reviews, ${summary.favorites} saved items, ${summary.reports} reports, ${summary.evidence} private evidence files`);
+  out(`demo data: ${summary.users} accounts, ${summary.businesses} businesses, ${summary.offers} offers, ${summary.events} events, ${summary.news} news items, ${summary.reviews} reviews, ${summary.favorites} saved items, ${summary.reports} reports, ${summary.posts} community posts, ${summary.evidence} private evidence files`);
 
   const cloud = getCloudinaryConfig();
   if (args.has('--cloudinary')) {

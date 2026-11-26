@@ -4,7 +4,7 @@ import { IconBubble } from './IconBubble.jsx';
 import { cn } from '../../lib/cn.js';
 
 const base =
-  'relative flex min-h-[104px] flex-col items-center justify-center gap-2 rounded-tile bg-white px-1.5 py-3 text-center shadow-card ring-1 ring-brand-100';
+  'relative flex h-full min-h-[104px] flex-col items-center justify-center gap-2 rounded-tile bg-white px-1.5 py-3 text-center shadow-card ring-1 ring-brand-100';
 
 /** Home grid tile. Coming-soon tiles are dimmed, badged and not tappable. */
 export function CategoryTile({ icon, label, to, comingSoon }) {

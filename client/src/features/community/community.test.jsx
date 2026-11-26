@@ -34,8 +34,8 @@ describe('community feed', () => {
     expect(within(card).getByText('Lakshmi')).toBeInTheDocument();
     expect(within(card).getByText('Recommendation')).toBeInTheDocument();
     expect(within(card).getByRole('link', { name: /^Padma Meals/ })).toHaveAttribute('href', '/businesses/padma-meals');
-    expect(within(card).getByRole('button', { name: 'Like (2 likes)' })).toHaveAttribute('aria-pressed', 'false');
-    expect(within(card).getByRole('link', { name: '1 comment - open' })).toHaveAttribute('href', '/community/p1#comments');
+    expect(within(card).getByRole('button', { name: 'Like, 2 likes' })).toHaveAttribute('aria-pressed', 'false');
+    expect(within(card).getByRole('link', { name: '1 comment' })).toHaveAttribute('href', '/community/p1#comments');
     await user.click(screen.getByRole('button', { name: 'Questions' }));
     expect(await screen.findByText('Where is a good tailor?')).toBeInTheDocument();
     expect(calls.some((c) => c.path === '/posts' && c.query.kind === 'question')).toBe(true);
@@ -45,7 +45,7 @@ describe('community feed', () => {
     mockApi({ 'GET /posts': () => page([post()]) });
     const { router } = renderApp('/community');
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: 'Like (2 likes)' }));
+    await user.click(await screen.findByRole('button', { name: 'Like, 2 likes' }));
     await waitFor(() => expect(router.state.location.pathname).toBe('/login'));
     expect(router.state.location.search).toBe('?next=%2Fcommunity');
   });
@@ -67,10 +67,10 @@ describe('community feed', () => {
     );
     renderApp('/community');
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: 'Like (2 likes)' }));
-    expect(await screen.findByRole('button', { name: 'Remove like (3 likes)' })).toHaveAttribute('aria-pressed', 'true');
-    await user.click(screen.getByRole('button', { name: 'Remove like (3 likes)' }));
-    await screen.findByRole('button', { name: 'Like (2 likes)' });
+    await user.click(await screen.findByRole('button', { name: 'Like, 2 likes' }));
+    expect(await screen.findByRole('button', { name: 'Like, 3 likes' })).toHaveAttribute('aria-pressed', 'true');
+    await user.click(screen.getByRole('button', { name: 'Like, 3 likes' }));
+    expect(await screen.findByRole('button', { name: 'Like, 2 likes' })).toHaveAttribute('aria-pressed', 'false');
     expect(calls.filter((c) => c.path === '/posts/p1/like').map((c) => c.method)).toEqual(['POST', 'DELETE']);
   });
 

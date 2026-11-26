@@ -19,7 +19,7 @@ services:
         value: '22'
       - key: NODE_ENV
         value: production
-      - key: TRUST_PROXY # Render runs one proxy in front of the service
+      - key: TRUST_PROXY # Render's own proxy. Behind the Vercel /api rewrite there are two hops; the right value is unverified - see DEPLOY.md section 8 before changing it
         value: '1'
       - key: JWT_EXPIRES_IN
         value: 7d

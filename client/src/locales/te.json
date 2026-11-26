@@ -325,7 +325,7 @@
     "allIn": "అన్ని {{name}}",
     "noPhotos": "ఇంకా ఫోటోలు లేవు",
     "addPhotos": "ఫోటోలు జోడించండి",
-    "recommend": "ఈ ప్రదేశాన్ని కమ్యూనిటీకి సిఫార్సు చేయండి"
+    "recommend": "ఈ ప్రదేశాన్ని సిఫార్సు చేయండి"
   },
   "location": {
     "nearMe": "నా దగ్గర",
@@ -1158,10 +1158,6 @@
     },
     "someone": "తెనాలి నివాసి",
     "edited": "సవరించబడింది",
-    "like": "లైక్ ({{count}} లైక్‌లు)",
-    "unlike": "లైక్ తీసివేయండి ({{count}} లైక్‌లు)",
-    "commentsCount_one": "{{count}} వ్యాఖ్య - తెరవండి",
-    "commentsCount_other": "{{count}} వ్యాఖ్యలు - తెరవండి",
     "commentsTitle_one": "{{count}} వ్యాఖ్య",
     "commentsTitle_other": "{{count}} వ్యాఖ్యలు",
     "noComments": "ఇంకా వ్యాఖ్యలు లేవు. మొదట మీరే స్పందించండి.",
@@ -1214,7 +1210,11 @@
       "textShort": "కనీసం {{min}} అక్షరాలు రాయండి.",
       "commentEmpty": "ముందు వ్యాఖ్య రాయండి."
     },
-    "cardHeading": "{{name}} - {{kind}}"
+    "cardHeading": "{{name}} - {{kind}}",
+    "likeName_one": "లైక్, {{count}} లైక్",
+    "likeName_other": "లైక్, {{count}} లైక్‌లు",
+    "commentsName_one": "{{count}} వ్యాఖ్య",
+    "commentsName_other": "{{count}} వ్యాఖ్యలు"
   },
   "map": {
     "label": "మ్యాప్: {{name}}",

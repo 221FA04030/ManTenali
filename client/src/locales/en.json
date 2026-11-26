@@ -325,7 +325,7 @@
     "allIn": "All {{name}}",
     "noPhotos": "No photos yet",
     "addPhotos": "Add photos",
-    "recommend": "Recommend this place to the community"
+    "recommend": "Recommend this place"
   },
   "location": {
     "nearMe": "Near me",
@@ -1158,10 +1158,6 @@
     },
     "someone": "A Tenali resident",
     "edited": "edited",
-    "like": "Like ({{count}} likes)",
-    "unlike": "Remove like ({{count}} likes)",
-    "commentsCount_one": "{{count}} comment - open",
-    "commentsCount_other": "{{count}} comments - open",
     "commentsTitle_one": "{{count}} comment",
     "commentsTitle_other": "{{count}} comments",
     "noComments": "No comments yet. Be the first to reply.",
@@ -1214,7 +1210,11 @@
       "textShort": "Write at least {{min}} characters.",
       "commentEmpty": "Write a comment first."
     },
-    "cardHeading": "{{kind}} by {{name}}"
+    "cardHeading": "{{kind}} by {{name}}",
+    "likeName_one": "Like, {{count}} like",
+    "likeName_other": "Like, {{count}} likes",
+    "commentsName_one": "{{count}} comment",
+    "commentsName_other": "{{count}} comments"
   },
   "map": {
     "label": "Map: {{name}}",
