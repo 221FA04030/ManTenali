@@ -1,9 +1,10 @@
 import { Suspense } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, ScrollRestoration, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BottomNav } from '../components/ui/BottomNav.jsx';
 import { MenuDrawer } from '../components/ui/MenuDrawer.jsx';
 import { ListSkeleton } from '../components/ui/Skeleton.jsx';
+import { OfflineBanner } from '../components/ui/OfflineBanner.jsx';
 import { ErrorBoundary } from './ErrorBoundary.jsx';
 
 function PageFallback() {
@@ -26,7 +27,7 @@ export function Layout() {
       >
         {t('app.skipToContent')}
       </a>
-      <div className="mx-auto min-h-dvh max-w-app bg-mint-page pb-nav">
+      <div className="mx-auto min-h-dvh max-w-app bg-mint-page pb-nav md:max-w-shell">
         <main id="main">
           <ErrorBoundary resetKey={location.pathname}>
             <Suspense fallback={<PageFallback />}>
@@ -36,7 +37,10 @@ export function Layout() {
         </main>
       </div>
       <MenuDrawer />
+      <OfflineBanner />
       <BottomNav />
+      {/* New pages open at the top; Back returns to where you were. */}
+      <ScrollRestoration />
     </div>
   );
 }

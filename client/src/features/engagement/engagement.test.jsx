@@ -70,6 +70,32 @@ describe('Save, Share and Report on a business page', () => {
     expect(await screen.findByRole('button', { name: 'Save - Annapurna Tiffins' })).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('Save waits for my saved list before it can be tapped (no wrong "Save" on slow connections)', async () => {
+    let release;
+    const gate = new Promise((r) => {
+      release = r;
+    });
+    const { calls } = mockApi(
+      detailApi({
+        'GET /auth/me': () => ok(sampleUser()),
+        'GET /businesses/b1/reviews/mine': () => ok(null),
+        'GET /favorites': async () => {
+          await gate; // slow network
+          return ok([{ id: 'f1', targetType: 'business', targetId: 'b1', createdAt: '2026-11-25T04:00:00.000Z', item: business() }]);
+        },
+      }),
+    );
+    renderApp('/businesses/annapurna-tiffins');
+    const loading = await screen.findByRole('button', { name: 'Save - Annapurna Tiffins' });
+    expect(loading).toBeDisabled();
+    expect(loading).toHaveAttribute('aria-busy', 'true');
+    release();
+    const saved = await screen.findByRole('button', { name: 'Saved - Annapurna Tiffins' });
+    expect(saved).toBeEnabled();
+    expect(saved).toHaveAttribute('aria-pressed', 'true');
+    expect(calls.some((c) => c.method === 'POST' && c.path === '/favorites')).toBe(false);
+  });
+
   it('reports with a reason; "Something else" needs details (FR-REP-1)', async () => {
     const { calls } = mockApi(
       detailApi({

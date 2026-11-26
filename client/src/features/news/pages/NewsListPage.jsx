@@ -33,7 +33,7 @@ export default function NewsListPage() {
   return (
     <>
       <PageHeader title={t('pages.news')} />
-      <div className="flex flex-col gap-4 p-4">
+      <div className="page-wide flex flex-col gap-4 p-4">
         <div role="group" aria-label={t('news.type')} className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
           <button type="button" className={chip(!type)} aria-pressed={!type} onClick={() => setType(undefined)}>
             {t('news.allTypes')}
@@ -57,7 +57,7 @@ export default function NewsListPage() {
             <p className="text-sm text-ink-muted" aria-live="polite">
               {t('news.count', { count: total })}
             </p>
-            <ul className="flex flex-col gap-3">
+            <ul className="card-list">
               {items.map((n) => (
                 <li key={n.id}>
                   <NewsCard item={n} />

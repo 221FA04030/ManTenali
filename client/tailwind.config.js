@@ -55,7 +55,8 @@ export default {
       },
       minHeight: { tap: '44px' },
       minWidth: { tap: '44px' },
-      maxWidth: { app: '40rem' },
+      // app: the phone column; shell: the frame on tablets and laptops; readable: detail pages and forms.
+      maxWidth: { app: '40rem', shell: '72rem', readable: '44rem' },
     },
   },
   plugins: [],

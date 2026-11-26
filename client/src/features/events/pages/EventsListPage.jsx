@@ -45,7 +45,7 @@ export default function EventsListPage() {
   return (
     <>
       <PageHeader title={t('pages.events')} />
-      <div className="flex flex-col gap-4 p-4">
+      <div className="page-wide flex flex-col gap-4 p-4">
         <LocationBar />
         <EventFilters value={filters} onChange={update} />
         {query.isPending ? (
@@ -59,7 +59,7 @@ export default function EventsListPage() {
             <p className="text-sm text-ink-muted" aria-live="polite">
               {t('events.count', { count: total })}
             </p>
-            <ul className="flex flex-col gap-3">
+            <ul className="card-list">
               {items.map((e) => (
                 <li key={e.id}>
                   <EventCard event={e} />

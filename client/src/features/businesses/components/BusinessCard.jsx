@@ -17,7 +17,7 @@ export function BusinessCard({ business: b }) {
   const lang = i18n.language;
   const cuisineLabels = useCuisineLabels();
   return (
-    <article className="overflow-hidden rounded-card bg-white shadow-card ring-1 ring-brand-100">
+    <article className="flex flex-col overflow-hidden rounded-card bg-white shadow-card ring-1 ring-brand-100">
       <Link to={`/businesses/${b.slug}`} className="flex gap-3 p-3 hover:bg-brand-50/60">
         {b.photo ? (
           <img
@@ -63,7 +63,8 @@ export function BusinessCard({ business: b }) {
           </p>
         </div>
       </Link>
-      <div className="border-t border-brand-100 px-3 py-2.5">
+      {/* mt-auto: in a grid row of cards, the contact buttons line up at the bottom. */}
+      <div className="mt-auto border-t border-brand-100 px-3 py-2.5">
         <ContactActions contact={b.contact} location={b.location} name={b.name} size="sm" onAction={() => track('contact_click', 'business', b.id)} />
       </div>
     </article>

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { Card } from '../../../components/ui/Card.jsx';
 import { Input } from '../../../components/ui/Input.jsx';
+import { PasswordInput } from '../../../components/ui/PasswordInput.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { useToast } from '../../../components/ui/Toast.jsx';
 import { errorMessageKey } from '../../../lib/apiClient.js';
@@ -70,9 +71,8 @@ function AuthForm({ mode, onSuccess }) {
         error={fieldError('email')}
         {...register('email')}
       />
-      <Input
+      <PasswordInput
         label={t('auth.password')}
-        type="password"
         autoComplete={isRegister ? 'new-password' : 'current-password'}
         hint={isRegister ? t('auth.passwordHint') : undefined}
         error={fieldError('password')}

@@ -233,7 +233,9 @@
       "passwordRequired": "Enter your password.",
       "passwordLength": "Password must be 8 to 72 characters.",
       "name": "Name must be 2 to 80 characters."
-    }
+    },
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "profile": {
     "details": "Your details",
@@ -1094,5 +1096,9 @@
     "showTable": "Show as a table",
     "day": "Day",
     "chartSummary": "Activity per day over {{days}} days: {{total}} events in total, highest {{peak}} on {{peakDay}}."
+  },
+  "offline": {
+    "title": "You are offline.",
+    "body": "You can still read what is already on screen. We will update it when your connection is back."
   }
 }

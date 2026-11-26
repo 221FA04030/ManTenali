@@ -37,7 +37,7 @@ export default function SavedPage() {
   return (
     <>
       <PageHeader title={t('pages.saved')} />
-      <div className="flex flex-col gap-6 p-4">
+      <div className="page-wide flex flex-col gap-6 p-4">
         {query.isPending ? (
           <ListSkeleton rows={3} />
         ) : query.isError ? (
@@ -53,7 +53,7 @@ export default function SavedPage() {
                 <div id={`saved-${type}`}>
                   <SectionHeader title={t(`saved.groups.${type}`, { count: group.length })} />
                 </div>
-                <ul className="flex flex-col gap-3">
+                <ul className="card-list">
                   {group.map((f) => (
                     <li key={f.id} className="flex flex-col gap-1">
                       {f.item ? (

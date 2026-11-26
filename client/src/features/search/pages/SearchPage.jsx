@@ -101,7 +101,7 @@ export default function SearchPage() {
   return (
     <>
       <PageHeader title={t('pages.search')} />
-      <div className="flex flex-col gap-4 p-4">
+      <div className="page-wide flex flex-col gap-4 p-4">
         <SearchBar
           key={q}
           defaultValue={q}
@@ -157,7 +157,7 @@ export default function SearchPage() {
                       <div id={`results-${rt}`}>
                         <SectionHeader title={t(`search.groups.${rt}`, { count: counts[rt] })} />
                       </div>
-                      <ul className="flex flex-col gap-3">
+                      <ul className="card-list">
                         {(first.groups[rt] ?? []).map((item) => (
                           <li key={item.id}>
                             <ResultCard type={rt} item={item} />
@@ -177,7 +177,7 @@ export default function SearchPage() {
                       {t('search.resultCount', { count: counts[type] })}
                       {pages[0]?.meta?.capped && ` ${t('search.capped')}`}
                     </p>
-                    <ul className="flex flex-col gap-3">
+                    <ul className="card-list">
                       {items.map((item) => (
                         <li key={item.id}>
                           <ResultCard type={type} item={item} />

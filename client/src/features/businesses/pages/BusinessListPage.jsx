@@ -69,7 +69,7 @@ export function BusinessDirectory({ fixedKind, title: fixedTitle, renderFilters,
   return (
     <>
       <PageHeader title={title} />
-      <div className="flex flex-col gap-4 p-4">
+      <div className="page-wide flex flex-col gap-4 p-4">
         <LocationBar />
         <BusinessFilters value={filters} onChange={update} nearMe={Boolean(coords)} hideKind={Boolean(fixedKind)} hideCategories={Boolean(fixedKind)}>
           {renderFilters?.(filters, update)}
@@ -86,7 +86,7 @@ export function BusinessDirectory({ fixedKind, title: fixedTitle, renderFilters,
             <p className="text-sm text-ink-muted" aria-live="polite">
               {t('business.count', { count: total })}
             </p>
-            <ul className="flex flex-col gap-3">
+            <ul className="card-list">
               {items.map((b) => (
                 <li key={b.id}>
                   <BusinessCard business={b} />

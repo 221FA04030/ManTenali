@@ -39,6 +39,27 @@
   .section-title {
     @apply text-lg font-bold text-ink;
   }
+  /* Card lists: one column on phones, two on tablets, three on laptops. */
+  .card-list {
+    @apply flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-4 lg:grid-cols-3;
+  }
+  /* Cards in the same row are the same height. */
+  .card-list > li {
+    @apply flex min-w-0 flex-col; /* min-w-0: a long unbroken word can't widen the column */
+  }
+  .card-list > li > :first-child {
+    @apply flex-1;
+  }
+  /* From tablet size up the frame is wider; page bodies keep a comfortable reading width
+     unless the page shows card lists (.page-wide). Phones are unaffected. */
+  @media (min-width: 768px) {
+    main > div:not(.page-wide),
+    main > article {
+      width: 100%;
+      max-width: 44rem; /* = maxWidth.readable in tailwind.config.js */
+      margin-inline: auto;
+    }
+  }
 }
 
 @layer utilities {

@@ -30,7 +30,7 @@ function useRequireLogin() {
 function SaveButton({ targetType, targetId, title }) {
   const { t } = useTranslation();
   const toast = useToast();
-  const { saved, toggle, pending } = useSaved(targetType, targetId);
+  const { saved, toggle, pending, ready } = useSaved(targetType, targetId);
   const requireLogin = useRequireLogin();
   const onClick = requireLogin(async () => {
     try {
@@ -41,7 +41,7 @@ function SaveButton({ targetType, targetId, title }) {
     }
   });
   return (
-    <button type="button" className={cn(btn, saved && 'bg-brand-700 text-white ring-brand-700 hover:bg-brand-800')} aria-pressed={saved} disabled={pending} onClick={onClick} aria-label={`${t(saved ? 'saved.savedLabel' : 'saved.save')} - ${title}`}>
+    <button type="button" className={cn(btn, saved && 'bg-brand-700 text-white ring-brand-700 hover:bg-brand-800')} aria-pressed={saved} disabled={pending || !ready} aria-busy={!ready || undefined} onClick={onClick} aria-label={`${t(saved ? 'saved.savedLabel' : 'saved.save')} - ${title}`}>
       <Bookmark className={cn('h-4 w-4', saved && 'fill-current')} aria-hidden="true" />
       {t(saved ? 'saved.savedLabel' : 'saved.save')}
     </button>

@@ -17,16 +17,20 @@ export function useFavorites() {
   return useQuery({ queryKey: favoriteKeys.mine, queryFn: favoritesApi.list, enabled: Boolean(user), staleTime: 60_000 });
 }
 
-/** Saved state and toggle for one item. */
+/**
+ * Saved state and toggle for one item. `ready` is false while a signed-in
+ * person's saved list is still loading: until then we don't know whether the
+ * item is saved, so the button must not show (or act on) a guess.
+ */
 export function useSaved(targetType, targetId) {
   const qc = useQueryClient();
-  const { data } = useFavorites();
+  const { data, isLoading } = useFavorites();
   const entry = useMemo(() => (data ?? []).find((f) => f.targetType === targetType && f.targetId === targetId), [data, targetType, targetId]);
   const mutation = useMutation({
     mutationFn: () => (entry ? favoritesApi.remove(entry.id) : favoritesApi.add(targetType, targetId)),
     onSettled: () => qc.invalidateQueries({ queryKey: favoriteKeys.mine }),
   });
-  return { saved: Boolean(entry), toggle: mutation.mutateAsync, pending: mutation.isPending };
+  return { saved: Boolean(entry), toggle: mutation.mutateAsync, pending: mutation.isPending, ready: !isLoading };
 }
 
 export function useRemoveFavorite() {

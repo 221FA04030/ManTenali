@@ -27,7 +27,7 @@ function FeedSection({ id, title, to, items, render }) {
       <div id={id}>
         <SectionHeader title={title} to={to} />
       </div>
-      <ul className="flex flex-col gap-3">
+      <ul className="card-list">
         {items.map((item) => (
           <li key={item.id}>{render(item)}</li>
         ))}
@@ -61,7 +61,7 @@ export default function HomePage() {
       </HomeHeader>
 
       <section aria-label={t('home.categoriesLabel')} className="page-pad pt-2">
-        <ul className="grid grid-cols-4 gap-2.5 sm:gap-3">
+        <ul className="grid grid-cols-4 gap-2.5 sm:gap-3 md:grid-cols-8">
           {HOME_TILES.map((tile) => (
             <li key={tile.key}>
               <CategoryTile icon={tile.icon} label={t(tile.labelKey)} to={tile.to} comingSoon={tile.comingSoon} />
@@ -70,7 +70,7 @@ export default function HomePage() {
         </ul>
       </section>
 
-      <div className="flex flex-col gap-6 pb-6 pt-5">
+      <div className="page-wide flex flex-col gap-6 pb-6 pt-5">
         {feed.isPending ? (
           <div className="page-pad flex flex-col gap-4" aria-busy="true" aria-label={t('common.loading')}>
             <Skeleton className="h-[150px] w-full rounded-card" />

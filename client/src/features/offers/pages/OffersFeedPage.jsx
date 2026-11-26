@@ -59,7 +59,7 @@ export default function OffersFeedPage() {
   return (
     <>
       <PageHeader title={t('pages.offers')} />
-      <div className="flex flex-col gap-4 p-4">
+      <div className="page-wide flex flex-col gap-4 p-4">
         <LocationBar />
         {filters.businessId && (
           <button
@@ -85,7 +85,7 @@ export default function OffersFeedPage() {
             <p className="text-sm text-ink-muted" aria-live="polite">
               {t('offers.count', { count: total })}
             </p>
-            <ul className="flex flex-col gap-3">
+            <ul className="card-list">
               {items.map((o) => (
                 <li key={o.id}>
                   <OfferCard offer={o} />

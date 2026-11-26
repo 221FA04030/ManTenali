@@ -41,7 +41,7 @@ export function HomeBanner({ items }) {
         {items.map((entry) => {
           const p = bannerProps(entry, t);
           return (
-            <li key={`${entry.type}-${entry.item.id}`} className={`shrink-0 snap-start ${items.length > 1 ? 'w-[88%]' : 'w-full'}`}>
+            <li key={`${entry.type}-${entry.item.id}`} className={`shrink-0 snap-start ${items.length > 1 ? 'w-[88%] md:w-[48%] lg:w-[32%]' : 'w-full'}`}>
               <Banner
                 title={entry.item.title}
                 eyebrow={p.eyebrow}

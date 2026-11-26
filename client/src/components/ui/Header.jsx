@@ -5,6 +5,7 @@ import { Logo } from './Logo.jsx';
 import { Skyline } from './Skyline.jsx';
 import { useMenu } from '../../app/MenuContext.jsx';
 import { cn } from '../../lib/cn.js';
+import { usePageTitle } from '../../lib/usePageTitle.js';
 
 const iconBtn =
   'flex min-h-tap min-w-tap items-center justify-center rounded-full transition-colors focus-visible:ring-white';
@@ -15,6 +16,7 @@ const iconBtn =
  */
 export function HomeHeader({ children }) {
   const { t } = useTranslation();
+  usePageTitle(null);
   const navigate = useNavigate();
   const { openMenu } = useMenu();
   return (
@@ -44,6 +46,7 @@ export function HomeHeader({ children }) {
 /** Sub-page header. `variant="mint"` is the Explore style; default is compact green. */
 export function PageHeader({ title, subtitle, back = true, variant = 'green', actions }) {
   const { t } = useTranslation();
+  usePageTitle(typeof title === 'string' ? title : null);
   const navigate = useNavigate();
   const mint = variant === 'mint';
   const goBack = () => (window.history.length > 1 ? navigate(-1) : navigate('/'));
@@ -54,7 +57,7 @@ export function PageHeader({ title, subtitle, back = true, variant = 'green', ac
         mint ? 'bg-explore-mint' : 'bg-brand-700 text-white shadow-sm',
       )}
     >
-      <div className={cn('mx-auto flex max-w-app items-center gap-2 px-3', mint ? 'min-h-[88px] py-3' : 'min-h-[60px]')}>
+      <div className={cn('mx-auto flex max-w-app items-center gap-2 px-3 md:max-w-shell', mint ? 'min-h-[88px] py-3' : 'min-h-[60px]')}>
         {back ? (
           <button
             type="button"
