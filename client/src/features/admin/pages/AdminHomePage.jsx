@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { CalendarCheck, CalendarDays, ClipboardCheck, FolderTree, Newspaper, Store } from 'lucide-react';
+import { BarChart3, CalendarCheck, CalendarDays, ClipboardCheck, Flag, FolderTree, Newspaper, Store, Users } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { ListRow } from '../../../components/ui/ListRow.jsx';
 
@@ -10,6 +10,9 @@ export default function AdminHomePage() {
     <>
       <PageHeader title={t('pages.admin')} />
       <ul className="flex flex-col gap-3 p-4">
+        <li>
+          <ListRow icon={Flag} title={t('adminReports.title')} subtitle={t('adminReports.hint')} to="/admin/reports" />
+        </li>
         <li>
           <ListRow icon={ClipboardCheck} title={t('review.title')} subtitle={t('review.hint')} to="/admin/submissions" />
         </li>
@@ -27,6 +30,12 @@ export default function AdminHomePage() {
         </li>
         <li>
           <ListRow icon={FolderTree} title={t('categoriesAdmin.title')} subtitle={t('categoriesAdmin.hint')} to="/admin/categories" />
+        </li>
+        <li>
+          <ListRow icon={Users} title={t('adminUsers.title')} subtitle={t('adminUsers.hint')} to="/admin/users" />
+        </li>
+        <li>
+          <ListRow icon={BarChart3} title={t('adminMetrics.title')} subtitle={t('adminMetrics.hint')} to="/admin/metrics" />
         </li>
       </ul>
     </>

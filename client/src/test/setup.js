@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom/vitest';
 import { afterEach, beforeEach, vi } from 'vitest';
-import { cleanup } from '@testing-library/react';
+import { cleanup, configure } from '@testing-library/react';
+
+// findBy*/waitFor wait up to 3 s (default 1 s): lazy routes are slower when every file runs in parallel.
+configure({ asyncUtilTimeout: 3000 });
 import i18n from '../app/i18n.js';
 import { mockApi } from './mockApi.js';
 

@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
 import request from 'supertest';
-import { buildTestApp, connectTestDb, disconnectTestDb, clearTestDb, TEST_ORIGIN } from '../../tests/helpers.js';
+import { buildTestApp, connectTestDb, disconnectTestDb, clearTestDb, TEST_ORIGIN, enterProductionEnv } from '../../tests/helpers.js';
 import { resetEnvCache } from '../../config/env.js';
 import { seedDemo, isLocalMongoUri, assertDemoTarget, listEvidenceFixtures } from './seedDemo.js';
 import { DEMO_USERS, DEMO_SUBMISSIONS } from './demoData.js';
@@ -49,8 +49,7 @@ describe('demo data guards', () => {
 
   it('refuses production - in the loader and in the npm run demo script - before connecting anywhere', () => {
     expect(() => assertDemoTarget({ uri: 'mongodb://127.0.0.1:1/x', nodeEnv: 'production' })).toThrow(/never loaded in production/);
-    process.env.NODE_ENV = 'production';
-    resetEnvCache();
+    enterProductionEnv();
     expect(() => assertDemoTarget({ uri: 'mongodb://127.0.0.1:1/x' })).toThrow(/never loaded in production/);
 
     const res = spawnSync(process.execPath, [demoScript, '--api-only'], {

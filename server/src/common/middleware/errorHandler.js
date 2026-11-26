@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { AppError, ERROR_CODES } from '../errors/index.js';
 import { errorBody } from '../utils/response.js';
+import { reportError } from '../integrations/sentry.js';
 
 /** Convert known non-AppError failures into AppErrors. */
 function normalise(err) {
@@ -23,10 +24,14 @@ function normalise(err) {
 export function errorHandler(err, req, res, _next) {
   const appError = normalise(err);
   if (appError) {
-    if (appError.status >= 500) req.log?.error({ err }, appError.message);
+    if (appError.status >= 500) {
+      req.log?.error({ err }, appError.message);
+      reportError(err, { requestId: req.id, method: req.method, route: req.route?.path ?? req.path });
+    }
     return res.status(appError.status).json(errorBody(appError.code, appError.message, appError.details));
   }
   req.log?.error({ err, requestId: req.id }, 'unhandled error');
+  reportError(err, { requestId: req.id, method: req.method, route: req.route?.path ?? req.path });
   return res.status(500).json(
     errorBody('INTERNAL_ERROR', ERROR_CODES.INTERNAL_ERROR.message, { requestId: req.id }),
   );

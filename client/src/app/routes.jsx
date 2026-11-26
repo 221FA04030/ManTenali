@@ -42,6 +42,9 @@ const SearchPage = lazy(() => import('../features/search/pages/SearchPage.jsx'))
 const SavedPage = lazy(() => import('../features/favorites/pages/SavedPage.jsx'));
 const SuggestPage = lazy(() => import('../features/reports/pages/SuggestPage.jsx'));
 const MyReviewsPage = lazy(() => import('../features/reviews/pages/MyReviewsPage.jsx'));
+const AdminReportsPage = lazy(() => import('../features/admin/pages/AdminReportsPage.jsx'));
+const AdminUsersPage = lazy(() => import('../features/admin/pages/AdminUsersPage.jsx'));
+const AdminMetricsPage = lazy(() => import('../features/admin/pages/AdminMetricsPage.jsx'));
 
 const signedIn = (el) => <RequireAuth>{el}</RequireAuth>;
 const ownerOrAdmin = (el) => <RequireAuth roles={['owner', 'admin']}>{el}</RequireAuth>;
@@ -102,6 +105,9 @@ export const routes = [
       { path: 'admin/events/new', element: adminOnly(<AdminEventFormPage />) },
       { path: 'admin/events/:id/edit', element: adminOnly(<AdminEventFormPage />) },
       { path: 'admin/news', element: adminOnly(<AdminNewsPage />) },
+      { path: 'admin/reports', element: adminOnly(<AdminReportsPage />) },
+      { path: 'admin/users', element: adminOnly(<AdminUsersPage />) },
+      { path: 'admin/metrics', element: adminOnly(<AdminMetricsPage />) },
       { path: 'admin/news/new', element: adminOnly(<AdminNewsFormPage />) },
       { path: 'admin/news/:id/edit', element: adminOnly(<AdminNewsFormPage />) },
       { path: 'about', element: <AboutPage /> },

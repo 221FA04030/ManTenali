@@ -1,0 +1,43 @@
+# Render Blueprint for the Mana Tenali API (spec section 13: one always-on Node service).
+# The web app is deployed separately on Vercel (client/vercel.json). See DEPLOY.md.
+#
+# Secrets are NOT stored here: every `sync: false` value is entered once in the
+# Render dashboard when the Blueprint is created.
+services:
+  - type: web
+    name: mana-tenali-api
+    runtime: node
+    plan: starter # always on (the free plan sleeps, which the spec's uptime target rules out)
+    region: singapore # closest Render region to Andhra Pradesh
+    branch: main
+    buildCommand: npm ci --include-workspace-root --workspace server --omit=dev
+    startCommand: npm start --workspace server
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY # Render runs one proxy in front of the service
+        value: '1'
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: MONGODB_URI # Atlas connection string
+        sync: false
+      - key: JWT_SECRET # long random value, at least 32 characters
+        sync: false
+      - key: CLIENT_ORIGIN # e.g. https://manatenali.in,https://www.manatenali.in
+        sync: false
+      - key: COOKIE_DOMAIN # e.g. .manatenali.in (app and API share it)
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: SENTRY_DSN # optional
+        sync: false

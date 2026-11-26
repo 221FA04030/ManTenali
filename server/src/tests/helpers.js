@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import mongoose from 'mongoose';
-import { inject } from 'vitest';
-import { loadEnv } from '../config/env.js';
+import { inject, onTestFinished } from 'vitest';
+import { loadEnv, resetEnvCache } from '../config/env.js';
 import { createLogger } from '../common/utils/logger.js';
 import { createApp } from '../app.js';
 
@@ -29,4 +29,25 @@ export async function disconnectTestDb() {
     await mongoose.connection.dropDatabase();
   }
   await mongoose.disconnect();
+}
+
+/**
+ * Switch the current test to a production-shaped configuration (Step 10 env
+ * rules: https origins, no local database). The database address uses the
+ * reserved .invalid domain, so nothing can ever connect to it. Restored
+ * automatically when the test finishes.
+ */
+export function enterProductionEnv() {
+  const keys = ['NODE_ENV', 'CLIENT_ORIGIN', 'MONGODB_URI'];
+  const saved = Object.fromEntries(keys.map((k) => [k, process.env[k]]));
+  Object.assign(process.env, {
+    NODE_ENV: 'production',
+    CLIENT_ORIGIN: 'https://app.example.invalid',
+    MONGODB_URI: 'mongodb+srv://placeholder.example.invalid/never-used',
+  });
+  resetEnvCache();
+  onTestFinished(() => {
+    for (const k of keys) process.env[k] = saved[k];
+    resetEnvCache();
+  });
 }

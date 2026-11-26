@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { ErrorState } from '../components/ui/ErrorState.jsx';
+import { reportError } from '../lib/errorReporting.js';
 
 /** Catches render errors so one broken screen never blanks the whole app. */
 export class ErrorBoundary extends Component {
@@ -10,6 +11,10 @@ export class ErrorBoundary extends Component {
 
   static getDerivedStateFromError(error) {
     return { error };
+  }
+
+  componentDidCatch(error, info) {
+    reportError(error, { componentStack: info?.componentStack });
   }
 
   componentDidUpdate(prevProps) {

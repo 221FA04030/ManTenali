@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
-import { buildTestApp, connectTestDb, disconnectTestDb, clearTestDb } from '../../tests/helpers.js';
+import { buildTestApp, connectTestDb, disconnectTestDb, clearTestDb, enterProductionEnv } from '../../tests/helpers.js';
 import { loginAs, createCategory } from '../../tests/factories.js';
 import { toIstDateTime } from '../../common/utils/dates.js';
 import { resetEnvCache } from '../../config/env.js';
@@ -371,8 +371,7 @@ describe('sample data', () => {
     const c = await News.findOne({ slug: 'sample-c' }).lean();
     expect(now - c.publishedAt).toBe(3 * HOUR);
     expect(now - c.contentUpdatedAt).toBe(HOUR);
-    process.env.NODE_ENV = 'production';
-    resetEnvCache();
+    enterProductionEnv();
     await expect(seedNews(list, cats)).rejects.toThrow(/cannot be seeded in production/);
   });
 });

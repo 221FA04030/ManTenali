@@ -52,12 +52,13 @@ export function useNewsMutation(fn, options = {}) {
 
 /**
  * FR-NEWS-1 types with their icon and colours. Accent colours follow the UI
- * reference: orange for traffic, blue for weather; the rest use brand green.
+ * reference: orange for traffic, blue for weather (darker steps of those hues,
+ * for WCAG AA text contrast on the light tints); the rest use brand green.
  */
 export const NEWS_TYPES = [
   { key: 'news', icon: Newspaper, tone: 'bg-brand-100 text-brand-800' },
-  { key: 'traffic', icon: TrafficCone, tone: 'bg-status-trafficBg text-status-traffic' },
-  { key: 'weather', icon: CloudSun, tone: 'bg-status-weatherBg text-status-weather' },
+  { key: 'traffic', icon: TrafficCone, tone: 'bg-status-trafficBg text-orange-800' },
+  { key: 'weather', icon: CloudSun, tone: 'bg-status-weatherBg text-blue-800' },
   { key: 'power', icon: Zap, tone: 'bg-amber-100 text-amber-800' },
   { key: 'water', icon: Droplets, tone: 'bg-sky-100 text-sky-800' },
   { key: 'announcement', icon: Megaphone, tone: 'bg-brand-100 text-brand-800' },

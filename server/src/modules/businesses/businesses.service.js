@@ -723,6 +723,15 @@ export async function moderationInfo(ids) {
   );
 }
 
+/** Step 10 metrics: published businesses, and how many were updated since `since` (listing freshness). */
+export async function freshness(since) {
+  const [total, fresh] = await Promise.all([
+    Business.countDocuments({ status: S.PUBLISHED }),
+    Business.countDocuments({ status: S.PUBLISHED, updatedAt: { $gte: since } }),
+  ]);
+  return { total, fresh };
+}
+
 /** Business ids by slug (used by the development sample seed). */
 export async function getIdsBySlugs(slugs) {
   const found = await Business.find({ slug: { $in: slugs } }).select('_id slug').lean();

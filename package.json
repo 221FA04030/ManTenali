@@ -15,19 +15,20 @@
     "test": "npm test -w server && npm test -w client",
     "build": "npm run build -w client",
     "format": "prettier --write \"server/src/**/*.js\" \"client/src/**/*.{js,jsx,css,json}\"",
-    "seed": "npm run seed -w server",
-    "seed:admin": "npm run seed:admin -w server",
-    "check:media": "npm run check:media -w server",
-    "migrate:categories": "npm run migrate:categories -w server",
-    "cleanup:evidence": "npm run cleanup:evidence -w server",
-    "demo": "node server/src/scripts/demo.js"
+    "seed": "npm run seed -w server --",
+    "seed:admin": "npm run seed:admin -w server --",
+    "check:media": "npm run check:media -w server --",
+    "migrate:categories": "npm run migrate:categories -w server --",
+    "cleanup:evidence": "npm run cleanup:evidence -w server --",
+    "demo": "node server/src/scripts/demo.js",
+    "check:launch": "npm run check:launch -w server --"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",
     "prettier": "^3.4.2"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.9"
   },
   "overrides": {
     "react": "18.3.1",

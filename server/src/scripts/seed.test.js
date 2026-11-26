@@ -1,4 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
+import { enterProductionEnv } from '../tests/helpers.js';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resetEnvCache } from '../config/env.js';
@@ -13,7 +14,7 @@ function runSeed(args, extraEnv) {
       SYSTEMROOT: process.env.SYSTEMROOT,
       NODE_ENV: 'production',
       // Placeholder values only - the script must refuse before connecting anywhere.
-      MONGODB_URI: 'mongodb://127.0.0.1:1/never-used',
+      MONGODB_URI: 'mongodb+srv://placeholder.example.invalid/never-used', // reserved domain: never resolves
       CLIENT_ORIGIN: 'https://example.invalid',
       JWT_SECRET: 'x'.repeat(40),
       ...extraEnv,
@@ -37,8 +38,17 @@ describe('sample data never reaches production', () => {
   });
 
   it('seedBusinesses itself refuses to run in production', async () => {
-    process.env.NODE_ENV = 'production';
-    resetEnvCache();
+    enterProductionEnv();
     await expect(seedBusinesses([], new Map())).rejects.toThrow(/cannot be seeded in production/);
+  });
+});
+
+describe('root npm scripts forward their arguments (D10.15)', () => {
+  it('every root script that runs a server script ends with "--", so `npm run seed -- --samples` passes --samples on', async () => {
+    const { readFileSync } = await import('node:fs');
+    const root = JSON.parse(readFileSync(fileURLToPath(new URL('../../../package.json', import.meta.url)), 'utf8'));
+    for (const name of ['seed', 'seed:admin', 'check:media', 'migrate:categories', 'cleanup:evidence', 'check:launch']) {
+      expect(`${name}: ${root.scripts[name]}`).toBe(`${name}: npm run ${name} -w server --`);
+    }
   });
 });

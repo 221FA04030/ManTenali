@@ -3,7 +3,7 @@ Mana Tenali is a local discovery and community platform designed for Tenali, And
 
 ## Getting started
 
-Requirements: Node.js 20+ (developed on Node 24) and npm 10+.
+Requirements: Node.js 22.9+ (the scripts use `node --env-file-if-exists`; developed on Node 24) and npm 10+.
 
 ```bash
 npm install                       # installs server + client (npm workspaces)
@@ -50,7 +50,7 @@ Safety:
 
 | Role | Email | Password | Use it to test |
 |------|-------|----------|----------------|
-| Admin | `admin@demo.example` | `DemoAdmin#2026` | Admin pages: business and event review, categories, events, news, verify; hide reviews; reports API |
+| Admin | `admin@demo.example` | `DemoAdmin#2026` | Admin pages: business and event review, categories, events, news, verify; hide reviews; reports queue, users, metrics |
 | Owner | `owner@demo.example` | `DemoOwner#2026` | Padma's businesses (approved, draft), menus, offers in every state |
 | Owner | `owner2@demo.example` | `DemoOwner#2026` | Suresh's businesses (approved, hidden, archived); Telugu interface |
 | User | `user@demo.example` | `DemoUser#2026` | Pending business submission; event submissions with private evidence |
@@ -185,6 +185,22 @@ Ratings are recalculated from published reviews after every change. Analytics ev
 device id kept in the browser (`mt.sid`): no account, IP address, search words or location, and they are deleted
 automatically after 180 days. The admin screens for the reports queue and metrics come with Step 10.
 
+### Admin tools and launch (Step 10)
+
+| Screen | Path | What it does |
+|--------|------|--------------|
+| Reports & suggestions | `/admin/reports` | Moderation queue by status: open the content, dismiss, mark reviewed, hide content, block the author |
+| Users | `/admin/users` | Search people, change roles, block and unblock (every change is confirmed; not your own account) |
+| Metrics | `/admin/metrics` | Anonymous launch metrics: activity per day, active devices, searches that led to a contact, 7-day return rate, event views and shares, listing freshness |
+
+| Command | What it does |
+|---------|--------------|
+| `npm run check:launch` | Read-only launch readiness report for the database in `server/.env` (categories, admin, no sample data, indexes, optional services) |
+
+Deployment (Vercel + Render) is described in `DEPLOY.md`; the launch checklist and the Step 10 accessibility and
+performance results are in `LAUNCH.md`. CI (`.github/workflows/ci.yml`) runs lint, tests, build and an audit on
+every pull request.
+
 ### Images (Cloudinary)
 
 Photo uploads use **Cloudinary** (signed direct uploads). Add these three variables to `server/.env`
@@ -217,6 +233,7 @@ logs `image uploads disabled` with the missing names at startup. The secret neve
 | `npm run check:media` | Check the Cloudinary (image upload) configuration |
 | `npm run demo` | Local demo stack with in-memory data and demo accounts (development only) |
 | `npm run cleanup:evidence` | Evidence retention: dry run; add `-- --apply` to delete files 180 days after the final decision |
+| `npm run check:launch` | Read-only launch readiness report (see `LAUNCH.md`) |
 
 The first server test run downloads a MongoDB binary for `mongodb-memory-server` (cached afterwards).
 
@@ -226,6 +243,8 @@ The first server test run downloads a MongoDB binary for `mongodb-memory-server`
 server/   Express API - modular monolith (src/modules/<feature>/<feature>.{routes,controller,service,model,validation,test}.js)
 client/   React + Vite SPA (src/app, src/features, src/components/ui, src/lib, src/locales)
 DECISIONS.md   implementation decisions
+DEPLOY.md      deployment (Vercel + Render + Atlas)
+LAUNCH.md      launch checklist and Step 10 audit results
 ```
 
 API base path: `/api/v1`. Health check: `GET /api/v1/health`.

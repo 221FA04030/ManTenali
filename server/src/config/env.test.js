@@ -48,3 +48,32 @@ describe('redactUri', () => {
     expect(redactUri(msg)).toBe('failed to connect [redacted-uri] after 3 tries');
   });
 });
+
+describe('production rules (Step 10)', () => {
+  const prod = { ...valid, NODE_ENV: 'production', CLIENT_ORIGIN: 'https://manatenali.in' };
+
+  it('accepts an https production configuration with an optional Sentry DSN', () => {
+    const env = loadEnv({ ...prod, COOKIE_DOMAIN: '.manatenali.in', SENTRY_DSN: 'https://abc@o1.ingest.sentry.io/1' });
+    expect(env).toMatchObject({ isProduction: true, COOKIE_DOMAIN: '.manatenali.in', SENTRY_DSN: 'https://abc@o1.ingest.sentry.io/1' });
+  });
+
+  it('refuses http origins, a bad cookie domain or a local database in production - naming problems, never values', () => {
+    const fail = (overrides) => {
+      try {
+        loadEnv({ ...prod, ...overrides });
+      } catch (err) {
+        expect(err).toBeInstanceOf(EnvValidationError);
+        return err.message;
+      }
+      throw new Error('expected a validation error');
+    };
+    expect(fail({ CLIENT_ORIGIN: 'https://manatenali.in,http://localhost:5173' })).toMatch(/CLIENT_ORIGIN must use https/);
+    expect(fail({ COOKIE_DOMAIN: 'not a domain' })).toMatch(/COOKIE_DOMAIN/);
+    const local = fail({ MONGODB_URI: 'mongodb://localhost:27017/x' });
+    expect(local).toMatch(/MONGODB_URI must not point at a local database/);
+    expect(local).not.toMatch(/localhost:27017/);
+    expect(fail({ SENTRY_DSN: 'http://insecure' })).toMatch(/SENTRY_DSN/);
+    // the same values are fine outside production
+    expect(loadEnv({ ...valid, MONGODB_URI: 'mongodb://localhost:27017/x' }).isProduction).toBe(false);
+  });
+});

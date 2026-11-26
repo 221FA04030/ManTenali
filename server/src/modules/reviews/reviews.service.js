@@ -143,13 +143,18 @@ export async function remove(user, id) {
 export async function moderationInfo(ids) {
   if (!ids.length) return new Map();
   const items = await Review.find({ _id: { $in: ids } }).lean();
-  const published = await businessesService.getPublishedIds(items.map((r) => r.businessId));
+  const businessIds = items.map((r) => r.businessId);
+  const [published, businesses] = await Promise.all([
+    businessesService.getPublishedIds(businessIds),
+    businessesService.getSummariesByIds(businessIds, { publishedOnly: false }),
+  ]);
   return new Map(
     items.map((r) => [
       String(r._id),
       {
         title: `${r.rating}/5${r.comment ? ` - ${r.comment.slice(0, 80)}` : ''}`,
         businessId: String(r.businessId),
+        slug: businesses.get(String(r.businessId))?.slug ?? null, // the business page shows the review
         status: r.status,
         isPublic: r.status === R.PUBLISHED && published.has(String(r.businessId)),
         responsibleUserId: String(r.userId),

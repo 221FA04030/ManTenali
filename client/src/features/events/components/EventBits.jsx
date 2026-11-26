@@ -30,14 +30,14 @@ export function EventWhen({ startLocal, endLocal, allDay }) {
 }
 
 /** Calendar-style date block: "30 / NOV" (IST date). */
-export function DateBlock({ startLocal, className = '' }) {
+export function DateBlock({ startLocal, muted = false, className = '' }) {
   const { i18n } = useTranslation();
   const [y, m, d] = startLocal.slice(0, 10).split('-').map(Number);
   const month = new Intl.DateTimeFormat(i18n.language === 'te' ? 'te-IN' : 'en-IN', { month: 'short', timeZone: 'UTC' }).format(
     new Date(Date.UTC(y, m - 1, d)),
   );
   return (
-    <span className={`flex h-[72px] w-[64px] shrink-0 flex-col items-center justify-center rounded-2xl bg-brand-700 text-white ${className}`}>
+    <span className={`flex h-[72px] w-[64px] shrink-0 flex-col items-center justify-center rounded-2xl text-white ${muted ? 'bg-gray-500' : 'bg-brand-700'} ${className}`}>
       <span className="text-2xl font-bold leading-none">{d}</span>
       <span className="mt-1 text-xs font-semibold uppercase">{month}</span>
     </span>

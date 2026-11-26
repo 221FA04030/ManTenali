@@ -336,6 +336,15 @@ export async function moderationInfo(ids, now = new Date()) {
   );
 }
 
+/** Step 10 metrics: offers valid now (any business status), and how many were updated since `since`. */
+export async function freshness(since, now = new Date()) {
+  const [total, fresh] = await Promise.all([
+    Offer.countDocuments(validNow(now)),
+    Offer.countDocuments({ ...validNow(now), updatedAt: { $gte: since } }),
+  ]);
+  return { total, fresh };
+}
+
 /* ----------------------------- development seed ----------------------------- */
 
 /** Sample offers for local development only - always refused in production. */

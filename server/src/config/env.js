@@ -46,7 +46,29 @@ const envSchema = z.object({
     .pipe(z.string().regex(/^[a-z0-9_-]+$/i, 'must be a Cloudinary cloud name').optional()),
   CLOUDINARY_API_KEY: z.string().optional().transform((v) => v || undefined),
   CLOUDINARY_API_SECRET: z.string().optional().transform((v) => v || undefined),
+
+  // Step 10 - monitoring (optional): errors are reported only when set
+  SENTRY_DSN: z
+    .string()
+    .optional()
+    .transform((v) => v || undefined)
+    .pipe(z.url({ protocol: /^https$/, message: 'must be an https:// Sentry DSN' }).optional()),
 });
+
+/**
+ * Production-only rules (Step 10): the app and API run over HTTPS, so every
+ * allowed origin must be https, and the cookie domain must be a real domain.
+ */
+function productionProblems(env) {
+  if (env.NODE_ENV !== 'production') return [];
+  const problems = [];
+  if (csv(env.CLIENT_ORIGIN).some((o) => !o.startsWith('https://'))) problems.push('CLIENT_ORIGIN must use https:// origins in production');
+  if (env.COOKIE_DOMAIN && !/^\.?[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(env.COOKIE_DOMAIN)) {
+    problems.push('COOKIE_DOMAIN must be a domain like .example.in');
+  }
+  if (/^mongodb:\/\/(localhost|127\.0\.0\.1)/.test(env.MONGODB_URI)) problems.push('MONGODB_URI must not point at a local database in production');
+  return problems;
+}
 
 export class EnvValidationError extends Error {
   constructor(problems) {
@@ -64,6 +86,8 @@ export function loadEnv(source = process.env) {
     throw new EnvValidationError(problems);
   }
   const env = result.data;
+  const production = productionProblems(env);
+  if (production.length) throw new EnvValidationError(production);
   return Object.freeze({
     ...env,
     CLIENT_ORIGINS: csv(env.CLIENT_ORIGIN),

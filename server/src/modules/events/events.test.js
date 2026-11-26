@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
 import request from 'supertest';
-import { buildTestApp, connectTestDb, disconnectTestDb, clearTestDb, TEST_ORIGIN } from '../../tests/helpers.js';
+import { buildTestApp, connectTestDb, disconnectTestDb, clearTestDb, TEST_ORIGIN, enterProductionEnv } from '../../tests/helpers.js';
 import { loginAs, createUser, createCategory, createBusiness } from '../../tests/factories.js';
 import { toIstDateTime, istStartOfDay, istEndOfDay, toIstDate } from '../../common/utils/dates.js';
 import { resetEnvCache } from '../../config/env.js';
@@ -482,8 +482,7 @@ describe('sample data', () => {
     const e = await Event.findOne({ slug: 'sample-x' }).lean();
     expect(toIstDateTime(e.startAt).slice(11)).toBe('18:00');
     expect((await listPublic({ page: 1, limit: 5 })).items[0]).toMatchObject({ isSeed: true });
-    process.env.NODE_ENV = 'production';
-    resetEnvCache();
+    enterProductionEnv();
     await expect(seedEvents(list, ids)).rejects.toThrow(/cannot be seeded in production/);
   });
 });

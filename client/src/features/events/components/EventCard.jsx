@@ -13,7 +13,7 @@ export function EventCard({ event: e }) {
       to={`/events/${e.slug}`}
       className="flex gap-3 rounded-card bg-white p-3 shadow-card ring-1 ring-brand-100 transition-shadow hover:shadow-lift"
     >
-      <DateBlock startLocal={e.startLocal} className={e.isCancelled ? 'opacity-50' : ''} />
+      <DateBlock startLocal={e.startLocal} muted={e.isCancelled} />
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="flex flex-wrap gap-1.5">
           {e.isCancelled && <Badge tone="red">{t('events.cancelled')}</Badge>}

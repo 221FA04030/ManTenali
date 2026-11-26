@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
-import { buildTestApp, connectTestDb, disconnectTestDb, clearTestDb, TEST_ORIGIN } from '../../tests/helpers.js';
+import { buildTestApp, connectTestDb, disconnectTestDb, clearTestDb, TEST_ORIGIN, enterProductionEnv } from '../../tests/helpers.js';
 import { loginAs, createCategory, createBusiness } from '../../tests/factories.js';
 import { Offer, OFFER_LIMIT_PER_BUSINESS } from './offers.model.js';
 import { listPublic, getOffer, seedOffers } from './offers.service.js';
@@ -377,8 +377,7 @@ describe('sample data', () => {
   });
 
   it('sample offers are refused in production', async () => {
-    process.env.NODE_ENV = 'production';
-    resetEnvCache();
+    enterProductionEnv();
     await expect(seedOffers([], new Map())).rejects.toThrow(/cannot be seeded in production/);
   });
 

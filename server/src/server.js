@@ -3,6 +3,7 @@ import { connectDb, disconnectDb, redactUri } from './config/db.js';
 import { createLogger } from './common/utils/logger.js';
 import { createApp } from './app.js';
 import { missingCloudinaryVars } from './common/integrations/cloudinary.js';
+import { initErrorReporting } from './common/integrations/sentry.js';
 
 async function main() {
   let env;
@@ -21,6 +22,8 @@ async function main() {
     level: env.LOG_LEVEL ?? (env.isProduction ? 'info' : 'debug'),
     pretty: !env.isProduction,
   });
+
+  await initErrorReporting(env, logger);
 
   // Make a missing image-upload configuration obvious at startup (names only, never values).
   const missingMedia = missingCloudinaryVars(env);

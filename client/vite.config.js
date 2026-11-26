@@ -23,5 +23,7 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.js'],
     include: ['src/**/*.test.{js,jsx}'],
     css: false,
+    // Screens load lazily; under a full parallel run on a slower machine they can take over 1 s.
+    testTimeout: 15_000,
   },
 });

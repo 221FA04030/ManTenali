@@ -15,9 +15,11 @@
     "check:media": "node --env-file-if-exists=.env src/scripts/checkMedia.js",
     "migrate:categories": "node --env-file-if-exists=.env src/scripts/migrateCategories.js",
     "cleanup:evidence": "node --env-file-if-exists=.env src/scripts/cleanupEvidence.js",
-    "demo": "node src/scripts/demo.js"
+    "demo": "node src/scripts/demo.js",
+    "check:launch": "node --env-file-if-exists=.env src/scripts/checkLaunch.js"
   },
   "dependencies": {
+    "@sentry/node": "^11.18.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",

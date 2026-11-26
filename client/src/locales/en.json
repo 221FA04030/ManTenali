@@ -966,5 +966,133 @@
     "mineEmptyBody": "Open a business you have visited and share your experience.",
     "businessUnavailable": "Business no longer listed",
     "hiddenBadge": "Hidden by a moderator"
+  },
+  "adminReports": {
+    "title": "Reports & suggestions",
+    "hint": "Review reported content and suggestions from users",
+    "typeLabel": "Content type",
+    "allTypes": "All types",
+    "status": {
+      "open": "Open",
+      "reviewed": "Reviewed",
+      "actioned": "Actioned",
+      "dismissed": "Dismissed"
+    },
+    "types": {
+      "business": "Business",
+      "review": "Review",
+      "offer": "Offer",
+      "event": "Event",
+      "news": "News",
+      "suggestion": "Suggestion"
+    },
+    "reasons": {
+      "wrong_info": "Wrong information",
+      "closed": "Permanently closed",
+      "spam": "Spam",
+      "offensive": "Offensive",
+      "fraud": "Fake or scam",
+      "duplicate": "Duplicate",
+      "other": "Other",
+      "new_business": "Missing business",
+      "new_event": "Event",
+      "correction": "Correction",
+      "idea": "Idea"
+    },
+    "notPublic": "Not public ({{status}})",
+    "targetGone": "The reported content no longer exists.",
+    "reportedBy": "From",
+    "responsible": "Author",
+    "when": "Received",
+    "handled": "Handled",
+    "actions": {
+      "dismiss": "Dismiss",
+      "mark_reviewed": "Mark reviewed",
+      "hide_target": "Hide content",
+      "block_user": "Block user",
+      "hide_and_block": "Hide and block"
+    },
+    "confirm": {
+      "dismiss": "Dismiss this report?",
+      "mark_reviewed": "Mark as reviewed?",
+      "hide_target": "Hide this content?",
+      "block_user": "Block this user?",
+      "hide_and_block": "Hide the content and block the user?"
+    },
+    "explain": {
+      "dismiss": "Nothing changes on the app. The report is closed.",
+      "mark_reviewed": "The report stays in the queue as reviewed, for follow-up.",
+      "hide_target": "The content disappears from the app (it can be restored from its admin page). Other open reports about it are closed too.",
+      "block_user": "{{name}} will be signed out and can no longer sign in or post. You can unblock them in Users.",
+      "hide_and_block": "The content is hidden and {{name}} is blocked."
+    },
+    "note": "Note (optional)",
+    "noteHint": "For the record; the reporter does not see it.",
+    "done": "Report {{status}}",
+    "emptyTitle": "Nothing here",
+    "emptyBody": "No reports with this status."
+  },
+  "adminUsers": {
+    "title": "Users",
+    "hint": "Find people, change roles, block or unblock",
+    "search": "Search by name or email",
+    "role": "Role",
+    "allRoles": "All roles",
+    "active": "Active",
+    "blocked": "Blocked",
+    "you": "you",
+    "joined": "Joined {{date}}",
+    "signIn": {
+      "google": "Google",
+      "password": "Email and password"
+    },
+    "changeRole": "Role",
+    "block": "Block",
+    "unblock": "Unblock",
+    "confirmTitle": "Confirm change",
+    "confirm": "Confirm",
+    "confirmRole": "Change {{name}} to {{role}}?",
+    "confirmBlock": "Block {{name}}? They will be signed out and cannot sign in or post.",
+    "confirmUnblock": "Unblock {{name}}?",
+    "adminWarning": "Admins can see private evidence, moderate everything and change any account. Only give this role to people you trust.",
+    "updated": "{{name}} updated",
+    "emptyTitle": "No users found"
+  },
+  "adminMetrics": {
+    "title": "Metrics",
+    "hint": "Activity, searches, contacts and listing freshness",
+    "range": "Date range",
+    "lastDays_one": "Last {{count}} day",
+    "lastDays_other": "Last {{count}} days",
+    "privacy": "Counted anonymously per device. No names, accounts or locations are recorded. Days are in IST.",
+    "people": "People",
+    "activeDevices": "Active devices",
+    "activeDevicesHint": "in the last 7 days",
+    "devicesInRange": "Devices in this range",
+    "searchToContact": "Searches that led to a contact",
+    "retention": "Came back after 7 days",
+    "ofCount": "{{part}} of {{whole}}",
+    "notEnough": "Not enough data yet",
+    "daily": "Activity per day",
+    "activity": "Activity in this range",
+    "types": {
+      "view": "Page views",
+      "offer_view": "Offer views",
+      "contact_click": "Contact taps",
+      "share": "Shares",
+      "search": "Searches"
+    },
+    "eventViews": "Event views",
+    "eventShares_one": "{{count}} share",
+    "eventShares_other": "{{count}} shares",
+    "freshness": "Updated in the last {{days}} days",
+    "fresh": {
+      "businesses": "Businesses",
+      "offers": "Offers",
+      "events": "Events"
+    },
+    "showTable": "Show as a table",
+    "day": "Day",
+    "chartSummary": "Activity per day over {{days}} days: {{total}} events in total, highest {{peak}} on {{peakDay}}."
   }
 }

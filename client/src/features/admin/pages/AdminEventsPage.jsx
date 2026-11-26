@@ -113,7 +113,7 @@ export default function AdminEventsPage() {
                     </Link>
                   )}
                   {['draft', 'hidden', 'cancelled'].includes(e.status) && (
-                    <button type="button" className={btn} onClick={() => setEventStatus.mutate({ id: e.id, value: 'published' })} aria-label={`${t('admin.publish')} ${e.title}`}>
+                    <button type="button" className={btn} onClick={() => setEventStatus.mutate({ id: e.id, value: 'published' })} aria-label={`${e.status === 'draft' ? t('admin.publish') : t('eventAdmin.restore')} ${e.title}`}>
                       {e.status === 'draft' ? <Send className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                       {e.status === 'draft' ? t('admin.publish') : t('eventAdmin.restore')}
                     </button>

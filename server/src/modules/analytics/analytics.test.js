@@ -88,6 +88,39 @@ describe('GET /admin/analytics/summary', () => {
     expect((await agent.get('/api/v1/admin/analytics/summary').query({ from: '2026-11-20', to: '2026-11-10' })).status).toBe(400);
   });
 
+  it('launch metrics: weekly devices, search -> contact, event views and shares, 7-day retention, freshness', async () => {
+    const { createBusiness } = await import('../../tests/factories.js');
+    const DAY = 86_400_000;
+    const now = Date.now();
+    const ago = (d, extraMs = 0) => new Date(now - d * DAY + extraMs);
+    await ActivityEvent.insertMany([
+      // device A: searched, then called -> converted; first seen 20 days ago and back today -> returned
+      { type: 'view', targetType: 'business', targetId: ID, sessionId: 'dev-aaaaaaa', createdAt: ago(20) },
+      { type: 'search', sessionId: 'dev-aaaaaaa', createdAt: ago(1) },
+      { type: 'contact_click', targetType: 'business', targetId: ID, sessionId: 'dev-aaaaaaa', createdAt: ago(1, 60_000) },
+      // device B: called BEFORE searching -> not converted; first seen 15 days ago, only active 2 days -> not returned
+      { type: 'contact_click', targetType: 'business', targetId: ID, sessionId: 'dev-bbbbbbb', createdAt: ago(15) },
+      { type: 'search', sessionId: 'dev-bbbbbbb', createdAt: ago(14) },
+      // device C: new today (too recent for the retention cohort); viewed and shared an event
+      { type: 'view', targetType: 'event', targetId: ID, sessionId: 'dev-ccccccc', createdAt: ago(0) },
+      { type: 'share', targetType: 'event', targetId: ID, sessionId: 'dev-ccccccc', createdAt: ago(0) },
+    ]);
+    await createBusiness({ name: 'Fresh' });
+    const { Business } = await import('../businesses/businesses.model.js');
+    const stale = await createBusiness({ name: 'Stale' });
+    await Business.collection.updateOne({ _id: stale._id }, { $set: { updatedAt: new Date(now - 45 * DAY) } });
+
+    const { agent } = await loginAs(app, 'admin');
+    const from = istToday(new Date(now - 30 * DAY));
+    const { metrics } = (await agent.get('/api/v1/admin/analytics/summary').query({ from, to: istToday() })).body.data;
+    expect(metrics.activeDevices7d).toBe(2); // A and C
+    expect(metrics.searchToContact).toEqual({ searchSessions: 2, converted: 1, rate: 50 });
+    expect(metrics.events).toEqual({ views: 1, shares: 1 });
+    expect(metrics.retention7d).toEqual({ cohort: 2, returned: 1, rate: 50 }); // A returned, B did not; C too recent
+    expect(metrics.freshness.businesses).toEqual({ total: 2, fresh: 1, rate: 50 });
+    expect(metrics.freshness).toMatchObject({ days: 30, offers: { total: 0, fresh: 0, rate: null }, events: { total: 0, rate: null } });
+  });
+
   it('is admin-only', async () => {
     const { agent } = await loginAs(app, 'owner');
     expect((await agent.get('/api/v1/admin/analytics/summary')).status).toBe(403);

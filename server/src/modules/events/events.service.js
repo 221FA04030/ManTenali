@@ -562,6 +562,13 @@ export async function moderationInfo(ids) {
   );
 }
 
+/** Step 10 metrics: public events that have not ended, and how many were updated since `since`. */
+export async function freshness(since, now = new Date()) {
+  const base = { status: { $in: PUBLIC_STATUSES }, endAt: { $gte: now } };
+  const [total, fresh] = await Promise.all([Event.countDocuments(base), Event.countDocuments({ ...base, updatedAt: { $gte: since } })]);
+  return { total, fresh };
+}
+
 /* ----------------------------- development seed ----------------------------- */
 
 /** Sample events for local development only - refused in production. Idempotent by slug. */
