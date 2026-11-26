@@ -64,8 +64,8 @@ export default function HomePage() {
         <SearchBar onSubmit={(q) => navigate(q ? `/search?q=${encodeURIComponent(q)}` : '/search')} />
       </HomeHeader>
 
-      <section aria-label={t('home.categoriesLabel')} className="page-pad pt-2">
-        <ul className="grid grid-cols-4 gap-2.5 sm:gap-3 md:grid-cols-6">
+      <section aria-label={t('home.categoriesLabel')} className="cat-grid page-pad pt-3">
+        <ul>
           {HOME_TILES.map((tile) => {
             const link = tile.categorySlug ? categoryLink(tile.categorySlug) : { to: tile.to };
             return (
