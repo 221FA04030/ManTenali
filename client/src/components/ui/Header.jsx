@@ -1,68 +1,35 @@
-import { Bell, ChevronLeft, LocateFixed, MapPin, Menu, UserRound } from 'lucide-react';
+import { Bell, ChevronLeft, LogIn, Menu, Search, Sprout } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Logo } from './Logo.jsx';
-import { Skyline } from './Skyline.jsx';
 import { useMenu } from '../../app/MenuContext.jsx';
-import { useLocationContext } from '../../app/providers/LocationProvider.jsx';
 import { useAuth } from '../../features/auth/AuthContext.jsx';
-import { TENALI_AREAS } from '../../config/areas.js';
 import { cldUrl } from '../../lib/cloudinary.js';
 import { cn } from '../../lib/cn.js';
 import { usePageTitle } from '../../lib/usePageTitle.js';
 
 const iconBtn =
   'flex min-h-tap min-w-tap items-center justify-center rounded-full transition-colors focus-visible:ring-white';
+/** 44px white circle used by the header's search and account buttons. */
+const whiteCircle =
+  'flex h-[clamp(2.25rem,7.9vw,2.75rem)] w-[clamp(2.25rem,7.9vw,2.75rem)] shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm transition-transform active:scale-95 focus-visible:ring-white';
 
-/**
- * Where the Home feed is for: an area of Tenali, all of Tenali, or "near me"
- * (shown while location is on; choosing an area turns it off).
- */
-function LocationChip() {
-  const { t } = useTranslation();
-  const { area, setArea, coords, clearNearMe } = useLocationContext();
-  const Icon = coords ? LocateFixed : MapPin;
-  return (
-    <label className="relative inline-flex max-w-full items-center">
-      <span className="sr-only">{t('location.area')}</span>
-      <Icon className="pointer-events-none absolute left-3 h-4 w-4 text-white" aria-hidden="true" />
-      <select
-        value={coords ? '__near' : area}
-        onChange={(e) => {
-          if (coords) clearNearMe();
-          setArea(e.target.value === '__near' ? area : e.target.value);
-        }}
-        className="min-h-[36px] max-w-[11rem] appearance-none sm:max-w-[15rem] truncate rounded-full bg-white/20 pl-8 pr-4 text-sm font-semibold text-white ring-1 ring-white/50 focus:outline-none focus:ring-2 focus:ring-white [&>option]:text-ink"
-      >
-        {coords && <option value="__near">{t('location.nearMeChip')}</option>}
-        <option value="">{t('location.allTenali')}</option>
-        {TENALI_AREAS.map((a) => (
-          <option key={a} value={a}>
-            {a}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-/** Profile photo / initial when signed in, otherwise a log-in button. */
+/** Profile photo or first initial when signed in; a log-in button otherwise. */
 function AccountButton() {
   const { t } = useTranslation();
   const { user } = useAuth();
   if (!user) {
     return (
-      <Link to="/login" className={cn(iconBtn, 'text-white hover:bg-white/15')} aria-label={t('auth.login')}>
-        <UserRound className="h-6 w-6" aria-hidden="true" />
+      <Link to="/login" className={whiteCircle} aria-label={t('auth.login')}>
+        <LogIn className="h-[46%] w-[46%]" strokeWidth={2} aria-hidden="true" />
       </Link>
     );
   }
   return (
-    <Link to="/profile" className={cn(iconBtn, 'hover:bg-white/15')} aria-label={t('header.profile', { name: user.name })}>
+    <Link to="/profile" className={cn(whiteCircle, 'overflow-hidden')} aria-label={t('header.profile', { name: user.name })}>
       {user.avatarUrl ? (
-        <img src={cldUrl(user.avatarUrl, { w: 72, h: 72 })} alt="" className="h-9 w-9 rounded-full object-cover ring-2 ring-white" />
+        <img src={cldUrl(user.avatarUrl, { w: 88, h: 88 })} alt="" className="h-full w-full object-cover" />
       ) : (
-        <span aria-hidden="true" className="flex h-9 w-9 items-center justify-center rounded-full bg-white font-bold text-brand-800">
+        <span aria-hidden="true" className="text-[clamp(0.9375rem,3.2vw,1.125rem)] font-semibold">
           {user.name.trim().charAt(0).toUpperCase()}
         </span>
       )}
@@ -71,39 +38,43 @@ function AccountButton() {
 }
 
 /**
- * Home header: green gradient fading into mint, menu, wordmark, location chip,
- * notices bell and account button, skyline. `children` (the search bar)
- * overlaps the bottom edge like the reference.
+ * Home app bar (DOCS/refrence.jpeg): green gradient; menu, "Mana Tenali" with
+ * a sprout and the tagline; search, notices and account on the right. With
+ * `overlap`, the bottom ~40px is covered by the hero card.
  */
-export function HomeHeader({ children }) {
+export function HomeHeader({ overlap = true }) {
   const { t } = useTranslation();
   usePageTitle(null);
   const navigate = useNavigate();
   const { openMenu } = useMenu();
   return (
-    <header className="relative bg-header-green pt-[max(env(safe-area-inset-top),12px)]">
-      <div className="relative z-10 flex items-start justify-between px-3 pt-2">
-        <button type="button" className={cn(iconBtn, 'text-white hover:bg-white/15')} onClick={openMenu} aria-label={t('menu.open')}>
-          <Menu className="h-7 w-7" aria-hidden="true" />
+    <header className={cn('bg-appbar-green px-2 pt-[max(env(safe-area-inset-top),10px)] text-white', overlap ? 'pb-14' : 'pb-3')}>
+      <div className="flex items-center gap-1 py-2 pr-1.5">
+        <button type="button" className={cn(iconBtn, 'shrink-0 text-white hover:bg-white/15')} onClick={openMenu} aria-label={t('menu.open')}>
+          <Menu className="h-7 w-7" strokeWidth={1.75} aria-hidden="true" />
         </button>
-        <div className="flex min-w-0 flex-col items-center gap-2 pt-3">
-          <Logo />
-          <LocationChip />
+        <div className="min-w-0 flex-1">
+          <h1 className="flex items-center gap-1 text-[clamp(1.125rem,5vw,1.75rem)] font-bold leading-tight tracking-tight">
+            <span className="truncate">{t('app.name')}</span>
+            <Sprout className="h-[1.1em] w-[1.1em] shrink-0 text-leaf" strokeWidth={2} aria-hidden="true" />
+          </h1>
+          <p className="truncate text-[clamp(0.75rem,3.2vw,0.9375rem)] text-white/90">{t('header.tagline')}</p>
         </div>
-        <div className="flex items-center">
+        <div className="flex shrink-0 items-center gap-[clamp(0.125rem,1.6vw,0.875rem)]">
+          <button type="button" className={whiteCircle} onClick={() => navigate('/search')} aria-label={t('header.search')}>
+            <Search className="h-1/2 w-1/2" strokeWidth={2} aria-hidden="true" />
+          </button>
           <button
             type="button"
             className={cn(iconBtn, 'text-white hover:bg-white/15')}
             onClick={() => navigate('/news')}
             aria-label={t('header.notifications')}
           >
-            <Bell className="h-6 w-6" aria-hidden="true" />
+            <Bell className="h-[clamp(1.375rem,4.6vw,1.625rem)] w-[clamp(1.375rem,4.6vw,1.625rem)]" strokeWidth={1.75} aria-hidden="true" />
           </button>
           <AccountButton />
         </div>
       </div>
-      <Skyline className="relative -mt-1 block h-20 w-full sm:h-24" />
-      <div className="relative z-10 -mt-3 bg-gradient-to-b from-[#CDEFD2] to-brand-100 px-4 pb-4">{children}</div>
     </header>
   );
 }

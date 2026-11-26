@@ -20,14 +20,14 @@ export function Layout() {
   const { t } = useTranslation();
   const location = useLocation();
   return (
-    <div className="min-h-dvh bg-mint-page">
+    <div className={location.pathname === '/' ? 'min-h-dvh bg-white' : 'min-h-dvh bg-mint-page'}>
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-[70] focus:rounded-lg focus:bg-white focus:px-3 focus:py-2"
       >
         {t('app.skipToContent')}
       </a>
-      <div className="mx-auto min-h-dvh max-w-app bg-mint-page pb-nav md:max-w-shell">
+      <div className={`mx-auto min-h-dvh max-w-app pb-nav md:max-w-shell ${location.pathname === '/' ? 'bg-white' : 'bg-mint-page'}`}>
         <main id="main">
           <ErrorBoundary resetKey={location.pathname}>
             <Suspense fallback={<PageFallback />}>

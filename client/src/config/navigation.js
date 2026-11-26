@@ -7,35 +7,34 @@ import {
   HeartPulse,
   House,
   Landmark,
-  LayoutGrid,
   MessagesSquare,
   Newspaper,
   ShoppingBag,
   Store,
   TicketPercent,
   UtensilsCrossed,
-  Wrench,
+  Settings,
+  Ticket,
+  Users,
 } from 'lucide-react';
 import { isComingSoon } from './comingSoon.js';
 
 /**
- * Home shortcuts. Each one opens real data: a page (`to`) or a main business
- * category (`categorySlug`, resolved to its id when categories load). Features
- * of later phases stay dimmed "Coming soon".
+ * Home shortcuts, in the order of the home design (DOCS/refrence.jpeg). Each
+ * one opens real data: a page (`to`) or a main business category
+ * (`categorySlug`, resolved to its id when categories load).
  */
 export const HOME_TILES = [
   { key: 'food', labelKey: 'tiles.food', icon: UtensilsCrossed, to: '/food' },
   { key: 'shopping', labelKey: 'tiles.shopping', icon: ShoppingBag, categorySlug: 'shopping' },
   { key: 'healthMedical', labelKey: 'tiles.health', icon: HeartPulse, categorySlug: 'health-medical' },
   { key: 'educationCat', labelKey: 'tiles.education', icon: GraduationCap, categorySlug: 'education' },
-  { key: 'services', labelKey: 'tiles.services', icon: Wrench, to: '/businesses?kind=service' },
+  { key: 'services', labelKey: 'tiles.services', icon: Settings, to: '/businesses?kind=service' },
   { key: 'hotels', labelKey: 'tiles.hotels', icon: BedDouble, categorySlug: 'hotels-stay' },
-  { key: 'offers', labelKey: 'tiles.offers', icon: TicketPercent, to: '/offers' },
+  { key: 'offers', labelKey: 'tiles.offers', icon: Ticket, to: '/offers' },
   { key: 'events', labelKey: 'tiles.events', icon: CalendarDays, to: '/events' },
   { key: 'news', labelKey: 'tiles.news', icon: Newspaper, to: '/news' },
-  { key: 'community', labelKey: 'tiles.community', icon: MessagesSquare, to: '/community' },
-  { key: 'busTracking', labelKey: 'tiles.bus', icon: Bus },
-  { key: 'more', labelKey: 'tiles.more', icon: LayoutGrid, to: '/discover' },
+  { key: 'community', labelKey: 'tiles.community', icon: Users, to: '/community' },
 ].map((tile) => ({ ...tile, comingSoon: isComingSoon(tile.key) }));
 
 /** Discover list: every section of the app; later-phase ones dimmed "Coming soon". */

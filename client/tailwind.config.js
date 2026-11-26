@@ -25,6 +25,14 @@ export default {
           muted: '#4B5B50',
           soft: '#6B7A70',
         },
+        // Home reference design (DOCS/refrence.jpeg).
+        primary: { DEFAULT: '#1E7B3A', dark: '#14632D', light: '#E6F4EA' },
+        leaf: '#7BC043',
+        offer: { DEFAULT: '#E8590C', text: '#C2410C' }, // text: AA contrast (4.5:1) for small text on white
+        news: '#1565C0',
+        heading: '#14261A',
+        label: '#2B3A30',
+        meta: '#6B7280',
         status: {
           traffic: '#EA580C',
           trafficBg: '#FFEDD5',
@@ -35,14 +43,19 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"Noto Sans"', '"Noto Sans Telugu"', 'system-ui', 'sans-serif'],
+        // Poppins for Latin text; Telugu text falls back to Noto Sans Telugu.
+        sans: ['Poppins', '"Noto Sans Telugu"', '"Noto Sans"', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         card: '18px',
-        tile: '20px',
+        tile: '18px',
+        hero: '20px',
       },
       boxShadow: {
         card: '0 2px 10px rgba(21, 128, 61, 0.08), 0 1px 2px rgba(15, 31, 20, 0.04)',
+        soft: '0 2px 10px rgba(0, 0, 0, 0.08)',
+        bar: '0 -4px 16px rgba(0, 0, 0, 0.08)',
+        post: '0 6px 16px rgba(30, 123, 58, 0.4)',
         lift: '0 8px 24px rgba(21, 128, 61, 0.18)',
         nav: '0 -4px 20px rgba(15, 31, 20, 0.08)',
       },
@@ -51,6 +64,8 @@ export default {
         'header-green':
           'linear-gradient(180deg, #15803D 0%, #1E8E3E 45%, #4DB463 78%, #CDEFD2 100%)',
         'banner-green': 'linear-gradient(100deg, #166534 0%, #15803D 45%, #2FA24A 100%)',
+        'appbar-green': 'linear-gradient(180deg, #1E7B3A 0%, #23924A 100%)',
+        'photo-placeholder': 'linear-gradient(135deg, #CFEBD6 0%, #E6F4EA 55%, #F3FAF5 100%)',
         'explore-mint': 'linear-gradient(180deg, #DDF3DF 0%, #ECF8EC 40%, #E3F5E5 100%)',
       },
       minHeight: { tap: '44px' },
