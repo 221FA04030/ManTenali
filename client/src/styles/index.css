@@ -50,6 +50,74 @@
   .card-list > li > :first-child {
     @apply flex-1;
   }
+  /*
+   * Home category shortcuts: round icons with their name underneath.
+   * Sized by the space the grid actually has (a container query), not the
+   * viewport: 4 columns when narrow, 6 from 520 px, all 12 in one row from
+   * 1040 px. With 12 shortcuts every count fills complete rows. The circle is
+   * ~70% of a column (2.75-4rem) and aspect-ratio keeps it round at any size.
+   */
+  .cat-grid {
+    container-type: inline-size;
+  }
+  .cat-grid > ul {
+    --cat-cols: 4;
+    display: grid;
+    grid-template-columns: repeat(var(--cat-cols), minmax(0, 1fr));
+    column-gap: 0.5rem;
+    row-gap: 1rem;
+  }
+  @container (min-width: 520px) {
+    .cat-grid > ul {
+      --cat-cols: 6;
+      column-gap: 0.75rem;
+      row-gap: 1.25rem;
+    }
+  }
+  @container (min-width: 1040px) {
+    .cat-grid > ul {
+      --cat-cols: 12;
+    }
+  }
+  .cat-item {
+    @apply flex h-full min-w-0 flex-col items-center gap-2 rounded-2xl pb-1 pt-1 text-center;
+  }
+  .cat-circle {
+    @apply relative flex shrink-0 items-center justify-center rounded-full shadow-card ring-1 transition duration-150;
+    /* Fallback for browsers without container units. */
+    width: 3.25rem;
+    width: clamp(2.75rem, calc(100cqi / var(--cat-cols) * 0.7), 4rem);
+    aspect-ratio: 1;
+  }
+  a.cat-item:hover .cat-circle {
+    transform: translateY(-2px);
+  }
+  a.cat-item:active .cat-circle {
+    transform: scale(0.95);
+  }
+  .cat-icon {
+    width: 46%;
+    height: 46%;
+  }
+  /* Label size follows the column width, so whole words fit: ~11px on 320px phones, 12px on most
+     phones, up to 14px with 6 columns, 13px when all 12 share one row. */
+  .cat-label {
+    @apply max-w-full font-semibold leading-tight text-ink;
+    font-size: 0.75rem;
+    font-size: clamp(0.6875rem, calc(100cqi / var(--cat-cols) * 0.155), 0.75rem);
+    overflow-wrap: break-word; /* only a word too long for a line by itself is split (safety net) */
+    text-wrap: balance;
+  }
+  @container (min-width: 520px) {
+    .cat-label {
+      font-size: clamp(0.8125rem, calc(100cqi / var(--cat-cols) * 0.155), 0.875rem);
+    }
+  }
+  @container (min-width: 1040px) {
+    .cat-label {
+      font-size: 0.8125rem;
+    }
+  }
   /* From tablet size up the frame is wider; page bodies keep a comfortable reading width
      unless the page shows card lists (.page-wide). Phones are unaffected. */
   @media (min-width: 768px) {

@@ -50,7 +50,7 @@ export default function AdminMetricsPage() {
     <>
       <PageHeader title={t('adminMetrics.title')} />
       <div className="flex flex-col gap-4 p-4">
-        <div role="group" aria-label={t('adminMetrics.range')} className="flex gap-2">
+        <div role="group" aria-label={t('adminMetrics.range')} className="flex flex-wrap gap-2">
           {RANGES.map((r) => (
             <button key={r} type="button" className={chip(days === r)} aria-pressed={days === r} onClick={() => setDays(r)}>
               {t('adminMetrics.lastDays', { count: r })}
