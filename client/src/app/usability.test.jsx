@@ -38,7 +38,7 @@ describe('everyday usability', () => {
 
   it('shows a calm offline notice that goes away when the connection returns', async () => {
     renderApp('/');
-    await screen.findByRole('searchbox');
+    await screen.findByRole('button', { name: 'Search Mana Tenali' });
     const setOnline = (value) => {
       Object.defineProperty(window.navigator, 'onLine', { value, configurable: true });
       act(() => window.dispatchEvent(new Event(value ? 'online' : 'offline')));
@@ -56,7 +56,7 @@ describe('everyday usability', () => {
 
   it('new pages open at the top, and Back returns to the previous position', async () => {
     const { router } = renderApp('/');
-    await screen.findByRole('searchbox');
+    await screen.findByRole('button', { name: 'Search Mana Tenali' });
     window.scrollTo.mockClear();
     await act(() => router.navigate('/discover'));
     await waitFor(() => expect(window.scrollTo).toHaveBeenCalledWith(0, 0));

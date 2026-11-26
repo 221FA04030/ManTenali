@@ -1,8 +1,9 @@
-/* Only the Latin and Telugu subsets are bundled. */
-@import '@fontsource/noto-sans/latin-400.css';
-@import '@fontsource/noto-sans/latin-500.css';
-@import '@fontsource/noto-sans/latin-600.css';
-@import '@fontsource/noto-sans/latin-700.css';
+/* Only the Latin and Telugu subsets are bundled. Poppins is the UI font; Noto Sans Telugu
+   covers Telugu (Poppins has no Telugu glyphs). */
+@import '@fontsource/poppins/latin-400.css';
+@import '@fontsource/poppins/latin-500.css';
+@import '@fontsource/poppins/latin-600.css';
+@import '@fontsource/poppins/latin-700.css';
 @import '@fontsource/noto-sans-telugu/telugu-400.css';
 @import '@fontsource/noto-sans-telugu/telugu-600.css';
 @import '@fontsource/noto-sans-telugu/telugu-700.css';
@@ -51,71 +52,59 @@
     @apply flex-1;
   }
   /*
-   * Home category shortcuts: round icons with their name underneath.
-   * Sized by the space the grid actually has (a container query), not the
-   * viewport: 4 columns when narrow, 6 from 520 px, all 12 in one row from
-   * 1040 px. With 12 shortcuts every count fills complete rows. The circle is
-   * ~70% of a column (2.75-4rem) and aspect-ratio keeps it round at any size.
+   * Home category shortcuts (DOCS/refrence.jpeg): 5 columns of light-green
+   * rounded squares with the name underneath. The tile is at most 64px and
+   * ~86% of a column, so it stays square on narrow phones; the label size
+   * follows the column (up to 14px) so a whole word always fits on a line.
    */
   .cat-grid {
     container-type: inline-size;
+    /* 16px side padding, easing to 8px on the narrowest phones (320px) so labels keep room. */
+    padding-inline: clamp(0.5rem, calc(0.5rem + (100vw - 20rem) * 0.2), 1rem);
   }
   .cat-grid > ul {
-    --cat-cols: 4;
     display: grid;
-    grid-template-columns: repeat(var(--cat-cols), minmax(0, 1fr));
-    column-gap: 0.5rem;
-    row-gap: 1rem;
-  }
-  @container (min-width: 520px) {
-    .cat-grid > ul {
-      --cat-cols: 6;
-      column-gap: 0.75rem;
-      row-gap: 1.25rem;
-    }
-  }
-  @container (min-width: 1040px) {
-    .cat-grid > ul {
-      --cat-cols: 12;
-    }
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    row-gap: 1.25rem;
   }
   .cat-item {
-    @apply flex h-full min-w-0 flex-col items-center gap-2 rounded-2xl pb-1 pt-1 text-center;
+    @apply flex h-full min-w-0 flex-col items-center gap-2 rounded-2xl text-center;
   }
-  .cat-circle {
-    @apply relative flex shrink-0 items-center justify-center rounded-full shadow-card ring-1 transition duration-150;
-    /* Fallback for browsers without container units. */
-    width: 3.25rem;
-    width: clamp(2.75rem, calc(100cqi / var(--cat-cols) * 0.7), 4rem);
+  .cat-tile {
+    @apply relative flex shrink-0 items-center justify-center rounded-tile transition duration-150;
+    width: 3.5rem; /* fallback without container units */
+    width: min(4rem, calc(100cqi / 5 * 0.78));
     aspect-ratio: 1;
   }
-  a.cat-item:hover .cat-circle {
-    transform: translateY(-2px);
+  a.cat-item:hover .cat-tile {
+    @apply bg-[#d6ecdc];
   }
-  a.cat-item:active .cat-circle {
+  a.cat-item:active .cat-tile {
+    @apply bg-[#cbe6d3];
     transform: scale(0.95);
   }
   .cat-icon {
-    width: 46%;
-    height: 46%;
+    width: 47%;
+    height: 47%;
   }
-  /* Label size follows the column width, so whole words fit: ~11px on 320px phones, 12px on most
-     phones, up to 14px with 6 columns, 13px when all 12 share one row. */
   .cat-label {
-    @apply max-w-full font-semibold leading-tight text-ink;
+    @apply max-w-full font-medium leading-tight text-label;
     font-size: 0.75rem;
-    font-size: clamp(0.6875rem, calc(100cqi / var(--cat-cols) * 0.155), 0.75rem);
+    font-size: clamp(0.625rem, calc(100cqi / 5 * 0.16), 0.875rem);
+    letter-spacing: -0.01em;
     overflow-wrap: break-word; /* only a word too long for a line by itself is split (safety net) */
     text-wrap: balance;
   }
-  @container (min-width: 520px) {
-    .cat-label {
-      font-size: clamp(0.8125rem, calc(100cqi / var(--cat-cols) * 0.155), 0.875rem);
-    }
+  /* Explore tiles: icon beside the label when the tile is wide enough, above it when narrow,
+     so a one-word label like "Restaurants" is never clipped. */
+  .explore-tile {
+    container-type: inline-size;
   }
-  @container (min-width: 1040px) {
-    .cat-label {
-      font-size: 0.8125rem;
+  @container (max-width: 7.5rem) {
+    .explore-label {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.125rem;
     }
   }
   /* From tablet size up the frame is wider; page bodies keep a comfortable reading width
@@ -132,7 +121,7 @@
 
 @layer utilities {
   .pb-nav {
-    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(7rem + env(safe-area-inset-bottom)); /* clears the 84px bar and the raised Post button */
   }
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);

@@ -21,6 +21,10 @@ upload the original photo.
 | Community post photo | Community → Write a post | Any signed-in user | 5 MB | Any; landscape works best | Feed card and post page |
 | Profile photo | Profile → "Profile photo" | Any signed-in user | 2 MB | Square, at least 400 × 400 | Profile, posts and comments |
 
+The Home hero and "What's Happening" cards show the photo of each event, offer or news item
+(above), or a green placeholder. The four "Explore Tenali" tiles are fixed links with no photo
+field: giving them photos would need four images in the code (`client/public/`), not an upload.
+
 ### Most useful first
 
 For launch, the photos that make the biggest difference are:

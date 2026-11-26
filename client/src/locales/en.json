@@ -26,7 +26,9 @@
   },
   "header": {
     "notifications": "Today in Tenali updates",
-    "profile": "Your profile ({{name}})"
+    "profile": "Your profile ({{name}})",
+    "tagline": "Discover • Connect • Local",
+    "search": "Search Mana Tenali"
   },
   "search": {
     "placeholder": "Search in Tenali...",
@@ -96,7 +98,7 @@
   },
   "home": {
     "categoriesLabel": "Browse categories",
-    "bannerTitle": "What's Happening in Tenali?",
+    "bannerTitle": "What's Happening in Tenali",
     "bannerSubtitle": "Events • News • Offers • Updates",
     "viewNow": "View Now",
     "todayTitle": "Today in Tenali",
@@ -114,7 +116,26 @@
     },
     "foodTitle": "Popular restaurants",
     "featuredTitle": "Verified businesses",
-    "communityTitle": "From the community"
+    "communityTitle": "From the community",
+    "tenali": "Tenali",
+    "heroLabel": "Highlights in Tenali",
+    "slideOf": "{{n}} of {{total}}",
+    "slidesLabel": "Choose a highlight",
+    "showSlide": "Show highlight {{n}} of {{total}}",
+    "pauseSlides": "Pause highlights",
+    "playSlides": "Play highlights",
+    "exploreTitle": "Explore Tenali",
+    "explore": {
+      "businesses": "Businesses",
+      "restaurants": "Restaurants",
+      "places": "Places to Visit",
+      "events": "Events"
+    },
+    "badge": {
+      "event": "Event",
+      "offer": "Offer",
+      "news": "News"
+    }
   },
   "explore": {
     "title": "Discover Tenali",

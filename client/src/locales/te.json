@@ -26,7 +26,9 @@
   },
   "header": {
     "notifications": "ఈ రోజు తెనాలి అప్‌డేట్స్",
-    "profile": "మీ ప్రొఫైల్ ({{name}})"
+    "profile": "మీ ప్రొఫైల్ ({{name}})",
+    "tagline": "కనుగొనండి • కలవండి • స్థానికం",
+    "search": "మన తెనాలిలో వెతకండి"
   },
   "search": {
     "placeholder": "తెనాలిలో వెతకండి...",
@@ -96,7 +98,7 @@
   },
   "home": {
     "categoriesLabel": "విభాగాలను చూడండి",
-    "bannerTitle": "తెనాలిలో ఏం జరుగుతోంది?",
+    "bannerTitle": "తెనాలిలో ఏం జరుగుతోంది",
     "bannerSubtitle": "కార్యక్రమాలు • వార్తలు • ఆఫర్లు • అప్‌డేట్స్",
     "viewNow": "ఇప్పుడే చూడండి",
     "todayTitle": "ఈ రోజు తెనాలిలో",
@@ -114,7 +116,26 @@
     },
     "foodTitle": "ప్రసిద్ధ రెస్టారెంట్లు",
     "featuredTitle": "ధృవీకరించిన వ్యాపారాలు",
-    "communityTitle": "కమ్యూనిటీ నుండి"
+    "communityTitle": "కమ్యూనిటీ నుండి",
+    "tenali": "తెనాలి",
+    "heroLabel": "తెనాలి విశేషాలు",
+    "slideOf": "{{total}}లో {{n}}",
+    "slidesLabel": "విశేషాన్ని ఎంచుకోండి",
+    "showSlide": "{{total}}లో {{n}}వ విశేషం చూపించు",
+    "pauseSlides": "విశేషాలను ఆపు",
+    "playSlides": "విశేషాలను నడిపించు",
+    "exploreTitle": "తెనాలిని అన్వేషించండి",
+    "explore": {
+      "businesses": "వ్యాపారాలు",
+      "restaurants": "రెస్టారెంట్లు",
+      "places": "చూడదగ్గ ప్రదేశాలు",
+      "events": "కార్యక్రమాలు"
+    },
+    "badge": {
+      "event": "కార్యక్రమం",
+      "offer": "ఆఫర్",
+      "news": "వార్తలు"
+    }
   },
   "explore": {
     "title": "తెనాలిని కనుగొనండి",

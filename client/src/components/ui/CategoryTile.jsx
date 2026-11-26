@@ -3,24 +3,17 @@ import { ComingSoonBadge } from './Badge.jsx';
 import { cn } from '../../lib/cn.js';
 
 /**
- * Home category shortcut: a round icon with its name underneath. Sizes come
- * from the `.cat-grid` container (see styles/index.css), so the circle stays
- * round and scales with the space available. Coming-soon shortcuts are dimmed,
- * badged and not tappable.
+ * Home category shortcut (DOCS/refrence.jpeg): a light-green rounded square
+ * with the icon, and the name underneath. Sizes come from `.cat-grid` (see
+ * styles/index.css), so the tile stays square and the label always fits.
+ * Coming-soon shortcuts are dimmed, badged and not tappable.
  */
 export function CategoryTile({ icon: Icon, label, to, comingSoon }) {
   const disabled = comingSoon || !to;
   const content = (
     <>
-      <span
-        data-cat-circle=""
-        aria-hidden="true"
-        className={cn(
-          'cat-circle',
-          disabled ? 'bg-gray-50 text-gray-500 ring-gray-200' : 'bg-white text-brand-700 ring-brand-200 group-hover:shadow-lift',
-        )}
-      >
-        <Icon className="cat-icon" strokeWidth={2} />
+      <span data-cat-tile="" aria-hidden="true" className={cn('cat-tile', disabled ? 'bg-gray-100 text-gray-500' : 'bg-primary-light text-primary')}>
+        <Icon className="cat-icon" strokeWidth={1.75} />
         {disabled && <ComingSoonBadge short className="absolute -bottom-2 left-1/2 -translate-x-1/2 ring-2 ring-white" />}
       </span>
       <span className="cat-label">{label}</span>
