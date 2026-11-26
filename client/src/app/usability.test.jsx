@@ -58,7 +58,7 @@ describe('everyday usability', () => {
     const { router } = renderApp('/');
     await screen.findByRole('searchbox');
     window.scrollTo.mockClear();
-    await act(() => router.navigate('/explore'));
+    await act(() => router.navigate('/discover'));
     await waitFor(() => expect(window.scrollTo).toHaveBeenCalledWith(0, 0));
     window.scrollTo.mockClear();
     await act(() => router.navigate(-1));

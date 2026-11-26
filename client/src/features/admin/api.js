@@ -37,7 +37,7 @@ export function useAdminMutation(fn, options = {}) {
 }
 
 export const REPORT_STATUSES = ['open', 'reviewed', 'actioned', 'dismissed'];
-export const REPORT_TYPES = ['business', 'review', 'offer', 'event', 'news', 'suggestion'];
+export const REPORT_TYPES = ['business', 'review', 'offer', 'event', 'news', 'post', 'comment', 'suggestion'];
 
 /** Where an admin can look at the reported content (admins can preview hidden items). */
 export function reportTargetLink(r) {
@@ -45,6 +45,8 @@ export function reportTargetLink(r) {
   if (r.targetType === 'offer') return `/offers/${r.targetId}`;
   if (r.targetType === 'event') return `/events/${r.target.slug}`;
   if (r.targetType === 'news') return `/news/${r.target.slug}`;
+  if (r.targetType === 'post') return `/community/${r.targetId}`;
+  if (r.targetType === 'comment') return r.target.postId ? `/community/${r.target.postId}#comments` : null;
   if (r.targetType === 'business' || r.targetType === 'review') return r.target.slug ? `/businesses/${r.target.slug}` : null;
   return null;
 }

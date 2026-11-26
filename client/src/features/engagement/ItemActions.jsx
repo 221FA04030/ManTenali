@@ -95,14 +95,14 @@ function ReportButton({ targetType, targetId, title, compact = false }) {
 
 /**
  * Save / Share / Report row for detail pages. News can be shared and reported
- * but not saved (FR-FAV-1 covers businesses, offers and events).
+ * but not saved (FR-FAV-1 covers businesses, offers, events and community posts).
  */
-export function ItemActions({ targetType, targetId, title, canSave = true, className }) {
+export function ItemActions({ targetType, targetId, title, canSave = true, canReport = true, className }) {
   return (
     <div className={cn('flex gap-2', className)}>
       {canSave && <SaveButton targetType={targetType} targetId={targetId} title={title} />}
       <ShareButton targetType={targetType} targetId={targetId} title={title} />
-      <ReportButton targetType={targetType} targetId={targetId} title={title} />
+      {canReport && <ReportButton targetType={targetType} targetId={targetId} title={title} />}
     </div>
   );
 }

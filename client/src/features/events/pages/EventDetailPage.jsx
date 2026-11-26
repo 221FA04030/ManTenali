@@ -8,7 +8,7 @@ import { Skeleton, ListSkeleton } from '../../../components/ui/Skeleton.jsx';
 import { ErrorState } from '../../../components/ui/ErrorState.jsx';
 import { EmptyState } from '../../../components/ui/EmptyState.jsx';
 import { cldUrl } from '../../../lib/cloudinary.js';
-import { directionsUrl } from '../../../lib/geo.js';
+import { LocationMap } from '../../../components/ui/LocationMap.jsx';
 import { categoryName } from '../../categories/api.js';
 import { useEvent } from '../api.js';
 import { EventStatusBadge, EventWhen } from '../components/EventBits.jsx';
@@ -116,9 +116,9 @@ export default function EventDetailPage() {
           <p className="text-[15px]">{e.venue.name}</p>
           <p className="text-sm text-ink-muted">{[e.venue.address, e.venue.area].join(', ')}</p>
           {e.location && (
-            <a href={directionsUrl(e.location)} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex min-h-tap items-center text-sm font-semibold text-brand-700 hover:underline">
-              {t('business.openInMaps')}
-            </a>
+            <div className="mt-3">
+              <LocationMap location={e.location} label={e.venue.name} />
+            </div>
           )}
         </Card>
 

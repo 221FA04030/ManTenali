@@ -88,7 +88,9 @@ function toAdminDTO(r, infoByType, contacts) {
     targetType: r.targetType,
     targetId: r.targetId ? String(r.targetId) : null,
     // null when the content no longer exists (e.g. a review its author deleted).
-    target: info ? { title: info.title, slug: info.slug ?? null, businessId: info.businessId ?? null, status: info.status, isPublic: info.isPublic } : null,
+    target: info
+      ? { title: info.title, slug: info.slug ?? null, businessId: info.businessId ?? null, postId: info.postId ?? null, status: info.status, isPublic: info.isPublic }
+      : null,
     reason: r.reason,
     details: r.details ?? '',
     status: r.status,

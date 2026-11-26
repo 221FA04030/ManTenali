@@ -13,6 +13,8 @@ import { BusinessCard } from '../../businesses/components/BusinessCard.jsx';
 import { OfferCard } from '../../offers/components/OfferCard.jsx';
 import { EventCard } from '../../events/components/EventCard.jsx';
 import { NewsCard } from '../../news/components/NewsCard.jsx';
+import { PostCard } from '../../community/components/PostCard.jsx';
+import { useBusinessCategoryLink } from '../../categories/api.js';
 import { HomeBanner } from '../components/HomeBanner.jsx';
 import { TodayInTenali } from '../components/TodayInTenali.jsx';
 import { useHomeFeed } from '../api.js';
@@ -39,7 +41,8 @@ function FeedSection({ id, title, to, items, render }) {
 /**
  * Home screen (spec section 11): header with search, category tiles, then the
  * GET /home feed - banner, Today in Tenali, nearby businesses, active offers,
- * upcoming events and latest news. Tiles and search work even if the feed fails.
+ * popular food places, upcoming events, verified businesses, community posts
+ * and latest news. Empty sections are hidden. Tiles and search work even if the feed fails.
  */
 export default function HomePage() {
   const { t } = useTranslation();
@@ -50,6 +53,7 @@ export default function HomePage() {
     [coords, area],
   );
   const feed = useHomeFeed(params);
+  const categoryLink = useBusinessCategoryLink();
   const d = feed.data;
   const nearbyTitle =
     d?.nearby.mode === 'near' ? t('home.nearbyTitle') : d?.nearby.mode === 'area' ? t('home.nearbyArea', { area: d.nearby.area }) : t('home.popularTitle');
@@ -61,12 +65,15 @@ export default function HomePage() {
       </HomeHeader>
 
       <section aria-label={t('home.categoriesLabel')} className="page-pad pt-2">
-        <ul className="grid grid-cols-4 gap-2.5 sm:gap-3 md:grid-cols-8">
-          {HOME_TILES.map((tile) => (
-            <li key={tile.key}>
-              <CategoryTile icon={tile.icon} label={t(tile.labelKey)} to={tile.to} comingSoon={tile.comingSoon} />
-            </li>
-          ))}
+        <ul className="grid grid-cols-4 gap-2.5 sm:gap-3 md:grid-cols-6">
+          {HOME_TILES.map((tile) => {
+            const link = tile.categorySlug ? categoryLink(tile.categorySlug) : { to: tile.to };
+            return (
+              <li key={tile.key}>
+                <CategoryTile icon={tile.icon} label={t(tile.labelKey)} to={link.to} comingSoon={tile.comingSoon || link.missing} />
+              </li>
+            );
+          })}
         </ul>
       </section>
 
@@ -86,7 +93,10 @@ export default function HomePage() {
             <TodayInTenali today={d.today} />
             <FeedSection id="home-nearby" title={nearbyTitle} to="/businesses" items={d.nearby.items} render={(b) => <BusinessCard business={b} />} />
             <FeedSection id="home-offers" title={t('home.offersTitle')} to="/offers" items={d.offers} render={(o) => <OfferCard offer={o} />} />
+            <FeedSection id="home-food" title={t('home.foodTitle')} to="/food?sort=rating" items={d.food} render={(b) => <BusinessCard business={b} />} />
             <FeedSection id="home-events" title={t('home.eventsTitle')} to="/events" items={d.events} render={(e) => <EventCard event={e} />} />
+            <FeedSection id="home-featured" title={t('home.featuredTitle')} to="/businesses?isVerified=true" items={d.featured} render={(b) => <BusinessCard business={b} />} />
+            <FeedSection id="home-community" title={t('home.communityTitle')} to="/community" items={d.community} render={(p) => <PostCard post={p} />} />
             <FeedSection id="home-news" title={t('home.newsTitle')} to="/news?type=news" items={d.news} render={(n) => <NewsCard item={n} />} />
           </>
         )}

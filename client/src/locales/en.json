@@ -6,12 +6,12 @@
   },
   "nav": {
     "home": "Home",
-    "explore": "Explore",
-    "suggest": "Suggest",
     "saved": "Saved",
     "profile": "Profile",
     "main": "Main navigation",
-    "back": "Go back"
+    "back": "Go back",
+    "post": "Post",
+    "discover": "Discover"
   },
   "menu": {
     "open": "Open menu",
@@ -25,7 +25,8 @@
     "logout": "Log out"
   },
   "header": {
-    "notifications": "Today in Tenali updates"
+    "notifications": "Today in Tenali updates",
+    "profile": "Your profile ({{name}})"
   },
   "search": {
     "placeholder": "Search in Tenali...",
@@ -80,13 +81,18 @@
   "tiles": {
     "news": "News & Updates",
     "shops": "Local Shops",
-    "food": "Food & Hotels",
+    "food": "Food & Dining",
     "bus": "Bus Tracking",
     "events": "Events",
     "jobs": "Jobs",
     "services": "Services",
     "more": "More",
-    "offers": "Offers"
+    "offers": "Offers",
+    "shopping": "Shopping",
+    "health": "Health & Medical",
+    "education": "Education",
+    "hotels": "Hotels & Stay",
+    "community": "Community"
   },
   "home": {
     "categoriesLabel": "Browse categories",
@@ -105,10 +111,13 @@
     "banner": {
       "event": "Event",
       "offer": "Offer"
-    }
+    },
+    "foodTitle": "Popular restaurants",
+    "featuredTitle": "Verified businesses",
+    "communityTitle": "From the community"
   },
   "explore": {
-    "title": "Explore Tenali",
+    "title": "Discover Tenali",
     "subtitle": "All in one place",
     "shops": {
       "title": "Local Shops & Businesses",
@@ -139,7 +148,7 @@
       "subtitle": "Municipality, bills, complaints"
     },
     "health": {
-      "title": "Health & Hospitals",
+      "title": "Health & Medical",
       "subtitle": "Hospitals, clinics, pharmacies"
     },
     "education": {
@@ -153,6 +162,10 @@
     "jobs": {
       "title": "Jobs & Internships",
       "subtitle": "Local job opportunities"
+    },
+    "community": {
+      "title": "Community",
+      "subtitle": "Recommendations, questions and local updates"
     }
   },
   "badge": {
@@ -199,7 +212,9 @@
     "login": "Log in",
     "suggest": "Suggest",
     "admin": "Admin",
-    "about": "About"
+    "about": "About",
+    "community": "Community",
+    "addSomething": "Add to Mana Tenali"
   },
   "about": {
     "body": "Mana Tenali is a local discovery and community app for Tenali, Andhra Pradesh. Find shops, food, offers, events and local news - with sources and update times shown so you know what to trust."
@@ -307,7 +322,10 @@
     "ratings_one": "{{count}} rating",
     "ratings_other": "{{count}} ratings",
     "verifiedOn": "Verified {{date}}",
-    "allIn": "All {{name}}"
+    "allIn": "All {{name}}",
+    "noPhotos": "No photos yet",
+    "addPhotos": "Add photos",
+    "recommend": "Recommend this place to the community"
   },
   "location": {
     "nearMe": "Near me",
@@ -315,7 +333,9 @@
     "allAreas": "All areas",
     "usingNearMe": "Using your location",
     "denied": "Location permission was denied. Choose your area instead.",
-    "unavailable": "Couldn't get your location. Choose your area instead."
+    "unavailable": "Couldn't get your location. Choose your area instead.",
+    "nearMeChip": "Near me",
+    "allTenali": "All of Tenali"
   },
   "status": {
     "draft": "Draft",
@@ -877,7 +897,9 @@
       "offer_one": "Offers ({{count}})",
       "offer_other": "Offers ({{count}})",
       "event_one": "Events ({{count}})",
-      "event_other": "Events ({{count}})"
+      "event_other": "Events ({{count}})",
+      "post_one": "Community posts ({{count}})",
+      "post_other": "Community posts ({{count}})"
     },
     "unavailable": "This item is no longer available. It may have ended or been removed.",
     "unavailableShort": "unavailable item",
@@ -898,7 +920,9 @@
       "review": "Report this review",
       "offer": "Report this offer",
       "event": "Report this event",
-      "news": "Report this news item"
+      "news": "Report this news item",
+      "post": "Report this post",
+      "comment": "Report this comment"
     },
     "reasonLabel": "What is wrong?",
     "reasons": {
@@ -938,7 +962,9 @@
       "correction": "What is wrong and where you saw it.",
       "idea": "What would make Mana Tenali more useful for you?"
     },
-    "send": "Send suggestion"
+    "send": "Send suggestion",
+    "post": "Write a community post",
+    "postHint": "Recommend a place, ask a question or share a local update"
   },
   "reviews": {
     "title": "Reviews",
@@ -986,7 +1012,9 @@
       "offer": "Offer",
       "event": "Event",
       "news": "News",
-      "suggestion": "Suggestion"
+      "suggestion": "Suggestion",
+      "post": "Community post",
+      "comment": "Comment"
     },
     "reasons": {
       "wrong_info": "Wrong information",
@@ -1100,5 +1128,96 @@
   "offline": {
     "title": "You are offline.",
     "body": "You can still read what is already on screen. We will update it when your connection is back."
+  },
+  "community": {
+    "tagline": "Tenali people helping each other",
+    "prompt": "Recommend, ask or share something...",
+    "write": "Write",
+    "kindLabel": "Type of post",
+    "all": "All",
+    "latest": "Latest posts",
+    "kinds": {
+      "recommendation": "Recommendation",
+      "question": "Question",
+      "update": "Local update"
+    },
+    "kindsPlural": {
+      "recommendation": "Recommendations",
+      "question": "Questions",
+      "update": "Local updates"
+    },
+    "kindHints": {
+      "recommendation": "A place, dish or service you liked and why.",
+      "question": "Ask your neighbours - someone will know.",
+      "update": "Something happening nearby that others should know."
+    },
+    "placeholders": {
+      "recommendation": "Which place do you recommend, and what is good there?",
+      "question": "What would you like to ask?",
+      "update": "What is happening, and where?"
+    },
+    "someone": "A Tenali resident",
+    "edited": "edited",
+    "like": "Like ({{count}} likes)",
+    "unlike": "Remove like ({{count}} likes)",
+    "commentsCount_one": "{{count}} comment - open",
+    "commentsCount_other": "{{count}} comments - open",
+    "commentsTitle_one": "{{count}} comment",
+    "commentsTitle_other": "{{count}} comments",
+    "noComments": "No comments yet. Be the first to reply.",
+    "addComment": "Add a comment",
+    "sendComment": "Send comment",
+    "loginToComment": "Log in to comment",
+    "commentBy": "comment by {{name}}",
+    "emptyTitle": "No posts yet",
+    "emptyBody": "Be the first to recommend a place or ask a question.",
+    "notFound": "Post not available",
+    "notFoundBody": "It may have been deleted or hidden.",
+    "newTitle": "Write a post",
+    "editTitle": "Edit post",
+    "publish": "Post",
+    "saveChanges": "Save changes",
+    "posted": "Your post is live.",
+    "updated": "Post updated.",
+    "edit": "Edit",
+    "delete": "Delete",
+    "hide": "Hide",
+    "deletePostTitle": "Delete this post?",
+    "deletePostBody": "It will be removed from the community feed, with its comments. This cannot be undone.",
+    "hidePostTitle": "Hide this post?",
+    "deleteCommentTitle": "Delete this comment?",
+    "deleteCommentBody": "Your comment will be removed. This cannot be undone.",
+    "hideCommentTitle": "Hide this comment?",
+    "hideBody": "It will no longer be shown to anyone. You can see it from the reports queue.",
+    "postDeleted": "Post deleted.",
+    "postHidden": "Post hidden.",
+    "commentDeleted": "Comment deleted.",
+    "commentHidden": "Comment hidden.",
+    "adminPreview": "Only admins can see this post.",
+    "status": {
+      "published": "Published",
+      "hidden": "Hidden",
+      "removed": "Deleted"
+    },
+    "f": {
+      "kind": "What kind of post?",
+      "text": "Your post",
+      "textHint": "{{used}} / {{max}} characters",
+      "area": "Area (optional)",
+      "noArea": "No area",
+      "business": "About this business",
+      "unlinkBusiness": "Remove the linked business",
+      "photo": "Photo (optional)",
+      "rules": "Be kind and accurate. No adverts, phone numbers or personal details of others. Posts that break these rules are removed."
+    },
+    "v": {
+      "textShort": "Write at least {{min}} characters.",
+      "commentEmpty": "Write a comment first."
+    },
+    "cardHeading": "{{kind}} by {{name}}"
+  },
+  "map": {
+    "label": "Map: {{name}}",
+    "directions": "Get directions"
   }
 }

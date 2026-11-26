@@ -28,6 +28,7 @@ import { Review } from '../../modules/reviews/reviews.model.js';
 import { seedReviews } from '../../modules/reviews/reviews.service.js';
 import { seedFavorites } from '../../modules/favorites/favorites.service.js';
 import { seedReports } from '../../modules/reports/reports.service.js';
+import { seedPosts } from '../../modules/community/community.service.js';
 import { seedCategories, seedCategoryTree, findIdBySlug, getParentMap } from '../../modules/categories/categories.service.js';
 import { evidenceFolderFor } from '../../modules/media/media.service.js';
 import { toPoint } from '../../common/utils/geo.js';
@@ -37,7 +38,7 @@ import { BUSINESS_SEED } from '../seedData/businesses.js';
 import { OFFER_SEED } from '../seedData/offers.js';
 import { EVENT_SEED } from '../seedData/events.js';
 import { NEWS_SEED } from '../seedData/news.js';
-import { DEMO_USERS, DEMO_BUSINESSES, DEMO_OFFERS, DEMO_EVENTS, DEMO_SUBMISSIONS, DEMO_NEWS, DEMO_REVIEWS, DEMO_FAVORITES, DEMO_REPORTS, EVIDENCE_FIXTURES } from './demoData.js';
+import { DEMO_USERS, DEMO_BUSINESSES, DEMO_OFFERS, DEMO_EVENTS, DEMO_SUBMISSIONS, DEMO_NEWS, DEMO_REVIEWS, DEMO_FAVORITES, DEMO_REPORTS, DEMO_POSTS, EVIDENCE_FIXTURES } from './demoData.js';
 
 const DAY = 86_400_000;
 export const FIXTURES_DIR = fileURLToPath(new URL('./fixtures/', import.meta.url));
@@ -312,6 +313,29 @@ async function seedDemoEngagement(users) {
   return { reviews: reviews.created, favorites: favorites.created, reports: reports.created };
 }
 
+/** Community posts with their likes and comments (all marked as demo). */
+async function seedDemoPosts(users, now) {
+  const bizIds = await getIdsBySlugs(DEMO_POSTS.map((p) => p.business).filter(Boolean));
+  const { created } = await seedPosts(
+    DEMO_POSTS.map((p) => {
+      const at = new Date(now.getTime() - p.hoursAgo * 3_600_000);
+      return {
+        authorId: users.get(p.author),
+        kind: p.kind,
+        text: p.text,
+        area: p.area,
+        businessId: p.business ? bizIds.get(p.business) : undefined,
+        status: p.status ?? 'published',
+        createdAt: at,
+        updatedAt: at,
+        likedBy: p.likedBy.map((k) => users.get(k)),
+        comments: p.comments.map((c) => ({ authorId: users.get(c.author), text: c.text })),
+      };
+    }),
+  );
+  return created;
+}
+
 /**
  * Load everything: reference categories, the existing "(Sample)" content
  * (same as `npm run seed -- --samples`) and the demo accounts, businesses,
@@ -346,6 +370,7 @@ export async function seedDemo({ now = new Date() } = {}) {
   const admin = users.ids.get('admin');
   const news = await seedNews([...NEWS_SEED, ...DEMO_NEWS.map((n) => ({ ...n, createdBy: admin }))], newsCats, now);
   const engagement = await seedDemoEngagement(users.ids);
+  const posts = await seedDemoPosts(users.ids, now);
   return {
     users: users.created,
     businesses: samples.created + businesses,
@@ -354,5 +379,6 @@ export async function seedDemo({ now = new Date() } = {}) {
     evidence: submissions.evidence,
     news: news.created,
     ...engagement,
+    posts,
   };
 }

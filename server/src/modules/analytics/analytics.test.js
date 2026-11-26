@@ -26,6 +26,7 @@ describe('POST /analytics/events (FR-ANA-1)', () => {
       { type: 'offer_view', targetType: 'offer', targetId: ID },
       { type: 'contact_click', targetType: 'business', targetId: ID },
       { type: 'share', targetType: 'offer', targetId: ID },
+      { type: 'share', targetType: 'post', targetId: ID },
       { type: 'search' },
     ];
     for (const body of ok) expect((await post({ ...body, sessionId: SID })).status).toBe(202);
@@ -33,7 +34,7 @@ describe('POST /analytics/events (FR-ANA-1)', () => {
     expect((await post({ type: 'search', sessionId: SID }, agent)).body).toEqual({ success: true, data: { recorded: true } });
 
     const stored = await ActivityEvent.find().lean();
-    expect(stored).toHaveLength(8);
+    expect(stored).toHaveLength(9);
     // Only these fields exist: no user id, IP address, query text or coordinates, even when signed in.
     for (const doc of stored) {
       expect(Object.keys(doc).filter((k) => !['_id', 'type', 'targetType', 'targetId', 'sessionId', 'createdAt'].includes(k))).toEqual([]);
@@ -43,6 +44,7 @@ describe('POST /analytics/events (FR-ANA-1)', () => {
   it('rejects targets that do not fit the type, bad ids, unknown fields and missing session ids', async () => {
     const bad = [
       { type: 'contact_click', targetType: 'event', targetId: ID },
+      { type: 'view', targetType: 'post', targetId: ID }, // posts: shares only
       { type: 'offer_view', targetType: 'business', targetId: ID },
       { type: 'view', targetType: 'business' },
       { type: 'view', targetType: 'review', targetId: ID },

@@ -10,15 +10,66 @@ describe('Home screen and app shell', () => {
     renderApp('/');
     expect(await screen.findByText('Mana Tenali')).toBeInTheDocument();
     expect(screen.getByRole('searchbox', { name: 'Search Mana Tenali' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Area' })).toHaveDisplayValue('All of Tenali');
+    expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute('href', '/login');
 
     const grid = screen.getByRole('region', { name: 'Browse categories' });
     expect(within(grid).getByRole('link', { name: /News & Updates/ })).toHaveAttribute('href', '/news');
-    expect(within(grid).getByRole('link', { name: /Local Shops/ })).toHaveAttribute('href', '/businesses');
+    expect(within(grid).getByRole('link', { name: /Food & Dining/ })).toHaveAttribute('href', '/food');
+    expect(within(grid).getByRole('link', { name: /Community/ })).toHaveAttribute('href', '/community');
     expect(within(grid).getByRole('link', { name: /Services/ })).toHaveAttribute('href', '/businesses?kind=service');
-    expect(within(grid).getByRole('link', { name: /More/ })).toHaveAttribute('href', '/explore');
+    expect(within(grid).getByRole('link', { name: /More/ })).toHaveAttribute('href', '/discover');
+    // Category shortcuts open the full list until categories load (none are mocked here).
+    expect(within(grid).getByRole('link', { name: /Shopping/ })).toHaveAttribute('href', '/businesses');
     expect(within(grid).queryByRole('link', { name: /Bus Tracking/ })).toBeNull();
-    expect(within(grid).queryByRole('link', { name: /Jobs/ })).toBeNull();
+    expect(within(grid).getAllByText('Soon')).toHaveLength(1);
+  });
+
+  it('category shortcuts open their real category; a category that does not exist stays "Coming soon"', async () => {
+    mockApi({
+      'GET /categories': () =>
+        ok([
+          { id: 'c-shop', slug: 'shopping', parentId: null, name: { en: 'Shopping', te: null } },
+          { id: 'c-health', slug: 'health-medical', parentId: null, name: { en: 'Health & Medical', te: null } },
+          { id: 'c-edu', slug: 'education', parentId: null, name: { en: 'Education', te: null } },
+        ]),
+    });
+    renderApp('/');
+    const grid = await screen.findByRole('region', { name: 'Browse categories' });
+    await waitFor(() => expect(within(grid).getByRole('link', { name: /Shopping/ })).toHaveAttribute('href', '/businesses?categoryId=c-shop'));
+    expect(within(grid).getByRole('link', { name: /Health & Medical/ })).toHaveAttribute('href', '/businesses?categoryId=c-health');
+    expect(within(grid).getByRole('link', { name: /Education/ })).toHaveAttribute('href', '/businesses?categoryId=c-edu');
+    expect(within(grid).queryByRole('link', { name: /Hotels & Stay/ })).toBeNull(); // not in this category list
     expect(within(grid).getAllByText('Soon')).toHaveLength(2);
+  });
+
+  it('signed-in people see their profile button; Home shows popular food, verified businesses and community posts', async () => {
+    const biz = (id, name) => ({
+      id, slug: id, name, kind: 'food', category: null, subcategory: null, area: 'Kothapeta', location: null, photo: null,
+      isVerified: true, isSeed: false, ratingAvg: 4.5, ratingCount: 3, isOpenNow: null, contact: {}, updatedAt: '2026-11-25T04:00:00.000Z',
+    });
+    const post = {
+      id: 'p1', kind: 'question', text: 'Where is a good tailor?', photo: null, area: null, business: null,
+      author: { id: 'u9', name: 'Lakshmi', avatarUrl: null }, likeCount: 0, commentCount: 0, likedByMe: false, isMine: false,
+      isSeed: false, createdAt: '2026-11-25T04:00:00.000Z', editedAt: null,
+    };
+    mockApi({
+      'GET /auth/me': () => ok({ id: 'u1', name: 'Ravi Kumar', email: 'r@example.com', role: 'user', avatarUrl: null, language: 'en', status: 'active' }),
+      'GET /home': () =>
+        ok({
+          banner: [], today: { notices: [], nextEvent: null }, nearby: { mode: 'all', items: [] }, offers: [], events: [], news: [],
+          food: [biz('b1', 'Padma Meals')],
+          featured: [biz('b2', 'Sri Hardware')],
+          community: [post],
+        }),
+    });
+    renderApp('/');
+    expect(await screen.findByRole('link', { name: 'Your profile (Ravi Kumar)' })).toHaveAttribute('href', '/profile');
+    const food = await screen.findByRole('region', { name: /Popular restaurants/ });
+    expect(within(food).getByText('Padma Meals')).toBeInTheDocument();
+    expect(within(screen.getByRole('region', { name: /Verified businesses/ })).getByText('Sri Hardware')).toBeInTheDocument();
+    expect(within(screen.getByRole('region', { name: /From the community/ })).getByText('Where is a good tailor?')).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: /Active offers/ })).toBeNull(); // empty sections are hidden
   });
 
   it('search submits to /search with the query', async () => {
@@ -34,12 +85,12 @@ describe('Home screen and app shell', () => {
     const user = userEvent.setup();
     const nav = await screen.findByRole('navigation', { name: 'Main navigation' });
     expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
-    await user.click(within(nav).getByRole('link', { name: 'Explore' }));
-    expect(router.state.location.pathname).toBe('/explore');
+    await user.click(within(nav).getByRole('link', { name: 'Discover' }));
+    expect(router.state.location.pathname).toBe('/discover');
     await waitFor(() =>
-      expect(within(nav).getByRole('link', { name: 'Explore' })).toHaveAttribute('aria-current', 'page'),
+      expect(within(nav).getByRole('link', { name: 'Discover' })).toHaveAttribute('aria-current', 'page'),
     );
-    for (const label of ['Suggest', 'Saved', 'Profile']) {
+    for (const label of ['Post', 'Saved', 'Profile']) {
       expect(within(nav).getByRole('link', { name: label })).toBeInTheDocument();
     }
   });
@@ -50,7 +101,7 @@ describe('Home screen and app shell', () => {
     await user.click(await screen.findByRole('button', { name: 'Open menu' }));
     await user.click(screen.getByRole('button', { name: 'తెలుగు' }));
     expect(await screen.findAllByText('మన తెనాలి')).not.toHaveLength(0);
-    expect(screen.getByText('స్థానిక దుకాణాలు')).toBeInTheDocument();
+    expect(screen.getByText('షాపింగ్')).toBeInTheDocument();
     expect(document.documentElement.lang).toBe('te');
     expect(JSON.parse(window.localStorage.getItem('mt.lang'))).toBe('te');
   });

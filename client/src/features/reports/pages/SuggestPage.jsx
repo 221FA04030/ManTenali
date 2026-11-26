@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { CalendarPlus, CheckCircle2, Lightbulb, Store } from 'lucide-react';
+import { CalendarPlus, CheckCircle2, Lightbulb, PenLine, Store } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { Card } from '../../../components/ui/Card.jsx';
 import { ListRow } from '../../../components/ui/ListRow.jsx';
@@ -13,7 +13,7 @@ import { useAuth } from '../../auth/AuthContext.jsx';
 import { MIN_DETAILS, SUGGESTION_REASONS, useCreateReport } from '../api.js';
 
 /**
- * /suggest - the centre "Suggest" button (decision U1 / D0.13). Owners list their
+ * /suggest - the centre "Post" button (decision U1 / D0.13). Owners list their
  * own business and organisers submit events through the existing flows; anything
  * else (a missing business, a correction, an idea) is sent to admins as a suggestion.
  */
@@ -35,10 +35,13 @@ export default function SuggestPage() {
 
   return (
     <>
-      <PageHeader title={t('pages.suggest')} />
+      <PageHeader title={t('pages.addSomething')} />
       <div className="flex flex-col gap-4 p-4">
         <p className="text-[15px] text-ink-muted">{t('suggest.intro')}</p>
         <ul className="flex flex-col gap-3">
+          <li>
+            <ListRow icon={PenLine} title={t('suggest.post')} subtitle={t('suggest.postHint')} to="/community/new" />
+          </li>
           <li>
             <ListRow icon={Store} title={t('suggest.ownBusiness')} subtitle={t('suggest.ownBusinessHint')} to="/manage/new" />
           </li>

@@ -5,10 +5,11 @@ export const ACTIVITY_TARGETS = Object.freeze({
   view: ['business', 'event', 'news'],
   offer_view: ['offer'],
   contact_click: ['business'],
-  share: ['business', 'offer', 'event', 'news'],
+  share: ['business', 'offer', 'event', 'news', 'post'],
   search: [],
 });
 export const ACTIVITY_TYPES = Object.freeze(Object.keys(ACTIVITY_TARGETS));
+export const ACTIVITY_TARGET_TYPES = Object.freeze([...new Set(Object.values(ACTIVITY_TARGETS).flat())]);
 export const RETENTION_DAYS = 180;
 
 /**
@@ -18,7 +19,7 @@ export const RETENTION_DAYS = 180;
 const activitySchema = new mongoose.Schema(
   {
     type: { type: String, enum: ACTIVITY_TYPES, required: true },
-    targetType: { type: String, enum: ['business', 'offer', 'event', 'news'] },
+    targetType: { type: String, enum: ACTIVITY_TARGET_TYPES },
     targetId: { type: mongoose.Schema.Types.ObjectId },
     sessionId: { type: String, required: true, maxlength: 64 },
     createdAt: { type: Date, default: Date.now },

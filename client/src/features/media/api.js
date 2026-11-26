@@ -7,6 +7,7 @@ export const UPLOAD_LIMITS = {
   offer_image: 5 * 1024 * 1024,
   event_banner: 5 * 1024 * 1024,
   news_cover: 5 * 1024 * 1024,
+  post_photo: 5 * 1024 * 1024,
 };
 export const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 

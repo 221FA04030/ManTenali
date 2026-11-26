@@ -2,8 +2,9 @@ import * as businessesService from '../businesses/businesses.service.js';
 import * as offersService from '../offers/offers.service.js';
 import * as eventsService from '../events/events.service.js';
 import * as newsService from '../news/news.service.js';
+import * as communityService from '../community/community.service.js';
 
-export const HOME_LIMITS = Object.freeze({ banner: 5, bannerNews: 3, notices: 4, nearby: 3, offers: 4, events: 3, news: 3 });
+export const HOME_LIMITS = Object.freeze({ banner: 5, bannerNews: 3, notices: 4, nearby: 3, offers: 4, events: 3, news: 3, food: 4, featured: 4, community: 3 });
 const NEAR_ME_KM = 10;
 
 /**
@@ -40,9 +41,10 @@ async function nearbyBusinesses({ lat, lng, radiusKm, area }, now) {
 /**
  * GET /home: the Home screen in one request, composed from module services
  * (each applies its own public rules: published, valid, not expired).
+ * `viewer` (optional) only marks which community posts they have liked.
  */
-export async function getFeed(query = {}, now = new Date()) {
-  const [pinned, nextEvents, endingSoon, notices, nearby, events, news] = await Promise.all([
+export async function getFeed(query = {}, now = new Date(), viewer = null) {
+  const [pinned, nextEvents, endingSoon, notices, nearby, events, news, food, featured, community] = await Promise.all([
     newsService.listPinned(HOME_LIMITS.banner, now),
     eventsService.nextUpcoming(HOME_LIMITS.banner, now),
     offersService.listPublic({ page: 1, limit: HOME_LIMITS.banner, sort: 'endingSoon' }, now),
@@ -50,6 +52,9 @@ export async function getFeed(query = {}, now = new Date()) {
     nearbyBusinesses(query, now),
     eventsService.listPublic({ page: 1, limit: HOME_LIMITS.events }, now),
     newsService.listPublic({ page: 1, limit: HOME_LIMITS.news, type: 'news' }, now),
+    businessesService.listPublic({ page: 1, limit: HOME_LIMITS.food, kind: 'food', sort: 'rating' }, now),
+    businessesService.listPublic({ page: 1, limit: HOME_LIMITS.featured, isVerified: true, sort: 'rating' }, now),
+    communityService.latest(HOME_LIMITS.community, viewer),
   ]);
   return {
     banner: composeBanner(pinned, nextEvents, endingSoon.items),
@@ -58,5 +63,9 @@ export async function getFeed(query = {}, now = new Date()) {
     offers: endingSoon.items.slice(0, HOME_LIMITS.offers),
     events: events.items,
     news: news.items,
+    // Highest-rated food places; verified businesses; the newest community posts.
+    food: food.items,
+    featured: featured.items,
+    community,
   };
 }

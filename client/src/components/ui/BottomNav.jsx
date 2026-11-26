@@ -5,13 +5,13 @@ import { cn } from '../../lib/cn.js';
 
 const ITEMS = [
   { to: '/', key: 'home', icon: House, end: true, fill: true },
-  { to: '/explore', key: 'explore', icon: Compass },
-  { to: '/suggest', key: 'suggest', icon: Plus, center: true },
+  { to: '/discover', key: 'discover', icon: Compass },
+  { to: '/suggest', key: 'post', icon: Plus, center: true },
   { to: '/saved', key: 'saved', icon: Bookmark, fill: true },
   { to: '/profile', key: 'profile', icon: User },
 ];
 
-/** Always-visible bottom navigation (Home, Explore, Suggest, Saved, Profile). */
+/** Always-visible bottom navigation (Home, Discover, Post, Saved, Profile). The centre button opens the "add something" hub. */
 export function BottomNav() {
   const { t } = useTranslation();
   return (

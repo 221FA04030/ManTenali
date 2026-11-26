@@ -3,9 +3,10 @@ import { Clock, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge, SampleBadge } from '../../../components/ui/Badge.jsx';
 import { categoryName } from '../../categories/api.js';
+import { cldUrl } from '../../../lib/cloudinary.js';
 import { DateBlock, EventWhen } from './EventBits.jsx';
 
-/** Event card: date block, title, time, venue area, category, cancelled label. */
+/** Event card: date block, title, time, venue area, category, cancelled label, banner thumbnail when there is one. */
 export function EventCard({ event: e }) {
   const { t, i18n } = useTranslation();
   return (
@@ -30,6 +31,14 @@ export function EventCard({ event: e }) {
           <span className="truncate">{[e.venue.name, e.venue.area].join(' • ')}</span>
         </span>
       </span>
+      {e.bannerImage && (
+        <img
+          src={cldUrl(e.bannerImage.url, { w: 192, h: 192 })}
+          alt=""
+          loading="lazy"
+          className={`h-[88px] w-[88px] shrink-0 self-center rounded-2xl object-cover ${e.isCancelled ? 'opacity-60 grayscale' : ''}`}
+        />
+      )}
     </Link>
   );
 }

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { objectId } from '../../common/utils/validators.js';
 import { isIsoDate } from '../../common/utils/dates.js';
-import { ACTIVITY_TARGETS, ACTIVITY_TYPES } from './analytics.model.js';
+import { ACTIVITY_TARGETS, ACTIVITY_TARGET_TYPES, ACTIVITY_TYPES } from './analytics.model.js';
 
 const isoDate = z.string().refine(isIsoDate, 'Use a valid date (YYYY-MM-DD)');
 
@@ -9,7 +9,7 @@ const isoDate = z.string().refine(isIsoDate, 'Use a valid date (YYYY-MM-DD)');
 export const eventSchema = z
   .strictObject({
     type: z.enum(ACTIVITY_TYPES),
-    targetType: z.enum(['business', 'offer', 'event', 'news']).optional(),
+    targetType: z.enum(ACTIVITY_TARGET_TYPES).optional(),
     targetId: objectId.optional(),
     sessionId: z.string().regex(/^[A-Za-z0-9-]{8,64}$/, 'Invalid session id'),
   })

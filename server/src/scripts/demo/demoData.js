@@ -498,3 +498,47 @@ export const DEMO_SUBMISSIONS = [
     evidence: [{ fixture: 'poster' }],
   },
 ];
+
+/** Community posts (demo only, clearly labelled). `business` links a demo listing; one post is hidden by moderation. */
+export const DEMO_POSTS = [
+  {
+    author: 'user',
+    kind: 'recommendation',
+    text: 'Demo post: the Andhra meals at the demo Padma listing were fresh and served hot. Good for a quick lunch.',
+    area: 'Ramalingeswarapet',
+    business: 'demo-padma-andhra-meals',
+    hoursAgo: 3,
+    likedBy: ['user2', 'owner2'],
+    comments: [{ author: 'user2', text: 'Demo comment: agreed, the rasam was very good.' }],
+  },
+  {
+    author: 'user2',
+    kind: 'question',
+    text: 'Demo post: where can I get a bicycle tyre fixed near Bose Road on a Sunday?',
+    area: 'Bose Road',
+    hoursAgo: 20,
+    likedBy: ['user'],
+    comments: [
+      { author: 'owner2', text: 'Demo comment: the demo cycle store listing is open on Sunday mornings.' },
+      { author: 'user', text: 'Demo comment: thanks, that helps.' },
+    ],
+  },
+  {
+    author: 'owner',
+    kind: 'update',
+    text: 'Demo post: the road near the demo juice corner is being repaired this week, so please use the side lane.',
+    area: 'Ramalingeswarapet',
+    hoursAgo: 48,
+    likedBy: [],
+    comments: [],
+  },
+  {
+    author: 'blocked',
+    kind: 'update',
+    text: 'Demo post hidden by moderation: an example of a post an admin removed from the feed.',
+    status: 'hidden',
+    hoursAgo: 72,
+    likedBy: [],
+    comments: [],
+  },
+];

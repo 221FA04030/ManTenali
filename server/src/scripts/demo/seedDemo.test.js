@@ -87,13 +87,13 @@ describe('demo data load', () => {
     expect(first.evidence).toBeGreaterThanOrEqual(5);
     const before = await counts();
     const second = await seedDemo();
-    expect(second).toEqual({ users: 0, businesses: 0, offers: 0, events: 0, evidence: 0, news: 0, reviews: 0, favorites: 0, reports: 0 });
+    expect(second).toEqual({ users: 0, businesses: 0, offers: 0, events: 0, evidence: 0, news: 0, reviews: 0, favorites: 0, reports: 0, posts: 0 });
     expect(await counts()).toEqual(before);
   });
 
   it('adds reviews (ratings recalculated), saved items and open reports for Step 9', async () => {
     const summary = await seedDemo();
-    expect(summary).toMatchObject({ reviews: 5, favorites: 4, reports: 3 });
+    expect(summary).toMatchObject({ reviews: 5, favorites: 4, reports: 3, posts: 4 });
     const padma = await Business.findOne({ slug: 'demo-padma-andhra-meals' }).lean();
     expect(padma).toMatchObject({ ratingAvg: 4.5, ratingCount: 2 });
     const biryani = await Business.findOne({ slug: 'sample-kothapeta-biryani-house' }).lean();

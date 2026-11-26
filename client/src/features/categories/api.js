@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/apiClient.js';
 
@@ -54,4 +55,22 @@ export function useCategoryTree(type = 'business', options) {
 export function categoryName(category, lang) {
   if (!category) return '';
   return (lang === 'te' && category.name?.te) || category.name?.en || '';
+}
+
+/**
+ * Links to a main business category by slug (Home shortcuts, Discover rows):
+ * { to: '/businesses?categoryId=...' } once categories load; the full list while
+ * they load or cannot be fetched; { missing: true } when the category does not
+ * exist (shown as "Coming soon").
+ */
+export function useBusinessCategoryLink() {
+  const { data, isSuccess } = useCategories('business');
+  return useCallback(
+    (slug) => {
+      const c = data?.find((x) => x.slug === slug && !x.parentId);
+      if (c) return { to: `/businesses?categoryId=${c.id}` };
+      return isSuccess ? { missing: true } : { to: '/businesses' };
+    },
+    [data, isSuccess],
+  );
 }

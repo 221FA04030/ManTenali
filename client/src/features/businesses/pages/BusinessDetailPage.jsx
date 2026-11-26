@@ -1,13 +1,15 @@
 import { Link, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/AuthContext.jsx';
-import { BookOpen, Clock, Globe, Mail, MapPin, Pencil, Star, Store } from 'lucide-react';
+import { BookOpen, Clock, Globe, ImagePlus, Mail, MapPin, MessageSquarePlus, Pencil, Star, Store } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { Card } from '../../../components/ui/Card.jsx';
 import { Badge, TrustBadge } from '../../../components/ui/Badge.jsx';
 import { Skeleton, ListSkeleton } from '../../../components/ui/Skeleton.jsx';
 import { ErrorState } from '../../../components/ui/ErrorState.jsx';
 import { EmptyState } from '../../../components/ui/EmptyState.jsx';
+import { IconBubble } from '../../../components/ui/IconBubble.jsx';
+import { categoryIcon } from '../../../lib/categoryIcons.js';
 import { ContactActions } from '../components/ContactActions.jsx';
 import { HoursTable } from '../components/HoursTable.jsx';
 import { MenuView } from '../../food/components/MenuView.jsx';
@@ -17,10 +19,30 @@ import { useBusiness } from '../api.js';
 import { categoryName } from '../../categories/api.js';
 import { cldUrl } from '../../../lib/cloudinary.js';
 import { formatDateTime, formatRelative } from '../../../lib/format.js';
-import { directionsUrl } from '../../../lib/geo.js';
+import { LocationMap } from '../../../components/ui/LocationMap.jsx';
 import { track, useTrackOnce } from '../../../lib/analytics.js';
 import { ItemActions } from '../../engagement/ItemActions.jsx';
 import { ReviewsSection } from '../../reviews/components/ReviewsSection.jsx';
+
+/**
+ * Shown instead of the gallery when a listing has no photos yet: the category
+ * icon on a plain brand background (never a stock photo standing in for the
+ * real place). Owners and admins get a prompt to add photos.
+ */
+function NoPhotosCover({ icon, manageTo }) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex aspect-[21/9] w-full flex-col items-center justify-center gap-2 rounded-card bg-gradient-to-br from-brand-100 to-brand-50 ring-1 ring-brand-100">
+      <IconBubble icon={icon} size="lg" />
+      <p className="text-sm font-medium text-ink-muted">{t('business.noPhotos')}</p>
+      {manageTo && (
+        <Link to={manageTo} className="inline-flex min-h-tap items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-brand-800 ring-1 ring-brand-200 hover:bg-brand-50">
+          <ImagePlus className="h-4 w-4" aria-hidden="true" /> {t('business.addPhotos')}
+        </Link>
+      )}
+    </div>
+  );
+}
 
 function Gallery({ photos, name }) {
   if (!photos?.length) return null;
@@ -93,7 +115,14 @@ export default function BusinessDetailPage() {
         }
       />
       <div className="flex flex-col gap-4 p-4">
-        <Gallery photos={b.photos} name={b.name} />
+        {b.photos?.length ? (
+          <Gallery photos={b.photos} name={b.name} />
+        ) : (
+          <NoPhotosCover
+            icon={categoryIcon(b.subcategory?.icon ?? b.category?.icon)}
+            manageTo={b.canManage ? (user?.role === 'admin' ? `/admin/businesses/${b.slug}/edit` : `/manage/businesses/${b.id}`) : null}
+          />
+        )}
 
         <Card className="flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-1.5">
@@ -123,6 +152,14 @@ export default function BusinessDetailPage() {
         </Card>
 
         {isPublic && <ItemActions targetType="business" targetId={b.id} title={b.name} />}
+        {isPublic && (
+          <Link
+            to={`/community/new?business=${encodeURIComponent(b.slug)}`}
+            className="flex min-h-tap items-center justify-center gap-2 rounded-full bg-brand-50 px-4 text-sm font-semibold text-brand-800 ring-1 ring-brand-200 hover:bg-brand-100"
+          >
+            <MessageSquarePlus className="h-4 w-4" aria-hidden="true" /> {t('business.recommend')}
+          </Link>
+        )}
 
         <BusinessOffersSection businessId={b.id} canManage={b.canManage && b.status === 'published'} />
 
@@ -184,14 +221,9 @@ export default function BusinessDetailPage() {
             {[b.address.area, 'Tenali', b.address.pincode].filter(Boolean).join(', ')}
           </p>
           {b.location && (
-            <a
-              href={directionsUrl(b.location)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 inline-flex min-h-tap items-center text-sm font-semibold text-brand-700 hover:underline"
-            >
-              {t('business.openInMaps')}
-            </a>
+            <div className="mt-3">
+              <LocationMap location={b.location} label={b.name} />
+            </div>
           )}
           {(b.contact.email || b.contact.website) && (
             <div className="mt-2 flex flex-col gap-1 border-t border-brand-50 pt-2 text-sm">

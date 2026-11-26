@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import { Navigate } from 'react-router-dom';
 import { Layout } from './Layout.jsx';
 import { RequireAuth } from '../features/auth/components/RequireAuth.jsx';
 
@@ -39,6 +40,9 @@ const NewsDetailPage = lazy(() => import('../features/news/pages/NewsDetailPage.
 const AdminNewsPage = lazy(() => import('../features/admin/pages/AdminNewsPage.jsx'));
 const AdminNewsFormPage = lazy(() => import('../features/admin/pages/AdminNewsFormPage.jsx'));
 const SearchPage = lazy(() => import('../features/search/pages/SearchPage.jsx'));
+const CommunityPage = lazy(() => import('../features/community/pages/CommunityPage.jsx'));
+const PostDetailPage = lazy(() => import('../features/community/pages/PostDetailPage.jsx'));
+const PostEditorPage = lazy(() => import('../features/community/pages/PostEditorPage.jsx'));
 const SavedPage = lazy(() => import('../features/favorites/pages/SavedPage.jsx'));
 const SuggestPage = lazy(() => import('../features/reports/pages/SuggestPage.jsx'));
 const MyReviewsPage = lazy(() => import('../features/reviews/pages/MyReviewsPage.jsx'));
@@ -56,7 +60,8 @@ export const routes = [
     element: <Layout />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: 'explore', element: <ExplorePage /> },
+      { path: 'discover', element: <ExplorePage /> },
+      { path: 'explore', element: <Navigate to="/discover" replace /> }, // old address
       { path: 'businesses', element: <BusinessListPage /> },
       { path: 'businesses/:slug', element: <BusinessDetailPage /> },
       { path: 'food', element: <FoodListPage /> },
@@ -69,6 +74,10 @@ export const routes = [
       { path: 'events/:slug', element: <EventDetailPage /> },
       { path: 'news', element: <NewsListPage /> },
       { path: 'news/:slug', element: <NewsDetailPage /> },
+      { path: 'community', element: <CommunityPage /> },
+      { path: 'community/new', element: signedIn(<PostEditorPage />) },
+      { path: 'community/:id/edit', element: signedIn(<PostEditorPage />) },
+      { path: 'community/:id', element: <PostDetailPage /> },
       { path: 'search', element: <SearchPage /> },
       { path: 'saved', element: signedIn(<SavedPage />) },
       { path: 'suggest', element: <SuggestPage /> },

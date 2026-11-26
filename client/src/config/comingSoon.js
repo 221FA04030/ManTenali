@@ -7,8 +7,6 @@ export const COMING_SOON = new Set([
   'jobs',
   'transport',
   'publicServices',
-  'health',
-  'education',
   'realEstate',
 ]);
 

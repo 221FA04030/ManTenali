@@ -6,6 +6,8 @@ import { Offer } from '../offers/offers.model.js';
 import { Event } from '../events/events.model.js';
 import { News } from '../news/news.model.js';
 import { composeBanner, HOME_LIMITS } from './home.service.js';
+import { Post } from '../community/community.model.js';
+import { loginAs } from '../../tests/factories.js';
 
 let app;
 const DAY = 86_400_000;
@@ -47,7 +49,7 @@ describe('GET /home', () => {
   it('works on an empty database (every section empty, banner hidden by the client)', async () => {
     const res = await home();
     expect(res.status).toBe(200);
-    expect(res.body.data).toEqual({ banner: [], today: { notices: [], nextEvent: null }, nearby: { mode: 'all', items: [] }, offers: [], events: [], news: [] });
+    expect(res.body.data).toEqual({ banner: [], today: { notices: [], nextEvent: null }, nearby: { mode: 'all', items: [] }, offers: [], events: [], news: [], food: [], featured: [], community: [] });
   });
 
   it('banner: pinned news first (max 3), then next events and offers ending soonest, alternating, up to 5', async () => {
@@ -130,5 +132,27 @@ describe('GET /home', () => {
     expect(d.events.map((e) => e.title)).toEqual(['Upcoming']);
     expect(d.news.map((n) => n.title)).toEqual(['Town news']);
     expect(JSON.stringify(d)).not.toMatch(/moderationLog|createdBy|updatedBy|submittedBy|Hidden shop|Draft/);
+  });
+
+  it('popular food places by rating, verified businesses, and the latest public community posts', async () => {
+    await createBusiness({ name: 'Tiffins A', kind: 'food', ratingAvg: 4.1, ratingCount: 5 });
+    await createBusiness({ name: 'Meals B', kind: 'food', ratingAvg: 4.8, ratingCount: 9 });
+    await createBusiness({ name: 'Hidden meals', kind: 'food', status: 'hidden', ratingAvg: 5, ratingCount: 9 });
+    await createBusiness({ name: 'Hardware', kind: 'shop', isVerified: true, ratingAvg: 3.9, ratingCount: 2 });
+    const { user, agent } = await loginAs(app, 'user');
+    const [older, newer] = await Post.create([
+      { authorId: user._id, kind: 'question', text: 'Older question here', createdAt: new Date(Date.now() - HOUR) },
+      { authorId: user._id, kind: 'update', text: 'Newer update here' },
+    ]);
+    await Post.create({ authorId: user._id, kind: 'update', text: 'Hidden post here', status: 'hidden' });
+    await agent.post(`/api/v1/posts/${older._id}/like`);
+    const d = (await home()).body.data;
+    expect(d.food.map((b) => b.name)).toEqual(['Meals B', 'Tiffins A']);
+    expect(d.featured.map((b) => b.name)).toEqual(['Hardware']);
+    expect(d.community.map((p) => p.id)).toEqual([String(newer._id), String(older._id)]);
+    expect(d.community[1].likedByMe).toBe(false); // visitors
+    const mine = (await agent.get('/api/v1/home')).body.data.community;
+    expect(mine[1]).toMatchObject({ likedByMe: true, likeCount: 1 }); // signed in: their own likes
+    expect(JSON.stringify(d)).not.toMatch(/Hidden meals|Hidden post/);
   });
 });

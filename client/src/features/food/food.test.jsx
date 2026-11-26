@@ -57,11 +57,11 @@ describe('/food listing (FR-FOOD-2)', () => {
     });
   });
 
-  it('the Home "Food & Hotels" tile opens /food', async () => {
+  it('the Home "Food & Dining" tile opens /food', async () => {
     mockApi({ 'GET /businesses': () => page([]), 'GET /categories': () => ok([]) });
     const { router } = renderApp('/');
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('link', { name: /Food & Hotels/ }));
+    await user.click(await screen.findByRole('link', { name: /Food & Dining/ }));
     await waitFor(() => expect(router.state.location.pathname).toBe('/food'));
     expect(await screen.findByText('No businesses found')).toBeInTheDocument();
   });
