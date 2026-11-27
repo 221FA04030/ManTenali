@@ -558,7 +558,8 @@
       "items": "Add at least one item to each menu section.",
       "itemName": "Give each menu item a name.",
       "price": "Enter a valid price for each item (in rupees)."
-    }
+    },
+    "dietLabel": "Diet"
   },
   "offers": {
     "title": "Offers",
@@ -1240,5 +1241,26 @@
   "map": {
     "label": "Map: {{name}}",
     "directions": "Get directions"
+  },
+  "filters": {
+    "button": "Filters",
+    "buttonCount": "Filters, {{count}} selected",
+    "title": "Filters",
+    "active": "Selected filters",
+    "remove": "Remove filter: {{name}}",
+    "clear": "Clear all",
+    "show_one": "Show {{count}} result",
+    "show_other": "Show {{count}} results",
+    "done": "Done",
+    "showOnly": "Show only"
+  },
+  "intro": {
+    "food": "Restaurants, tiffin centres, sweets and cafés in Tenali",
+    "businesses": "Shops, services and local businesses across Tenali",
+    "services": "Local service providers in Tenali",
+    "category": "{{name}} in Tenali",
+    "offers": "Current deals from local businesses",
+    "events": "What's happening in Tenali",
+    "news": "Local news, alerts and updates"
   }
 }

@@ -5,33 +5,38 @@ import { SampleBadge } from '../../../components/ui/Badge.jsx';
 import { cldUrl } from '../../../lib/cloudinary.js';
 import { EndsIn } from './OfferBits.jsx';
 
-/** Offer card: discount label, title, business, countdown. */
+/**
+ * Offer card styled as a coupon: the deal on a green stub (or on the offer's own
+ * photo), a dashed tear line, then title, business and countdown.
+ */
 export function OfferCard({ offer: o, showBusiness = true, compact = false }) {
   const { t } = useTranslation();
   return (
     <Link
       to={`/offers/${o.id}`}
-      className="flex gap-3 rounded-card bg-white p-3 shadow-card ring-1 ring-brand-100 transition-shadow hover:shadow-lift"
+      className="group relative flex min-h-[112px] overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-black/[0.04] transition duration-150 hover:shadow-lift active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
-      <span className="relative flex h-[84px] w-[84px] shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-700 text-center text-white">
+      <span className="relative flex w-[104px] shrink-0 flex-col items-center justify-center gap-1 overflow-hidden bg-primary px-2 py-3 text-center text-white">
         {o.image ? (
-          <img src={cldUrl(o.image.url, { w: 168, h: 168 })} alt="" loading="lazy" className="h-full w-full object-cover" />
+          <>
+            <img src={cldUrl(o.image.url, { w: 208, h: 240 })} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+            <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          </>
         ) : (
-          <TicketPercent className="h-8 w-8 opacity-90" aria-hidden="true" />
+          <TicketPercent className="h-6 w-6 opacity-80" aria-hidden="true" />
         )}
+        <span className={`relative line-clamp-3 break-words text-[15px] font-extrabold leading-tight ${o.image ? 'mt-auto' : ''}`}>{o.discountLabel}</span>
       </span>
-      <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="w-fit max-w-full truncate rounded-full bg-amber-100 px-2.5 py-0.5 text-sm font-bold text-amber-900">
-          {o.discountLabel}
-        </span>
-        <span className={compact ? 'line-clamp-1 font-bold leading-snug' : 'line-clamp-2 font-bold leading-snug'}>{o.title}</span>
+      <span aria-hidden="true" className="my-2 w-0 border-l-2 border-dashed border-gray-200" />
+      <span className="flex min-w-0 flex-1 flex-col gap-1 p-3.5">
+        <span className={`${compact ? 'line-clamp-1' : 'line-clamp-2'} text-[16px] font-semibold leading-snug text-heading group-hover:text-primary-dark`}>{o.title}</span>
         {showBusiness && o.business && (
-          <span className="flex min-w-0 items-center gap-1 text-[13px] text-ink-muted">
+          <span className="flex min-w-0 items-center gap-1 text-[13px] text-meta">
             <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
             <span className="truncate">{[o.business.name, o.business.area].filter(Boolean).join(' • ')}</span>
           </span>
         )}
-        <span className="flex flex-wrap items-center gap-2">
+        <span className="mt-auto flex flex-wrap items-center gap-2 pt-1">
           <EndsIn validToDate={o.validToDate} />
           {o.isSeed && <SampleBadge />}
         </span>

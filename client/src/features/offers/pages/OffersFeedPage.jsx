@@ -58,7 +58,7 @@ export default function OffersFeedPage() {
 
   return (
     <>
-      <PageHeader title={t('pages.offers')} />
+      <PageHeader title={t('pages.offers')} subtitle={t('intro.offers')} />
       <div className="page-wide flex flex-col gap-4 p-4">
         <LocationBar />
         {filters.businessId && (

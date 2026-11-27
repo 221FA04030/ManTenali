@@ -10,18 +10,21 @@ import { ErrorState } from '../../../components/ui/ErrorState.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { useLocationContext } from '../../../app/providers/LocationProvider.jsx';
 import { BusinessFilters } from '../components/BusinessFilters.jsx';
-import { BusinessCard } from '../components/BusinessCard.jsx';
+import { BusinessListItem } from '../components/BusinessListItem.jsx';
 import { useBusinessList, KINDS } from '../api.js';
+import { useCategoryTree, categoryName } from '../../categories/api.js';
 
 const FILTER_KEYS = ['kind', 'categoryId', 'subcategoryId', 'isVerified', 'openNow', 'sort', 'cuisine', 'priceRange', 'isVegFriendly'];
 
 /**
  * Business directory: list with filters, near me / area, load more (FR-BUS-1/2).
- * `fixedKind` locks the kind (e.g. "food" for /food); `renderFilters(value, onChange)`
- * adds page-specific filters (e.g. cuisine, price range, veg-friendly).
+ * `fixedKind` locks the kind (e.g. "food" for /food). `renderPrimary(value, onChange)`
+ * replaces the category chips with the page's own main choice (cuisines on /food);
+ * `sheetExtras` adds page-specific filters to the Filters sheet (price, veg-friendly).
  */
-export function BusinessDirectory({ fixedKind, title: fixedTitle, renderFilters, emptyIcon = Store }) {
-  const { t } = useTranslation();
+export function BusinessDirectory({ fixedKind, title: fixedTitle, intro: fixedIntro, renderPrimary, sheetExtras, emptyIcon = Store }) {
+  const { t, i18n } = useTranslation();
+  const { tree } = useCategoryTree('business');
   const [searchParams, setSearchParams] = useSearchParams();
   const { area, coords } = useLocationContext();
 
@@ -64,18 +67,38 @@ export function BusinessDirectory({ fixedKind, title: fixedTitle, renderFilters,
     setSearchParams(next, { replace: true });
   };
 
-  const title = fixedTitle ?? (filters.kind === 'service' ? t('business.servicesTitle') : t('pages.businesses'));
+  // Name the page after what was chosen (e.g. "Shopping" from the Home tile).
+  const main = tree.find((m) => m.id === filters.categoryId);
+  const sub = main?.children.find((c) => c.id === filters.subcategoryId);
+  const title =
+    fixedTitle ??
+    (main ? categoryName(main, i18n.language) : filters.kind === 'service' ? t('business.servicesTitle') : t('pages.businesses'));
+  const intro =
+    fixedIntro ??
+    (main
+      ? t('intro.category', { name: categoryName(sub ?? main, i18n.language) })
+      : filters.kind === 'service'
+        ? t('intro.services')
+        : t('intro.businesses'));
+  const loading = query.isPending;
 
   return (
     <>
-      <PageHeader title={title} />
-      <div className="page-wide flex flex-col gap-4 p-4">
+      <PageHeader title={title} subtitle={intro} />
+      <div className="page-wide flex flex-col gap-3 p-4">
         <LocationBar />
-        <BusinessFilters value={filters} onChange={update} nearMe={Boolean(coords)} hideKind={Boolean(fixedKind)} hideCategories={Boolean(fixedKind)}>
-          {renderFilters?.(filters, update)}
-        </BusinessFilters>
+        <BusinessFilters
+          value={filters}
+          onChange={update}
+          nearMe={Boolean(coords)}
+          fixedKind={fixedKind}
+          primary={renderPrimary?.(filters, update)}
+          sheetExtras={sheetExtras}
+          total={query.isError ? undefined : total}
+          loading={loading}
+        />
 
-        {query.isPending ? (
+        {loading ? (
           <ListSkeleton rows={4} />
         ) : query.isError ? (
           <ErrorState error={query.error} onRetry={() => query.refetch()} />
@@ -83,13 +106,10 @@ export function BusinessDirectory({ fixedKind, title: fixedTitle, renderFilters,
           <EmptyState icon={emptyIcon} title={t('business.emptyTitle')} body={t('business.emptyBody')} />
         ) : (
           <>
-            <p className="text-sm text-ink-muted" aria-live="polite">
-              {t('business.count', { count: total })}
-            </p>
-            <ul className="card-list">
+            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
               {items.map((b) => (
-                <li key={b.id}>
-                  <BusinessCard business={b} />
+                <li key={b.id} className="min-w-0">
+                  <BusinessListItem business={b} />
                 </li>
               ))}
             </ul>

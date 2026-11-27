@@ -7,7 +7,7 @@ import { ErrorState } from '../../../components/ui/ErrorState.jsx';
 import { SectionHeader } from '../../../components/ui/SectionHeader.jsx';
 import { useToast } from '../../../components/ui/Toast.jsx';
 import { errorMessageKey } from '../../../lib/apiClient.js';
-import { BusinessCard } from '../../businesses/components/BusinessCard.jsx';
+import { BusinessListItem } from '../../businesses/components/BusinessListItem.jsx';
 import { OfferCard } from '../../offers/components/OfferCard.jsx';
 import { EventCard } from '../../events/components/EventCard.jsx';
 import { PostCard } from '../../community/components/PostCard.jsx';
@@ -17,7 +17,7 @@ const TYPES = ['business', 'offer', 'event', 'post'];
 
 function SavedCard({ favorite }) {
   const f = favorite;
-  if (f.targetType === 'business') return <BusinessCard business={f.item} />;
+  if (f.targetType === 'business') return <BusinessListItem business={f.item} />;
   if (f.targetType === 'offer') return <OfferCard offer={f.item} />;
   if (f.targetType === 'post') return <PostCard post={f.item} />;
   return <EventCard event={f.item} />;

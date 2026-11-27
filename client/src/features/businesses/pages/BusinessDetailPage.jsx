@@ -114,76 +114,77 @@ export default function BusinessDetailPage() {
           )
         }
       />
-      <div className="flex flex-col gap-4 p-4">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4">
         {b.photos?.length ? (
           <Gallery photos={b.photos} name={b.name} />
         ) : (
-          <NoPhotosCover
+          b.canManage && <NoPhotosCover
             icon={categoryIcon(b.subcategory?.icon ?? b.category?.icon)}
             manageTo={b.canManage ? (user?.role === 'admin' ? `/admin/businesses/${b.slug}/edit` : `/manage/businesses/${b.id}`) : null}
           />
         )}
 
-        <Card className="flex flex-col gap-2">
+        <Card className="flex flex-col gap-3">
+          <div className="flex items-start gap-3">
+            {!b.photos?.length && <IconBubble icon={categoryIcon(b.subcategory?.icon ?? b.category?.icon)} size="lg" className="rounded-xl" />}
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <h2 className="text-xl font-bold leading-snug text-heading">{b.name}</h2>
+              <p className="text-sm text-meta">
+                {[categoryName(b.category, lang), categoryName(b.subcategory, lang)].filter(Boolean).join(' › ')}
+                {b.address?.area && ` • ${b.address.area}`}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
+            {b.ratingCount > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden="true" />
+                <span className="font-semibold">{b.ratingAvg.toFixed(1)}</span>
+                <span className="text-ink-muted">({t('business.ratings', { count: b.ratingCount })})</span>
+              </span>
+            )}
+            {b.priceRange && (
+              <span className="inline-flex items-center gap-1">
+                <PriceRange value={b.priceRange} /> <span className="text-ink-muted">{t(`food.price.${b.priceRange}`)}</span>
+              </span>
+            )}
+          </div>
           <div className="flex flex-wrap items-center gap-1.5">
-            <TrustBadge isVerified={b.isVerified} isSeed={b.isSeed} />
             {b.isOpenNow === true && <Badge tone="green">{t('business.openNow')}</Badge>}
             {b.isOpenNow === false && <Badge tone="gray">{t('business.closedNow')}</Badge>}
+            {b.food?.isVegFriendly && <VegFriendlyBadge />}
+            <TrustBadge isVerified={b.isVerified} isSeed={b.isSeed} />
             {b.status && b.status !== 'published' && <Badge tone="amber">{t(`status.${b.status}`)}</Badge>}
           </div>
-          <h2 className="text-xl font-bold leading-snug">{b.name}</h2>
-          <p className="text-sm text-ink-muted">
-            {[categoryName(b.category, lang), categoryName(b.subcategory, lang)].filter(Boolean).join(' › ')}
-          </p>
-          {b.ratingCount > 0 && (
-            <p className="inline-flex items-center gap-1 text-sm">
-              <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden="true" />
-              <span className="font-semibold">{b.ratingAvg.toFixed(1)}</span>
-              <span className="text-ink-muted">({t('business.ratings', { count: b.ratingCount })})</span>
-            </p>
+          {b.food?.cuisines.length > 0 && (
+            <ul className="flex flex-wrap gap-1.5" aria-label={t('food.cuisine')}>
+              {b.food.cuisines.map((c) => (
+                <li key={c} className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-label">
+                  {t(`cuisines.${c}`)}
+                </li>
+              ))}
+            </ul>
           )}
-          <div className="mt-1">
-            <ContactActions contact={b.contact} location={b.location} name={b.name} onAction={() => isPublic && track('contact_click', 'business', b.id)} />
-          </div>
+          <ContactActions contact={b.contact} location={b.location} name={b.name} layout="tiles" onAction={() => isPublic && track('contact_click', 'business', b.id)} />
           <p className="text-xs text-ink-soft">
             {t('common.updated', { time: formatRelative(b.updatedAt, lang) })}
             {b.isVerified && b.verifiedAt && ` • ${t('business.verifiedOn', { date: formatDateTime(b.verifiedAt, lang) })}`}
           </p>
         </Card>
 
-        {isPublic && <ItemActions targetType="business" targetId={b.id} title={b.name} />}
         {isPublic && (
-          <Link
-            to={`/community/new?business=${encodeURIComponent(b.slug)}`}
-            className="flex min-h-tap items-center justify-center gap-2 rounded-full bg-brand-50 px-4 text-sm font-semibold text-brand-800 ring-1 ring-brand-200 hover:bg-brand-100"
-          >
-            <MessageSquarePlus className="h-4 w-4" aria-hidden="true" /> {t('business.recommend')}
-          </Link>
+          <div className="flex flex-col gap-2">
+            <ItemActions targetType="business" targetId={b.id} title={b.name} />
+            <Link
+              to={`/community/new?business=${encodeURIComponent(b.slug)}`}
+              className="inline-flex min-h-tap items-center justify-center gap-2 self-center rounded-full px-4 text-sm font-semibold text-primary hover:bg-primary-light focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <MessageSquarePlus className="h-4 w-4" aria-hidden="true" /> {t('business.recommend')}
+            </Link>
+          </div>
         )}
 
         <BusinessOffersSection businessId={b.id} canManage={b.canManage && b.status === 'published'} />
-
-        {b.food && (
-          <Card className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              {b.priceRange && (
-                <span className="rounded-full bg-brand-50 px-3 py-1 text-sm">
-                  <PriceRange value={b.priceRange} /> <span className="text-ink-muted">{t(`food.price.${b.priceRange}`)}</span>
-                </span>
-              )}
-              {b.food.isVegFriendly && <VegFriendlyBadge />}
-            </div>
-            {b.food.cuisines.length > 0 && (
-              <ul className="flex flex-wrap gap-1.5" aria-label={t('food.cuisine')}>
-                {b.food.cuisines.map((c) => (
-                  <li key={c}>
-                    <Badge tone="gray">{t(`cuisines.${c}`)}</Badge>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-        )}
 
         {b.food && (
           <Card>

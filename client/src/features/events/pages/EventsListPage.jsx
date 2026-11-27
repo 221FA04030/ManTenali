@@ -44,7 +44,7 @@ export default function EventsListPage() {
 
   return (
     <>
-      <PageHeader title={t('pages.events')} />
+      <PageHeader title={t('pages.events')} subtitle={t('intro.events')} />
       <div className="page-wide flex flex-col gap-4 p-4">
         <LocationBar />
         <EventFilters value={filters} onChange={update} />

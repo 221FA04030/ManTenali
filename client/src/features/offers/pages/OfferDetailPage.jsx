@@ -52,7 +52,7 @@ export default function OfferDetailPage() {
   return (
     <>
       <PageHeader
-        title={o.discountLabel}
+        title={t('pages.offers')}
         actions={
           o.canManage && (
             <Link
@@ -65,31 +65,39 @@ export default function OfferDetailPage() {
           )
         }
       />
-      <div className="flex flex-col gap-4 p-4">
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4">
         {o.image && (
           <img src={cldUrl(o.image.url, { w: 720, h: 405 })} alt="" className="aspect-video w-full rounded-card object-cover shadow-card" />
         )}
 
-        {live && <ItemActions targetType="offer" targetId={o.id} title={o.title} />}
-
-        <Card className="flex flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {o.canManage && <OfferStatusBadge status={o.displayStatus} />}
-            {o.isSeed && <SampleBadge />}
+        <article className="overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-black/[0.04]">
+          <div className="flex items-center gap-3 bg-primary px-4 py-4 text-white">
+            <TicketPercent className="h-7 w-7 shrink-0 opacity-90" aria-hidden="true" />
+            <p className="min-w-0 break-words text-2xl font-extrabold leading-tight">{o.discountLabel}</p>
           </div>
-          <p className="w-fit rounded-full bg-amber-100 px-3 py-1 text-lg font-bold text-amber-900">{o.discountLabel}</p>
-          <h2 className="text-xl font-bold leading-snug">{o.title}</h2>
-          {o.description && <p className="whitespace-pre-line text-[15px] text-ink-muted">{o.description}</p>}
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-muted">
-            <span className="inline-flex items-center gap-1">
-              <CalendarDays className="h-4 w-4" aria-hidden="true" />
-              <ValidityDates from={o.validFromDate} to={o.validToDate} />
-            </span>
-            {live && <EndsIn validToDate={o.validToDate} />}
-          </p>
-        </Card>
+          <div aria-hidden="true" className="mx-4 border-t-2 border-dashed border-gray-200" />
+          <div className="flex flex-col gap-2 p-4">
+            {(o.canManage || o.isSeed) && (
+              <div className="flex flex-wrap items-center gap-1.5">
+                {o.canManage && <OfferStatusBadge status={o.displayStatus} />}
+                {o.isSeed && <SampleBadge />}
+              </div>
+            )}
+            <h2 className="text-xl font-bold leading-snug text-heading">{o.title}</h2>
+            {o.description && <p className="whitespace-pre-line text-[15px] text-ink-muted">{o.description}</p>}
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-muted">
+              <span className="inline-flex items-center gap-1">
+                <CalendarDays className="h-4 w-4" aria-hidden="true" />
+                <ValidityDates from={o.validFromDate} to={o.validToDate} />
+              </span>
+              {live && <EndsIn validToDate={o.validToDate} />}
+            </p>
+          </div>
+        </article>
 
         {o.couponCode && <CouponCode code={o.couponCode} />}
+
+        {live && <ItemActions targetType="offer" targetId={o.id} title={o.title} />}
 
         {o.redemptionInstructions && (
           <Card>

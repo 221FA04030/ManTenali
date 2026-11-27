@@ -110,8 +110,8 @@ export function PageHeader({ title, subtitle, back = true, variant = 'green', ac
           <span className="w-11" />
         )}
         <div className={cn('flex min-w-0 flex-1 flex-col', mint ? 'items-center text-center' : '')}>
-          <h1 className={cn('truncate font-bold', mint ? 'text-2xl text-ink' : 'text-lg')}>{title}</h1>
-          {subtitle && <p className={cn('text-sm', mint ? 'text-ink' : 'text-white')}>{subtitle}</p>}
+          <h1 className={cn('font-bold', mint ? 'truncate text-2xl text-ink' : 'line-clamp-2 text-lg leading-tight')}>{title}</h1>
+          {subtitle && <p className={cn('text-sm', mint ? 'text-ink' : 'line-clamp-1 text-white/85')}>{subtitle}</p>}
         </div>
         <div className="flex min-w-11 items-center justify-end gap-1">{actions}</div>
       </div>
