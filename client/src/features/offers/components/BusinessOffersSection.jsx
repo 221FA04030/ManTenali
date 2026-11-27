@@ -38,7 +38,7 @@ export function BusinessOffersSection({ businessId, canManage }) {
       {items.length === 0 ? (
         <p className="text-sm text-ink-muted">{t('offers.noneForBusiness')}</p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col divide-y divide-gray-100">
           {items.map((o) => (
             <li key={o.id}>
               <OfferCard offer={o} showBusiness={false} compact />

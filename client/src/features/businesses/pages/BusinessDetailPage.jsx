@@ -135,23 +135,38 @@ export default function BusinessDetailPage() {
               </p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
-            {b.ratingCount > 0 && (
-              <span className="inline-flex items-center gap-1">
-                <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden="true" />
-                <span className="font-semibold">{b.ratingAvg.toFixed(1)}</span>
-                <span className="text-ink-muted">({t('business.ratings', { count: b.ratingCount })})</span>
-              </span>
-            )}
-            {b.priceRange && (
-              <span className="inline-flex items-center gap-1">
-                <PriceRange value={b.priceRange} /> <span className="text-ink-muted">{t(`food.price.${b.priceRange}`)}</span>
-              </span>
-            )}
-          </div>
+          {/* The reference's stats strip: rating | price | open now. Only what this business has. */}
+          {(b.ratingCount > 0 || b.priceRange || typeof b.isOpenNow === 'boolean') && (
+            <dl className="-mx-4 flex divide-x divide-gray-200 border-y border-gray-100 py-3 text-center">
+              {b.ratingCount > 0 && (
+                <div className="flex flex-1 flex-col items-center gap-0.5 px-2">
+                  <dt className="sr-only">{t('business.ratingLabel')}</dt>
+                  <dd className="inline-flex items-center gap-1 text-[15px] font-bold text-heading">
+                    <Star className="h-4 w-4 fill-current" aria-hidden="true" />
+                    {b.ratingAvg.toFixed(1)}
+                  </dd>
+                  <dd className="text-[12px] text-meta">{t('business.ratings', { count: b.ratingCount })}</dd>
+                </div>
+              )}
+              {b.priceRange && (
+                <div className="flex flex-1 flex-col items-center gap-0.5 px-2">
+                  <dt className="sr-only">{t('food.priceRange')}</dt>
+                  <dd className="text-[15px]">
+                    <PriceRange value={b.priceRange} />
+                  </dd>
+                  <dd className="text-[12px] text-meta">{t(`food.price.${b.priceRange}`)}</dd>
+                </div>
+              )}
+              {typeof b.isOpenNow === 'boolean' && (
+                <div className="flex flex-1 flex-col items-center gap-0.5 px-2">
+                  <dt className="sr-only">{t('business.statusLabel')}</dt>
+                  <dd className={`text-[15px] font-bold ${b.isOpenNow ? 'text-primary' : 'text-meta'}`}>{t(b.isOpenNow ? 'business.openShort' : 'business.closedShort')}</dd>
+                  <dd className="text-[12px] text-meta">{t('business.rightNow')}</dd>
+                </div>
+              )}
+            </dl>
+          )}
           <div className="flex flex-wrap items-center gap-1.5">
-            {b.isOpenNow === true && <Badge tone="green">{t('business.openNow')}</Badge>}
-            {b.isOpenNow === false && <Badge tone="gray">{t('business.closedNow')}</Badge>}
             {b.food?.isVegFriendly && <VegFriendlyBadge />}
             <TrustBadge isVerified={b.isVerified} isSeed={b.isSeed} />
             {b.status && b.status !== 'published' && <Badge tone="amber">{t(`status.${b.status}`)}</Badge>}

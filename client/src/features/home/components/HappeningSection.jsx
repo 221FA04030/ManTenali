@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, CalendarDays, MapPin, Newspaper, TicketPercent } from 'lucide-react';
+import { SectionHeader } from '../../../components/ui/SectionHeader.jsx';
+import { CalendarDays, MapPin, Newspaper, TicketPercent } from 'lucide-react';
 import { cldUrl } from '../../../lib/cloudinary.js';
 import { formatDate } from '../../../lib/format.js';
 import { formatIsoDate } from '../../../lib/dates.js';
@@ -82,16 +83,8 @@ export function HappeningSection({ items }) {
   if (!items?.length) return null;
   return (
     <section aria-labelledby="home-happening-title" className="px-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 id="home-happening-title" className="text-[clamp(1.0625rem,4.4vw,1.375rem)] font-bold leading-tight text-heading">
-          {t('home.bannerTitle')}
-        </h2>
-        <Link to="/discover" className="inline-flex min-h-tap shrink-0 items-center gap-1 text-[clamp(0.875rem,3.6vw,1rem)] font-medium text-primary hover:underline">
-          {t('common.viewAll')}
-          <ArrowRight className="h-[18px] w-[18px]" aria-hidden="true" />
-        </Link>
-      </div>
-      <ul className="no-scrollbar -mr-4 mt-2 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 pr-4 pt-1">
+      <SectionHeader id="home-happening-title" title={t('home.bannerTitle')} to="/discover" />
+      <ul className="no-scrollbar -mr-4 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-3 pr-4 pt-1">
         {items.map(({ type, item }) => (
           <li key={`${type}-${item.id}`} className="w-[clamp(9rem,37vw,10rem)] shrink-0 snap-start">
             <HappeningCard type={type} item={item} />

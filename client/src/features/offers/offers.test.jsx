@@ -55,7 +55,8 @@ describe('/offers feed', () => {
     const card = (await screen.findByText('Free coffee with any dosa')).closest('a');
     expect(card).toHaveAttribute('href', '/offers/o1');
     expect(within(card).getByText('Free coffee')).toBeInTheDocument();
-    expect(within(card).getByText('Annapurna Tiffins • Market Area')).toBeInTheDocument();
+    expect(within(card).getByText('Annapurna Tiffins')).toBeInTheDocument();
+    expect(within(card).getByText('Market Area')).toBeInTheDocument();
     expect(within(card).getByText('Ends in 3 days')).toBeInTheDocument();
     expect(screen.getByText('1 offer')).toBeInTheDocument();
 

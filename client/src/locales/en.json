@@ -11,7 +11,9 @@
     "main": "Main navigation",
     "back": "Go back",
     "post": "Post",
-    "discover": "Discover"
+    "discover": "Discover",
+    "search": "Search",
+    "offers": "Offers"
   },
   "menu": {
     "open": "Open menu",
@@ -135,7 +137,13 @@
       "event": "Event",
       "offer": "Offer",
       "news": "News"
-    }
+    },
+    "nearbySubtitle": "Shops, food and services around you",
+    "foodSubtitle": "Top-rated places to eat in Tenali",
+    "featuredSubtitle": "Checked by the Mana Tenali team",
+    "communitySubtitle": "What neighbours are saying",
+    "seeAllBusinesses": "See all businesses",
+    "signoffMade": "Made in Tenali, for Tenali"
   },
   "explore": {
     "title": "Discover Tenali",
@@ -346,7 +354,12 @@
     "allIn": "All {{name}}",
     "noPhotos": "No photos yet",
     "addPhotos": "Add photos",
-    "recommend": "Recommend this place"
+    "recommend": "Recommend this place",
+    "ratingLabel": "Rating",
+    "statusLabel": "Status",
+    "openShort": "Open",
+    "closedShort": "Closed",
+    "rightNow": "Right now"
   },
   "location": {
     "nearMe": "Near me",
@@ -641,7 +654,8 @@
       "endBeforeStart": "The end date must be on or after the start date.",
       "maxYear": "An offer can run for at most one year.",
       "endPast": "The end date is already in the past."
-    }
+    },
+    "useCode": "Use {{code}}"
   },
   "events": {
     "allDay": "All day",
@@ -1243,9 +1257,9 @@
     "directions": "Get directions"
   },
   "filters": {
-    "button": "Filters",
-    "buttonCount": "Filters, {{count}} selected",
-    "title": "Filters",
+    "button": "Sort / Filter",
+    "buttonCount": "Sort / Filter, {{count}} selected",
+    "title": "Sort and filter",
     "active": "Selected filters",
     "remove": "Remove filter: {{name}}",
     "clear": "Clear all",

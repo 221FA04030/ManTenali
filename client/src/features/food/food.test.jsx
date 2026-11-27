@@ -49,8 +49,8 @@ describe('/food listing (FR-FOOD-2)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Biryani' }));
     // Price range and veg-friendly live in the Filters sheet.
-    await user.click(screen.getByRole('button', { name: 'Filters' }));
-    const sheet = screen.getByRole('dialog', { name: 'Filters' });
+    await user.click(screen.getByRole('button', { name: 'Sort / Filter' }));
+    const sheet = screen.getByRole('dialog', { name: 'Sort and filter' });
     await user.click(within(sheet).getByRole('button', { name: 'Moderate' }));
     await user.click(within(sheet).getByRole('button', { name: 'Veg-friendly' }));
     await waitFor(() => expect(router.state.location.search).toContain('isVegFriendly=true'));

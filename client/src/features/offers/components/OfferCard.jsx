@@ -1,45 +1,63 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, TicketPercent } from 'lucide-react';
+import { TicketPercent } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { SampleBadge } from '../../../components/ui/Badge.jsx';
 import { cldUrl } from '../../../lib/cloudinary.js';
 import { EndsIn } from './OfferBits.jsx';
 
+/** The offer's own image, else its business's photo, else a ticket icon tile. */
+function OfferPhoto({ offer: o }) {
+  const [failed, setFailed] = useState(false);
+  const url = o.image?.url ?? o.business?.photo?.url;
+  if (url && !failed) {
+    return (
+      <img
+        src={cldUrl(url, { w: 184, h: 184 })}
+        alt=""
+        width={92}
+        height={92}
+        loading="lazy"
+        decoding="async"
+        onError={() => setFailed(true)}
+        className="h-[92px] w-[92px] shrink-0 rounded-xl bg-gray-100 object-cover shadow-sm"
+      />
+    );
+  }
+  return (
+    <span aria-hidden="true" className="flex h-[92px] w-[92px] shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-light to-[#d3ebdb] text-primary shadow-sm">
+      <TicketPercent className="h-9 w-9" strokeWidth={1.8} />
+    </span>
+  );
+}
+
 /**
- * Offer card styled as a coupon: the deal on a green stub (or on the offer's own
- * photo), a dashed tear line, then title, business and countdown.
+ * Offer row in the reference's offers layout: photo on the left, the business
+ * name, the offer, the deal line in the offer colour (with the coupon code if
+ * there is one) and how long it runs.
  */
 export function OfferCard({ offer: o, showBusiness = true, compact = false }) {
   const { t } = useTranslation();
   return (
     <Link
       to={`/offers/${o.id}`}
-      className="group relative flex min-h-[112px] overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-black/[0.04] transition duration-150 hover:shadow-lift active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      className="group flex gap-4 rounded-xl py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
     >
-      <span className="relative flex w-[104px] shrink-0 flex-col items-center justify-center gap-1 overflow-hidden bg-primary px-2 py-3 text-center text-white">
-        {o.image ? (
-          <>
-            <img src={cldUrl(o.image.url, { w: 208, h: 240 })} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
-            <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-          </>
-        ) : (
-          <TicketPercent className="h-6 w-6 opacity-80" aria-hidden="true" />
-        )}
-        <span className={`relative line-clamp-3 break-words text-[15px] font-extrabold leading-tight ${o.image ? 'mt-auto' : ''}`}>{o.discountLabel}</span>
-      </span>
-      <span aria-hidden="true" className="my-2 w-0 border-l-2 border-dashed border-gray-200" />
-      <span className="flex min-w-0 flex-1 flex-col gap-1 p-3.5">
-        <span className={`${compact ? 'line-clamp-1' : 'line-clamp-2'} text-[16px] font-semibold leading-snug text-heading group-hover:text-primary-dark`}>{o.title}</span>
+      <OfferPhoto offer={o} />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5 pt-0.5">
         {showBusiness && o.business && (
-          <span className="flex min-w-0 items-center gap-1 text-[13px] text-meta">
-            <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            <span className="truncate">{[o.business.name, o.business.area].filter(Boolean).join(' • ')}</span>
-          </span>
+          <span className="truncate text-[16px] font-bold leading-snug text-heading group-hover:text-primary-dark">{o.business.name}</span>
         )}
-        <span className="mt-auto flex flex-wrap items-center gap-2 pt-1">
+        <span className={`${compact || showBusiness ? 'line-clamp-1' : 'line-clamp-2 font-semibold text-heading'} text-[13px] text-meta`}>{o.title}</span>
+        <span className="truncate text-[13px] font-semibold text-offer-text">
+          {o.discountLabel}
+          {o.couponCode && ` | ${t('offers.useCode', { code: o.couponCode })}`}
+        </span>
+        <span className="mt-1 flex flex-wrap items-center gap-2">
           <EndsIn validToDate={o.validToDate} />
           {o.isSeed && <SampleBadge />}
         </span>
+        {showBusiness && o.business?.area && <span className="text-[12px] text-meta">{o.business.area}</span>}
         <span className="sr-only">{t('offers.viewOffer')}</span>
       </span>
     </Link>

@@ -10,7 +10,7 @@ import { ErrorState } from '../../../components/ui/ErrorState.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { useLocationContext } from '../../../app/providers/LocationProvider.jsx';
 import { BusinessFilters } from '../components/BusinessFilters.jsx';
-import { BusinessListItem } from '../components/BusinessListItem.jsx';
+import { BusinessRow } from '../components/BusinessTiles.jsx';
 import { useBusinessList, KINDS } from '../api.js';
 import { useCategoryTree, categoryName } from '../../categories/api.js';
 
@@ -106,10 +106,10 @@ export function BusinessDirectory({ fixedKind, title: fixedTitle, intro: fixedIn
           <EmptyState icon={emptyIcon} title={t('business.emptyTitle')} body={t('business.emptyBody')} />
         ) : (
           <>
-            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <ul className="-mt-3 grid grid-cols-1 md:grid-cols-2 md:gap-x-8">
               {items.map((b) => (
-                <li key={b.id} className="min-w-0">
-                  <BusinessListItem business={b} />
+                <li key={b.id} className="min-w-0 border-b border-gray-100">
+                  <BusinessRow business={b} />
                 </li>
               ))}
             </ul>

@@ -76,39 +76,27 @@ export function BusinessFilters({ value, onChange, nearMe, fixedKind, primary, s
     <div className="flex flex-col gap-2">
       {primary ?? (!fixedKind && <CategoryRows value={value} onChange={onChange} />)}
 
-      <div className="flex items-center gap-2 pt-1">
+      {/* The reference's "ALL RESTAURANTS ... SORT/FILTER" bar. */}
+      <div className="-mx-4 mt-1 flex items-center justify-between gap-3 border-y border-gray-100 px-4 py-1">
+        <p className="min-w-0 truncate text-[12px] font-bold uppercase tracking-wide text-label" aria-live="polite">
+          {!loading && total !== undefined ? t('business.count', { count: total }) : ''}
+        </p>
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className={cn(chip(sheetFilters.length > 0), 'px-3.5')}
           aria-haspopup="dialog"
           aria-label={sheetFilters.length ? t('filters.buttonCount', { count: sheetFilters.length }) : t('filters.button')}
+          className="inline-flex min-h-tap shrink-0 items-center gap-2 rounded-lg px-2 text-[12px] font-bold uppercase tracking-wide text-label transition hover:bg-gray-50 hover:text-primary active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
           {t('filters.button')}
           {sheetFilters.length > 0 && (
-            <span aria-hidden="true" className="ml-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-xs font-bold text-primary">
+            <span aria-hidden="true" className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-white">
               {sheetFilters.length}
             </span>
           )}
         </button>
-        <label className="ml-auto flex min-w-0 items-center">
-          <span className="sr-only">{t('business.sortBy')}</span>
-          <select
-            value={value.sort ?? (nearMe ? 'distance' : 'newest')}
-            onChange={(e) => onChange({ sort: e.target.value })}
-            className="min-h-[40px] max-w-full rounded-full bg-white pl-3.5 pr-8 text-sm font-semibold text-label ring-1 ring-gray-200 focus:outline-none focus:ring-2 focus:ring-primary"
-          >
-            {nearMe && <option value="distance">{t('business.sort.distance')}</option>}
-            <option value="newest">{t('business.sort.newest')}</option>
-            <option value="rating">{t('business.sort.rating')}</option>
-          </select>
-        </label>
       </div>
-
-      <p className="min-h-5 text-sm text-meta" aria-live="polite">
-        {!loading && total !== undefined ? t('business.count', { count: total }) : ''}
-      </p>
 
       {sheetFilters.length > 0 && (
         <div className="flex flex-wrap gap-2" aria-label={t('filters.active')} role="group">
@@ -139,6 +127,19 @@ export function BusinessFilters({ value, onChange, nearMe, fixedKind, primary, s
         }
       >
         <div className="flex flex-col gap-5">
+          <section className="flex flex-col gap-2">
+            <h3 className="text-sm font-bold text-heading">{t('business.sortBy')}</h3>
+            <div role="group" aria-label={t('business.sortBy')} className="flex flex-wrap gap-2">
+              {[...(nearMe ? ['distance'] : []), 'newest', 'rating'].map((k) => {
+                const active = (value.sort ?? (nearMe ? 'distance' : 'newest')) === k;
+                return (
+                  <button key={k} type="button" className={chip(active)} aria-pressed={active} onClick={() => onChange({ sort: k })}>
+                    {t(`business.sort.${k}`)}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
           {!fixedKind && (
             <section className="flex flex-col gap-2">
               <h3 className="text-sm font-bold text-heading">{t('business.kind')}</h3>

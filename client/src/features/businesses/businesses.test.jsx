@@ -47,19 +47,21 @@ describe('business list', () => {
     const user = userEvent.setup();
     await screen.findByText('Annapurna Tiffins');
     // Type and "Open now" live in the Filters sheet.
-    await user.click(screen.getByRole('button', { name: 'Filters' }));
-    const sheet = screen.getByRole('dialog', { name: 'Filters' });
+    await user.click(screen.getByRole('button', { name: 'Sort / Filter' }));
+    const sheet = screen.getByRole('dialog', { name: 'Sort and filter' });
     await user.click(within(sheet).getByRole('button', { name: 'Food' }));
     await user.click(within(sheet).getByRole('button', { name: 'Open now' }));
+    // Sort is in the same sheet (reference "SORT/FILTER").
+    await user.click(within(sheet).getByRole('button', { name: 'Top rated' }));
     await waitFor(() => expect(router.state.location.search).toContain('kind=food'));
     await waitFor(() => {
       const last = calls.filter((c) => c.path === '/businesses').at(-1);
-      expect(last.query).toMatchObject({ kind: 'food', openNow: 'true', page: '1', limit: '20' });
+      expect(last.query).toMatchObject({ kind: 'food', openNow: 'true', sort: 'rating', page: '1', limit: '20' });
     });
     await user.click(within(sheet).getByRole('button', { name: 'Show 1 result' }));
     expect(screen.queryByRole('dialog')).toBeNull();
     // Selected filters show as removable chips; the button shows how many.
-    expect(screen.getByRole('button', { name: 'Filters, 2 selected' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sort / Filter, 2 selected' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Remove filter: Open now' }));
     await waitFor(() => expect(router.state.location.search).not.toContain('openNow'));
     expect(router.state.location.search).toContain('kind=food');

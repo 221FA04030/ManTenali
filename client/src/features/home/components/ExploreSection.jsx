@@ -34,7 +34,7 @@ export function ExploreSection() {
   const { t } = useTranslation();
   return (
     <section aria-labelledby="home-explore-title" className="px-4">
-      <h2 id="home-explore-title" className="text-[clamp(1.0625rem,4.4vw,1.375rem)] font-bold leading-tight text-heading">
+      <h2 id="home-explore-title" className="text-[19px] font-bold leading-snug text-heading">
         {t('home.exploreTitle')}
       </h2>
       <ul className="no-scrollbar -mr-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 pr-4 pt-2">

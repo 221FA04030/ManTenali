@@ -25,6 +25,29 @@ export function ContactActions({ contact, location, name, size = 'md', layout = 
   if (location) actions.push({ key: 'directions', href: directionsUrl(location), icon: Navigation, label: t('business.directions'), external: true });
   if (!actions.length) return null;
 
+  if (layout === 'compact') {
+    return (
+      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${actions.length}, minmax(0, 1fr))` }}>
+        {actions.map(({ key, href, icon: Icon, label, external }) => (
+          <a
+            key={key}
+            href={href}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAction?.(key);
+            }}
+            {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+            aria-label={`${label} - ${name}`}
+            className="inline-flex min-h-[40px] min-w-0 items-center justify-center gap-1 rounded-lg px-1 text-[12.5px] font-bold text-primary ring-1 ring-gray-200 transition duration-150 hover:bg-primary-light hover:ring-primary/40 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="truncate">{label}</span>
+          </a>
+        ))}
+      </div>
+    );
+  }
+
   if (layout === 'tiles') {
     return (
       <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${actions.length}, minmax(0, 1fr))` }}>

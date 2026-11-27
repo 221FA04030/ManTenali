@@ -82,12 +82,12 @@ export default function OffersFeedPage() {
           <EmptyState icon={TicketPercent} title={t('offers.emptyTitle')} body={t('offers.emptyBody')} />
         ) : (
           <>
-            <p className="text-sm text-ink-muted" aria-live="polite">
+            <p className="-mx-4 border-y border-gray-100 px-4 py-2.5 text-[17px] font-bold text-heading" aria-live="polite">
               {t('offers.count', { count: total })}
             </p>
-            <ul className="card-list">
+            <ul className="-mt-4 grid grid-cols-1 md:grid-cols-2 md:gap-x-8">
               {items.map((o) => (
-                <li key={o.id}>
+                <li key={o.id} className="min-w-0 border-b border-gray-100">
                   <OfferCard offer={o} />
                 </li>
               ))}
