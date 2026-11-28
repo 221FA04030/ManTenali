@@ -1,5 +1,4 @@
 import {
-  BedDouble,
   Briefcase,
   Bus,
   CalendarDays,
@@ -9,33 +8,13 @@ import {
   Landmark,
   MessagesSquare,
   Newspaper,
-  ShoppingBag,
   Store,
   TicketPercent,
   UtensilsCrossed,
-  Settings,
-  Ticket,
-  Users,
 } from 'lucide-react';
 import { isComingSoon } from './comingSoon.js';
 
-/**
- * Home shortcuts, in the order of the home design (DOCS/refrence.jpeg). Each
- * one opens real data: a page (`to`) or a main business category
- * (`categorySlug`, resolved to its id when categories load).
- */
-export const HOME_TILES = [
-  { key: 'food', labelKey: 'tiles.food', icon: UtensilsCrossed, to: '/food' },
-  { key: 'shopping', labelKey: 'tiles.shopping', icon: ShoppingBag, categorySlug: 'shopping' },
-  { key: 'healthMedical', labelKey: 'tiles.health', icon: HeartPulse, categorySlug: 'health-medical' },
-  { key: 'educationCat', labelKey: 'tiles.education', icon: GraduationCap, categorySlug: 'education' },
-  { key: 'services', labelKey: 'tiles.services', icon: Settings, to: '/businesses?kind=service' },
-  { key: 'hotels', labelKey: 'tiles.hotels', icon: BedDouble, categorySlug: 'hotels-stay' },
-  { key: 'offers', labelKey: 'tiles.offers', icon: Ticket, to: '/offers' },
-  { key: 'events', labelKey: 'tiles.events', icon: CalendarDays, to: '/events' },
-  { key: 'news', labelKey: 'tiles.news', icon: Newspaper, to: '/news' },
-  { key: 'community', labelKey: 'tiles.community', icon: Users, to: '/community' },
-].map((tile) => ({ ...tile, comingSoon: isComingSoon(tile.key) }));
+/* Home's shortcuts are in config/features.js (the feature registry). */
 
 /** Discover list: every section of the app; later-phase ones dimmed "Coming soon". */
 export const EXPLORE_ROWS = [

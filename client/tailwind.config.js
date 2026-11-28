@@ -26,9 +26,9 @@ export default {
           soft: '#6B7A70',
         },
         // Light theme: green for branding, icons and primary actions; white and pale mint surfaces.
-        primary: { DEFAULT: '#238344', dark: '#174D2B', light: '#EAF5ED' },
-        surface: { soft: '#F7FBF8' }, // header and soft section backgrounds
-        line: '#E6EEE8', // subtle borders and dividers
+        primary: { DEFAULT: '#218447', dark: '#174F32', light: '#EAF5ED' },
+        surface: { soft: '#F0F7F1' }, // header and soft section backgrounds
+        line: '#E5EEE7', // subtle borders and dividers
         leaf: '#7BC043',
         offer: { DEFAULT: '#E8590C', text: '#C2410C' }, // text: AA contrast (4.5:1) for small text on white
         news: '#1565C0',

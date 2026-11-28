@@ -14,25 +14,33 @@ describe('Home screen and app shell', () => {
     expect(screen.getByRole('button', { name: 'Search Mana Tenali' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Log in' })).toHaveAttribute('href', '/login');
 
+    // A first-time visitor sees exactly 8 shortcuts in the balanced default order, then More features.
     const grid = screen.getByRole('region', { name: 'Browse categories' });
+    const links = within(grid).getAllByRole('link');
+    expect(links).toHaveLength(8);
+    expect(links.map((a) => a.textContent)).toEqual([
+      'Food & Dining', 'Offers', 'News & Updates', 'Events', 'Shopping', 'Health & Medical', 'Community', 'Services',
+    ]);
     expect(within(grid).getByRole('link', { name: /News & Updates/ })).toHaveAttribute('href', '/news');
-    expect(within(grid).getByRole('link', { name: /Food & Dining/ })).toHaveAttribute('href', '/food');
-    expect(within(grid).getByRole('link', { name: /Community/ })).toHaveAttribute('href', '/community');
     expect(within(grid).getByRole('link', { name: /Services/ })).toHaveAttribute('href', '/businesses?kind=service');
-    expect(within(grid).getByRole('link', { name: /Offers/ })).toHaveAttribute('href', '/offers');
-    expect(within(grid).getByRole('link', { name: /Events/ })).toHaveAttribute('href', '/events');
     // Category shortcuts open the full list until categories load (none are mocked here).
     expect(within(grid).getByRole('link', { name: /Shopping/ })).toHaveAttribute('href', '/businesses');
-    expect(within(grid).getAllByRole('link')).toHaveLength(10); // the 10 shortcuts of the home design
     expect(within(grid).queryAllByText('Soon')).toHaveLength(0);
+    const more = within(grid).getByRole('button', { name: /More features/ });
+    expect(more).toHaveTextContent('+3');
 
-    // Explore Tenali: real lists; "Places to Visit" has no data yet, so it is dimmed and not a link.
-    const explore = screen.getByRole('region', { name: 'Explore Tenali' });
-    expect(within(explore).getByRole('link', { name: /Businesses/ })).toHaveAttribute('href', '/businesses');
-    expect(within(explore).getByRole('link', { name: /Restaurants/ })).toHaveAttribute('href', '/food');
-    expect(within(explore).getByRole('link', { name: /Events/ })).toHaveAttribute('href', '/events');
-    expect(within(explore).queryByRole('link', { name: /Places to Visit/ })).toBeNull();
-    expect(within(explore).getByText('Places to Visit').closest('[data-coming-soon]')).toHaveAttribute('aria-disabled', 'true');
+    // More features lists every other feature, with a short description, and opens it normally.
+    await userEvent.setup().click(more);
+    const sheet = await screen.findByRole('dialog', { name: 'All features' });
+    const rest = within(sheet).getAllByRole('link');
+    expect(rest.map((a) => a.getAttribute('href'))).toEqual(['/businesses', '/businesses', '/businesses']);
+    expect(rest[0]).toHaveTextContent(/Education.*Schools, colleges and coaching/);
+    expect(rest[1]).toHaveTextContent(/Hotels & Stay/);
+    expect(rest[2]).toHaveTextContent(/All Businesses.*Every business in the directory/);
+
+    // Explore Tenali is replaced by Community Posts.
+    expect(screen.queryByRole('region', { name: 'Explore Tenali' })).toBeNull();
+    expect(await screen.findByRole('region', { name: /Community Posts/ })).toBeInTheDocument();
   });
 
   it('category shortcuts open their real category; a category that does not exist stays "Coming soon"', async () => {
@@ -48,12 +56,16 @@ describe('Home screen and app shell', () => {
     const grid = await screen.findByRole('region', { name: 'Browse categories' });
     await waitFor(() => expect(within(grid).getByRole('link', { name: /Shopping/ })).toHaveAttribute('href', '/businesses?categoryId=c-shop'));
     expect(within(grid).getByRole('link', { name: /Health & Medical/ })).toHaveAttribute('href', '/businesses?categoryId=c-health');
-    expect(within(grid).getByRole('link', { name: /Education/ })).toHaveAttribute('href', '/businesses?categoryId=c-edu');
-    expect(within(grid).queryByRole('link', { name: /Hotels & Stay/ })).toBeNull(); // not in this category list
-    expect(within(grid).getAllByText('Soon')).toHaveLength(1);
+    expect(within(grid).getAllByRole('link')).toHaveLength(8);
+    // The rest are in More features; a category that does not exist is shown there as "Soon", not as a link.
+    await userEvent.setup().click(within(grid).getByRole('button', { name: /More features/ }));
+    const sheet = await screen.findByRole('dialog', { name: 'All features' });
+    expect(within(sheet).getByRole('link', { name: /Education/ })).toHaveAttribute('href', '/businesses?categoryId=c-edu');
+    expect(within(sheet).queryByRole('link', { name: /Hotels & Stay/ })).toBeNull(); // not in this category list
+    expect(within(sheet).getByText('Hotels & Stay').closest('[data-coming-soon]')).toHaveAttribute('aria-disabled', 'true');
   });
 
-  it('signed-in people see their profile button; Home shows popular food, verified businesses and community posts', async () => {
+  it('signed-in people see their profile button; Home shows popular food, verified businesses and community photo posts', async () => {
     const biz = (id, name) => ({
       id, slug: id, name, kind: 'food', category: null, subcategory: null, area: 'Kothapeta', location: null, photo: null,
       isVerified: true, isSeed: false, ratingAvg: 4.5, ratingCount: 3, isOpenNow: null, contact: {}, updatedAt: '2026-11-25T04:00:00.000Z',
@@ -72,13 +84,15 @@ describe('Home screen and app shell', () => {
           featured: [biz('b2', 'Sri Hardware')],
           community: [post],
         }),
+      'GET /posts': () => ok([{ ...post, photo: { url: 'https://res.cloudinary.com/demo/image/upload/v1/p.jpg', publicId: 'p' } }]),
     });
     renderApp('/');
     expect(await screen.findByRole('link', { name: 'Your profile (Ravi Kumar)' })).toHaveAttribute('href', '/profile');
     const food = await screen.findByRole('region', { name: /Popular restaurants/ });
     expect(within(food).getByText('Padma Meals')).toBeInTheDocument();
     expect(within(screen.getByRole('region', { name: /Verified businesses/ })).getByText('Sri Hardware')).toBeInTheDocument();
-    expect(within(screen.getByRole('region', { name: /From the community/ })).getByText('Where is a good tailor?')).toBeInTheDocument();
+    const posts = await screen.findByRole('region', { name: /Community Posts/ });
+    expect(within(posts).getAllByText('Where is a good tailor?').length).toBeGreaterThan(0);
     expect(screen.queryByRole('region', { name: /Active offers/ })).toBeNull(); // empty sections are hidden
   });
 
@@ -158,7 +172,7 @@ const HERO = 'Highlights in Tenali';
 const HAPPENING = "What's Happening in Tenali";
 
 describe('Home feed (GET /home)', () => {
-  it('shows the hero, What\'s Happening, Explore, Today in Tenali and the sections, with links to each item and list', async () => {
+  it('shows the hero, What\'s Happening, Community Posts, Today in Tenali and the sections, with links to each item and list', async () => {
     window.localStorage.setItem('mt.area', JSON.stringify('Kothapeta'));
     const { calls } = mockApi({ 'GET /home': () => ok(feed()) });
     renderApp('/');
@@ -182,7 +196,7 @@ describe('Home feed (GET /home)', () => {
     expect(cards[1]).toHaveTextContent(/Offer.*Free sweet with family meals.*Padma Meals/);
     expect(cards[2]).toHaveTextContent(/News.*Library reading week.*25 Nov 2026/);
     expect(within(happening).getByRole('link', { name: /View All/ })).toHaveAttribute('href', '/discover');
-    expect(screen.getByRole('region', { name: 'Explore Tenali' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /Community Posts/ })).toBeInTheDocument();
 
     const today = screen.getByRole('region', { name: /Today in Tenali/ });
     expect(within(today).getByRole('link', { name: /View All/ })).toHaveAttribute('href', '/news');
@@ -204,7 +218,7 @@ describe('Home feed (GET /home)', () => {
     expect(screen.queryByRole('region', { name: HERO })).not.toBeInTheDocument();
     expect(screen.queryByRole('region', { name: HAPPENING })).not.toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Browse categories' })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Explore Tenali' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /Community Posts/ })).toBeInTheDocument();
   });
 
   it('keeps tiles and search working when the feed fails, with a retry', async () => {
@@ -214,7 +228,7 @@ describe('Home feed (GET /home)', () => {
     const retry = await screen.findByRole('button', { name: 'Try again' });
     expect(screen.getByRole('button', { name: 'Search Mana Tenali' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Browse categories' })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Explore Tenali' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /Community Posts/ })).toBeInTheDocument();
     fail = false;
     await userEvent.setup().click(retry);
     expect(await screen.findByRole('region', { name: HERO })).toBeInTheDocument();

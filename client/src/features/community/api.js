@@ -1,6 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { HelpCircle, Megaphone, ThumbsUp } from 'lucide-react';
 import { api } from '../../lib/apiClient.js';
+import { trackFeature } from '../home/engagement/engagementStore.js';
 
 /** Mirrors the server (community.model.js POST_LIMITS); the server re-checks. */
 export const POST_LIMITS = { textMin: 3, textMax: 1000, commentMax: 500 };
@@ -74,6 +75,7 @@ export function useLike(post) {
   return useMutation({
     mutationFn: () => (post.likedByMe ? postsApi.unlike(post.id) : postsApi.like(post.id)),
     onSuccess: (res) => {
+      if (res.liked) trackFeature('community', 'action', `like:${post.id}`);
       const patch = (p) => (p && p.id === post.id ? { ...p, likedByMe: res.liked, likeCount: res.likeCount } : p);
       qc.setQueryData(postKeys.detail(post.id), patch);
       qc.setQueriesData({ queryKey: ['posts', 'feed'] }, (data) =>

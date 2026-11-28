@@ -27,6 +27,7 @@ export const updateSchema = z
 export const feedQuery = z.strictObject({
   kind: z.enum(POST_KINDS).optional(),
   area: z.string().trim().max(80).optional(),
+  withPhoto: z.enum(['true']).optional(), // Home's Community Posts: only posts with a photo
   ...paginationFields,
 });
 export const commentSchema = z.strictObject({ text: z.string().trim().min(1, 'Write a comment').max(POST_LIMITS.commentMax) });

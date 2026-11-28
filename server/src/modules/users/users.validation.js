@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { ROLE_LIST } from '../../config/constants.js';
 import { paginationFields } from '../../common/utils/pagination.js';
 import { objectId } from '../../common/utils/validators.js';
+import { ENGAGEMENT_LIMITS } from './users.model.js';
 
 export const updateMeSchema = z
   .strictObject({
@@ -27,3 +28,17 @@ export const adminUpdateUserSchema = z
   .refine((v) => v.role || v.status, { message: 'Provide role or status' });
 
 export const idParams = z.strictObject({ id: objectId });
+
+/** Home feature engagement: decayed scores per feature key (no content, no history). */
+const featureKey = z.string().regex(/^[a-zA-Z][a-zA-Z0-9]{0,31}$/, 'Invalid feature');
+const engagementEntry = z.strictObject({
+  score: z.number().finite().min(0).max(1_000_000),
+  updatedAt: z.iso.datetime(),
+  lastSession: z.union([z.string().regex(/^[A-Za-z0-9-]{1,40}$/), z.null()]).optional(),
+});
+export const engagementSchema = z.strictObject({
+  features: z
+    .record(featureKey, engagementEntry)
+    .refine((v) => Object.keys(v).length <= ENGAGEMENT_LIMITS.features, { message: 'Too many features' }),
+  mergeId: z.string().regex(/^[A-Za-z0-9-]{8,40}$/).optional(),
+});

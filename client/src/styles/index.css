@@ -95,6 +95,65 @@
     overflow-wrap: break-word; /* only a word too long for a line by itself is split (safety net) */
     text-wrap: balance;
   }
+  /*
+   * Home's personalised shortcuts: 4 columns of soft-coloured rounded squares on
+   * phones (8 shortcuts = 2 rows), one row of 8 when there is room. Same tile
+   * and label rules as .cat-grid, sized for 4 columns.
+   */
+  .feat-grid {
+    container-type: inline-size;
+    padding-inline: clamp(0.75rem, calc(0.75rem + (100vw - 20rem) * 0.2), 1rem);
+  }
+  .feat-grid > ul {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    row-gap: 1.125rem;
+  }
+  .feat-grid .cat-tile {
+    width: 3.5rem;
+    width: min(4rem, calc(100cqi / 4 * 0.62));
+  }
+  .feat-grid .cat-label {
+    font-size: 0.75rem;
+    font-size: clamp(0.6875rem, calc(100cqi / 4 * 0.12), 0.875rem);
+  }
+  @container (min-width: 36rem) {
+    .feat-grid > ul {
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+    }
+    .feat-grid .cat-tile {
+      width: min(4rem, calc(100cqi / 8 * 0.7));
+    }
+    .feat-grid .cat-label {
+      font-size: clamp(0.6875rem, calc(100cqi / 8 * 0.15), 0.8125rem);
+    }
+  }
+  /* Community Posts: rows drift by exactly half their (doubled) width, so the loop is seamless. */
+  .float-track {
+    animation-name: float-left;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    will-change: transform;
+  }
+  .float-track-reverse {
+    animation-name: float-right;
+  }
+  @keyframes float-left {
+    from {
+      transform: translate3d(0, 0, 0);
+    }
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+  @keyframes float-right {
+    from {
+      transform: translate3d(-50%, 0, 0);
+    }
+    to {
+      transform: translate3d(0, 0, 0);
+    }
+  }
   /* Explore tiles: icon beside the label when the tile is wide enough, above it when narrow,
      so a one-word label like "Restaurants" is never clipped. */
   .explore-tile {
@@ -135,6 +194,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .float-track {
+    animation: none !important; /* never a 0.01ms loop: the rows stay still */
+  }
   *,
   *::before,
   *::after {

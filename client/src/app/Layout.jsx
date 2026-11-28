@@ -8,6 +8,7 @@ import { MenuDrawer } from '../components/ui/MenuDrawer.jsx';
 import { ListSkeleton } from '../components/ui/Skeleton.jsx';
 import { OfflineBanner } from '../components/ui/OfflineBanner.jsx';
 import { ErrorBoundary } from './ErrorBoundary.jsx';
+import { useEngagementTracking } from '../features/home/engagement/useFeatureEngagement.js';
 
 function PageFallback() {
   return (
@@ -25,6 +26,7 @@ export function Layout() {
   const { t } = useTranslation();
   const location = useLocation();
   const flat = FLAT_PAGES.test(location.pathname);
+  useEngagementTracking(); // personalised Home shortcuts: which features this person uses
   // Wide screens get the reference's left sidebar instead of the bottom bar.
   const desktop = useMediaQuery('(min-width: 1024px)');
   return (

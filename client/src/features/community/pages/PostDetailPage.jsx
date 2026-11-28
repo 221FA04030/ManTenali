@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { trackFeature } from '../../home/engagement/engagementStore.js';
 import { EyeOff, MessagesSquare, Pencil, Send, Trash2 } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { Card } from '../../../components/ui/Card.jsx';
@@ -101,7 +102,10 @@ function Comments({ post }) {
   const [text, setText] = useState('');
   const [error, setError] = useState(false);
   const add = usePostMutation((body) => postsApi.addComment(post.id, body), {
-    onSuccess: () => setText(''),
+    onSuccess: () => {
+      setText('');
+      trackFeature('community', 'action', `comment:${post.id}`);
+    },
     onError: (err) => toast.error(t(errorMessageKey(err))),
   });
   const submit = (e) => {
