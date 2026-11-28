@@ -47,6 +47,23 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string().optional().transform((v) => v || undefined),
   CLOUDINARY_API_SECRET: z.string().optional().transform((v) => v || undefined),
 
+  // News import from Instagram via Apify (optional: Fetch News is off until APIFY_TOKEN is set).
+  // The token stays on the server; the browser only ever calls this API.
+  APIFY_TOKEN: z.string().optional().transform((v) => v || undefined),
+  // Shared secret a scheduled Apify task sends to POST /integrations/apify/news-import.
+  // The webhook is off (404) until it is set.
+  APIFY_WEBHOOK_SECRET: z
+    .string()
+    .optional()
+    .transform((v) => v || undefined)
+    .pipe(z.string().min(24, 'must be at least 24 characters (use a long random value)').optional()),
+  NEWS_IMPORT_INSTAGRAM_USERNAME: z
+    .string()
+    .regex(/^[a-z0-9._]{1,30}$/, 'must be an Instagram username like snewstenali')
+    .default('snewstenali'),
+  NEWS_IMPORT_SOURCE_NAME: z.string().trim().min(2).max(100).default('S News Tenali'),
+  NEWS_IMPORT_MAX_POSTS: z.coerce.number().int().min(1).max(50).default(10),
+
   // Step 10 - monitoring (optional): errors are reported only when set
   SENTRY_DSN: z
     .string()

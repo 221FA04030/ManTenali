@@ -31,11 +31,15 @@ import {
   auditQuery,
 } from '../moderation/moderation.validation.js';
 import * as controller from './admin.controller.js';
+import { buildNewsImportAdminRoutes } from '../newsImport/newsImport.routes.js';
 
 /** Everything under /admin requires an authenticated admin. */
 export function buildAdminRoutes() {
   const router = Router();
   router.use(authenticate, authorize(ROLES.ADMIN));
+
+  // Fetch News from Instagram (S News Tenali) and review the imported drafts.
+  router.use('/news-imports', buildNewsImportAdminRoutes());
 
   router.get('/users', validate({ query: adminListUsersQuery }), asyncHandler(controller.listUsers));
   router.patch(

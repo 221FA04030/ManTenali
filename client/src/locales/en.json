@@ -1382,5 +1382,81 @@
       "delete": "Deleted"
     },
     "fromReport": "From a report"
+  },
+  "newsImport": {
+    "title": "Fetch News",
+    "subtitle": "Import new posts from S News Tenali on Instagram as drafts for review.",
+    "fetch": "Fetch News",
+    "fetching": "Fetching…",
+    "countsLabel": "Imported posts by status",
+    "reviewLink_one": "Review imported drafts ({{count}} waiting)",
+    "reviewLink_other": "Review imported drafts ({{count}} waiting)",
+    "status": {
+      "needs_review": "Needs review",
+      "published": "Published",
+      "rejected": "Rejected",
+      "failed": "Failed"
+    },
+    "run": {
+      "running": "Fetching posts from @{{account}}…",
+      "succeeded": "Last fetch finished",
+      "failed": "Last fetch failed",
+      "progress": "{{checked}} of up to {{requested}} posts checked",
+      "finished": "Finished {{time}}",
+      "doneToast_one": "Fetch finished: {{count}} new draft",
+      "doneToast_other": "Fetch finished: {{count}} new drafts",
+      "counts": {
+        "checked": "Checked",
+        "imported": "Imported",
+        "duplicates": "Duplicates",
+        "failed": "Failed"
+      }
+    },
+    "media": {
+      "reel": "Reel",
+      "video": "Video",
+      "image": "Photo",
+      "carousel": "Carousel",
+      "unknown": "Post"
+    },
+    "transcript": {
+      "not_transcribed": "not transcribed",
+      "not_applicable": "no audio",
+      "transcribed": "transcribed",
+      "failed": "transcription failed"
+    },
+    "empty": {
+      "needs_review": "Nothing waiting for review",
+      "published": "No imported news published yet",
+      "rejected": "Nothing rejected",
+      "failed": "No failed imports",
+      "body": "Use Fetch News on the News page to check S News Tenali for new posts."
+    },
+    "review": {
+      "title": "Review imported news",
+      "subtitle": "From S News Tenali · drafts until you publish",
+      "posted": "Posted {{time}}",
+      "imported": "Imported {{time}}",
+      "openSource": "Open the original post",
+      "newTab": "(opens in a new tab)",
+      "caption": "Original caption",
+      "noCaption": "The post has no caption.",
+      "transcript": "Transcript",
+      "listenFirst": "Speech-to-text is not set up yet. Watch the original post before publishing.",
+      "noAudio": "This post has no audio.",
+      "headline": "Headline (Telugu)",
+      "summary": "Summary (Telugu)",
+      "summaryHint": "Only what the source says",
+      "save": "Save draft",
+      "publish": "Publish",
+      "reject": "Reject",
+      "saved": "Draft saved",
+      "published": "Published",
+      "rejected": "Rejected",
+      "rejectTitle": "Reject this post?",
+      "rejectBody": "The draft is removed and never shown. The post stays recorded so it is not imported again.",
+      "rejectReason": "Reason (optional)",
+      "rejectedBecause": "Rejected: {{reason}}"
+    }
   }
 }

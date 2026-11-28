@@ -274,6 +274,41 @@ export async function create(admin, input) {
   return adminView(doc);
 }
 
+/**
+ * A DRAFT made by the Instagram news import (newsImport module). Always a
+ * draft of type `news`, with the source name and post link and no cover image
+ * (the app's placeholder is shown). `createdBy` is the admin who pressed
+ * Fetch News, or empty for a scheduled import. Publishing goes through update().
+ */
+export async function createImportedDraft({ title, summary, sourceName, sourceUrl, createdBy }) {
+  const doc = new News({
+    slug: await slugFor(title),
+    title,
+    summary,
+    type: 'news',
+    sourceName,
+    sourceUrl,
+    status: S.DRAFT,
+    contentUpdatedAt: new Date(),
+    createdBy,
+    updatedBy: createdBy,
+  });
+  await doc.save();
+  return adminView(doc);
+}
+
+/** Admin summaries of news items by id (any status), for the import review list. */
+export async function adminSummariesByIds(ids) {
+  if (!ids.length) return new Map();
+  const items = await News.find({ _id: { $in: ids } }).select('slug title summary status sourceName sourceUrl').lean();
+  return new Map(
+    items.map((n) => [
+      String(n._id),
+      { id: String(n._id), slug: n.slug, title: n.title, summary: n.summary, status: n.status, sourceName: n.sourceName, sourceUrl: n.sourceUrl ?? null },
+    ]),
+  );
+}
+
 /** Edit, publish, unpublish (draft), hide, pin or unpin. Removed items can't change. */
 export async function update(admin, id, input) {
   const doc = await loadForAdmin(id);

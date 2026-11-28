@@ -16,6 +16,7 @@ import { buildReviewsRoutes, buildBusinessReviewsRoutes } from './modules/review
 import { buildReportsRoutes } from './modules/reports/reports.routes.js';
 import { buildAnalyticsRoutes } from './modules/analytics/analytics.routes.js';
 import { buildPostsRoutes, buildCommentsRoutes } from './modules/community/community.routes.js';
+import { buildIntegrationRoutes } from './modules/newsImport/newsImport.routes.js';
 
 /** Mounts every module under /api/v1. Adding a module = one line here. */
 export function buildRoutes() {
@@ -40,5 +41,6 @@ export function buildRoutes() {
   router.use('/posts', buildPostsRoutes());
   router.use('/comments', buildCommentsRoutes());
   router.use('/admin', buildAdminRoutes());
+  router.use('/integrations', buildIntegrationRoutes()); // server-to-server webhooks (shared secret)
   return router;
 }

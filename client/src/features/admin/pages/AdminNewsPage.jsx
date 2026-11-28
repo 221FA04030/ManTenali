@@ -16,6 +16,7 @@ import { errorMessageKey } from '../../../lib/apiClient.js';
 import { formatRelative } from '../../../lib/format.js';
 import { NEWS_TYPE_KEYS, newsApi, useAdminNews, useNewsMutation } from '../../news/api.js';
 import { NewsStatusBadge, NewsTypeBadge } from '../../news/components/NewsBits.jsx';
+import { FetchNewsPanel } from '../components/FetchNewsPanel.jsx';
 
 const STATUSES = ['draft', 'published', 'hidden', 'archived'];
 const btn = 'inline-flex min-h-[40px] items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold ring-1 ring-brand-200 hover:bg-brand-50 disabled:opacity-50';
@@ -68,6 +69,7 @@ export default function AdminNewsPage() {
         }
       />
       <div className="flex flex-col gap-3 p-4">
+        <FetchNewsPanel />
         <label className="relative flex items-center">
           <span className="sr-only">{t('newsAdmin.search')}</span>
           <Search className="pointer-events-none absolute left-3 h-4 w-4 text-ink-soft" aria-hidden="true" />

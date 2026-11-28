@@ -268,6 +268,50 @@ logs `image uploads disabled` with the missing names at startup. The secret neve
 
 The first server test run downloads a MongoDB binary for `mongodb-memory-server` (cached afterwards).
 
+## Fetch News (S News Tenali on Instagram)
+
+Admins can import public posts and Reels from [@snewstenali](https://www.instagram.com/snewstenali/) as **news drafts**. Nothing is published automatically.
+
+- **Admin News -> Fetch News** asks the server to run the Apify actor `sones/instagram-posts-scraper-lowcost` for the newest `NEWS_IMPORT_MAX_POSTS` posts. The page shows progress and how many posts were checked, imported, skipped as duplicates, or failed, plus totals that need review, were published, rejected or failed.
+- **Duplicates:** each post is recorded once by its Instagram id and link (`news_imports` collection), so fetching again never imports it twice. A post whose draft could not be made is retried on the next fetch.
+- **Drafts:** the headline and summary start from the caption only, with no AI and no added facts. The source is "S News Tenali" with the post link, and the app's placeholder image is used: the video and Instagram images are never stored or shown.
+- **Review** (`/admin/news/imports`): shows the caption, transcript status, source and link. The admin edits the Telugu headline and summary, then publishes or rejects. A rejected draft is removed and never shown.
+- **Transcripts:** speech-to-text is not set up yet, so Reels are marked "not transcribed" and the admin watches the original before publishing. ElevenLabs (speech-to-text) and Claude (summaries) can be added later.
+
+| Method and path | Who | What |
+|---|---|---|
+| `POST /api/v1/admin/news-imports/fetch` | admin | Start a fetch (202). 409 while one runs; 503 without `APIFY_TOKEN` |
+| `GET /api/v1/admin/news-imports/runs/latest`, `/runs/:id` | admin | Progress and counts of a fetch |
+| `GET /api/v1/admin/news-imports?status=` | admin | Imported posts (`needs_review`, `published`, `rejected`, `failed`), with totals in `meta.counts` |
+| `PATCH /api/v1/admin/news-imports/:id` | admin | Save the headline and summary (still a draft) |
+| `POST /api/v1/admin/news-imports/:id/publish` / `/reject` | admin | Publish with the final headline and summary, or reject |
+| `POST /api/v1/integrations/apify/news-import` | Apify webhook | Import a scheduled run's posts (shared secret header) |
+
+Environment variables (server only; see `server/.env.example`):
+
+| Variable | Needed for | Notes |
+|---|---|---|
+| `APIFY_TOKEN` | Fetch News | Apify personal API token. Fetch News is off until it is set |
+| `APIFY_WEBHOOK_SECRET` | Scheduled imports | At least 24 random characters. The webhook answers 404 until it is set |
+| `NEWS_IMPORT_INSTAGRAM_USERNAME` | optional | Default `snewstenali` |
+| `NEWS_IMPORT_SOURCE_NAME` | optional | Default `S News Tenali` |
+| `NEWS_IMPORT_MAX_POSTS` | optional | Posts per fetch, 1-50, default 10 |
+
+### Scheduled fetching (Apify schedule + webhook)
+
+The app has no scheduler of its own; Apify runs the schedule and tells the API when posts are ready.
+
+1. In Apify Console, open `sones/instagram-posts-scraper-lowcost` and **save a task** with this input: `{"usernames": ["snewstenali"], "postsPerProfile": 10}`.
+2. In the task, open **Integrations -> Webhook** and add a webhook:
+   - **Event types:** `Run succeeded` only.
+   - **URL:** `https://mantenali-3.onrender.com/api/v1/integrations/apify/news-import`.
+   - **Headers template:** `{"X-Mana-Tenali-Secret": "<the same value as APIFY_WEBHOOK_SECRET>"}`.
+   - **Payload template:** keep the default (it includes `eventType` and `resource.defaultDatasetId`).
+3. In Apify Console, open **Schedules -> Create schedule**, choose how often (for example every 2 hours), and add the task.
+4. On Render, set `APIFY_TOKEN` and `APIFY_WEBHOOK_SECRET` in the service's **Environment**, then redeploy.
+
+On each successful run, the API reads that run's dataset with `APIFY_TOKEN` and imports new posts as drafts, exactly like the button. Runs started while another import is still running are refused (409); Apify retries failed webhook calls. Imports appear under Admin News for review. A chat-based run (Claude Code with the Apify connection) is a one-off and is not a background job.
+
 ## Project layout
 
 ```

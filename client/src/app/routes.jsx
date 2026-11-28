@@ -39,6 +39,7 @@ const NewsListPage = lazy(() => import('../features/news/pages/NewsListPage.jsx'
 const NewsDetailPage = lazy(() => import('../features/news/pages/NewsDetailPage.jsx'));
 const AdminNewsPage = lazy(() => import('../features/admin/pages/AdminNewsPage.jsx'));
 const AdminNewsFormPage = lazy(() => import('../features/admin/pages/AdminNewsFormPage.jsx'));
+const AdminNewsImportsPage = lazy(() => import('../features/admin/pages/AdminNewsImportsPage.jsx'));
 const SearchPage = lazy(() => import('../features/search/pages/SearchPage.jsx'));
 const CommunityPage = lazy(() => import('../features/community/pages/CommunityPage.jsx'));
 const PostDetailPage = lazy(() => import('../features/community/pages/PostDetailPage.jsx'));
@@ -120,6 +121,7 @@ export const routes = [
       { path: 'admin/users', element: adminOnly(<AdminUsersPage />) },
       { path: 'admin/metrics', element: adminOnly(<AdminMetricsPage />) },
       { path: 'admin/news/new', element: adminOnly(<AdminNewsFormPage />) },
+      { path: 'admin/news/imports', element: adminOnly(<AdminNewsImportsPage />) },
       { path: 'admin/news/:id/edit', element: adminOnly(<AdminNewsFormPage />) },
       { path: 'about', element: <AboutPage /> },
       { path: '*', element: <NotFoundPage /> },
