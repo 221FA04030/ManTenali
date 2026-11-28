@@ -22,12 +22,12 @@ const label = 'text-[clamp(0.6875rem,3.3vw,0.9375rem)] leading-tight';
 export function BottomNav() {
   const { t } = useTranslation();
   return (
-    <nav aria-label={t('nav.main')} className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-app rounded-t-[24px] bg-white shadow-bar safe-bottom">
+    <nav aria-label={t('nav.main')} className="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-app rounded-t-[24px] border-t border-line bg-white shadow-bar safe-bottom">
       <ul className="grid h-[clamp(4.25rem,19vw,5.25rem)] grid-cols-5 items-center px-1">
         {ITEMS.map(({ to, key, icon: Icon, end, center, fill }) => (
           <li key={key} className="flex h-full items-center justify-center">
             {center ? (
-              <NavLink to={to} className="group -mt-[clamp(1.25rem,6vw,2rem)] flex flex-col items-center gap-1 rounded-2xl text-label">
+              <NavLink to={to} className="group -mt-[clamp(1.25rem,6vw,2rem)] flex flex-col items-center gap-1 rounded-2xl text-meta">
                 {({ isActive }) => (
                   <>
                     <span
@@ -38,7 +38,7 @@ export function BottomNav() {
                     >
                       <Icon className="h-1/2 w-1/2" strokeWidth={2.5} aria-hidden="true" />
                     </span>
-                    <span className={cn(label, isActive && 'font-semibold text-primary')}>{t(`nav.${key}`)}</span>
+                    <span className={cn(label, isActive && 'font-semibold text-primary-dark')}>{t(`nav.${key}`)}</span>
                   </>
                 )}
               </NavLink>
@@ -49,14 +49,14 @@ export function BottomNav() {
                 className={({ isActive }) =>
                   cn(
                     'flex min-h-[52px] min-w-[52px] flex-col items-center justify-center gap-0.5 rounded-2xl px-[clamp(0.375rem,3vw,1.5rem)] py-1.5 transition-colors',
-                    isActive ? 'bg-primary-light text-primary' : 'text-label hover:text-primary',
+                    isActive ? 'bg-primary-light text-primary-dark' : 'text-meta hover:text-primary',
                   )
                 }
               >
                 {({ isActive }) => (
                   <>
                     <Icon
-                      className={cn('h-[clamp(1.375rem,6vw,1.625rem)] w-[clamp(1.375rem,6vw,1.625rem)]', isActive && fill && 'fill-primary')}
+                      className={cn('h-[clamp(1.375rem,6vw,1.625rem)] w-[clamp(1.375rem,6vw,1.625rem)]', isActive && fill && 'fill-primary text-primary')}
                       strokeWidth={1.75}
                       aria-hidden="true"
                     />

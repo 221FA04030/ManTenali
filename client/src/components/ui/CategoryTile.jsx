@@ -12,7 +12,7 @@ export function CategoryTile({ icon: Icon, label, to, comingSoon }) {
   const disabled = comingSoon || !to;
   const content = (
     <>
-      <span data-cat-tile="" aria-hidden="true" className={cn('cat-tile', disabled ? 'bg-gray-100 text-gray-500' : 'bg-primary-light text-primary')}>
+      <span data-cat-tile="" aria-hidden="true" className={cn('cat-tile', disabled ? 'bg-gray-100 text-gray-500' : 'bg-primary-light text-primary ring-1 ring-inset ring-line')}>
         <Icon className="cat-icon" strokeWidth={1.75} />
         {disabled && <ComingSoonBadge short className="absolute -bottom-2 left-1/2 -translate-x-1/2 ring-2 ring-white" />}
       </span>

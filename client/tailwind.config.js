@@ -25,14 +25,16 @@ export default {
           muted: '#4B5B50',
           soft: '#6B7A70',
         },
-        // Home reference design (DOCS/refrence.jpeg).
-        primary: { DEFAULT: '#1E7B3A', dark: '#14632D', light: '#E6F4EA' },
+        // Light theme: green for branding, icons and primary actions; white and pale mint surfaces.
+        primary: { DEFAULT: '#238344', dark: '#174D2B', light: '#EAF5ED' },
+        surface: { soft: '#F7FBF8' }, // header and soft section backgrounds
+        line: '#E6EEE8', // subtle borders and dividers
         leaf: '#7BC043',
         offer: { DEFAULT: '#E8590C', text: '#C2410C' }, // text: AA contrast (4.5:1) for small text on white
         news: '#1565C0',
-        heading: '#14261A',
-        label: '#2B3A30',
-        meta: '#6B7280',
+        heading: '#202B24',
+        label: '#202B24',
+        meta: '#657168',
         status: {
           traffic: '#EA580C',
           trafficBg: '#FFEDD5',

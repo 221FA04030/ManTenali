@@ -80,24 +80,24 @@ export default function HomePage() {
           </div>
         ) : (
           happening.length > 0 && (
-            <div className="border-t-8 border-gray-100 pb-5 pt-5">
+            <div className="border-t border-line pb-5 pt-5">
               <HappeningSection items={happening} />
             </div>
           )
         )}
         {/* Explore needs no data, so it is there while the feed loads or if it fails. */}
-        <div className="border-t-8 border-gray-100 pb-5 pt-5">
+        <div className="border-t border-line pb-5 pt-5">
           <ExploreSection />
         </div>
         {d && (
           <>
-            <div className="border-t-8 border-gray-100 pb-5 pt-5">
+            <div className="border-t border-line pb-5 pt-5">
               <TodayInTenali today={d.today} />
             </div>
 
             {d.nearby?.items?.length > 0 && (
-              <Section id="home-nearby" title={nearbyTitle} subtitle={t('home.nearbySubtitle')} to="/businesses">
-                <ul className="divide-y divide-gray-100 px-4">
+              <Section band="line" id="home-nearby" title={nearbyTitle} subtitle={t('home.nearbySubtitle')} to="/businesses">
+                <ul className="divide-y divide-line px-4">
                   {d.nearby.items.map((b) => (
                     <li key={b.id}>
                       <BusinessRow business={b} />
@@ -117,7 +117,7 @@ export default function HomePage() {
             )}
 
             {d.food?.length > 0 && (
-              <Section id="home-food" title={t('home.foodTitle')} subtitle={t('home.foodSubtitle')} to="/food?sort=rating">
+              <Section band="line" id="home-food" title={t('home.foodTitle')} subtitle={t('home.foodSubtitle')} to="/food?sort=rating">
                 <Rail label={t('home.foodTitle')}>
                   {d.food.map((b) => (
                     <li key={b.id} className="snap-start">
@@ -129,7 +129,7 @@ export default function HomePage() {
             )}
 
             {d.featured?.length > 0 && (
-              <Section id="home-featured" title={t('home.featuredTitle')} subtitle={t('home.featuredSubtitle')} to="/businesses?isVerified=true">
+              <Section band="line" id="home-featured" title={t('home.featuredTitle')} subtitle={t('home.featuredSubtitle')} to="/businesses?isVerified=true">
                 <Rail label={t('home.featuredTitle')}>
                   {d.featured.map((b) => (
                     <li key={b.id} className="snap-start">
@@ -141,7 +141,7 @@ export default function HomePage() {
             )}
 
             {d.community?.length > 0 && (
-              <Section id="home-community" title={t('home.communityTitle')} subtitle={t('home.communitySubtitle')} to="/community">
+              <Section band="line" id="home-community" title={t('home.communityTitle')} subtitle={t('home.communitySubtitle')} to="/community">
                 <ul className="card-list px-4">
                   {d.community.map((p) => (
                     <li key={p.id}>
@@ -155,8 +155,8 @@ export default function HomePage() {
         )}
 
         {/* Sign-off, as at the end of the reference home screen. */}
-        <div className="border-t-8 border-gray-100 bg-gray-50 px-6 pb-8 pt-10">
-          <p aria-hidden="true" className="text-[44px] font-extrabold uppercase leading-[0.95] tracking-tight text-gray-300 sm:text-[56px]">
+        <div className="border-t border-line bg-surface-soft px-6 pb-8 pt-10">
+          <p aria-hidden="true" className="text-[44px] font-extrabold uppercase leading-[0.95] tracking-tight text-[#CFE3D5] sm:text-[56px]">
             {t('app.name')
               .split(' ')
               .map((word) => (
@@ -165,8 +165,8 @@ export default function HomePage() {
                 </span>
               ))}
           </p>
-          <p className="mt-4 text-[13px] font-semibold uppercase tracking-wide text-gray-400">{t('app.tagline')}</p>
-          <p className="mt-1 text-[12px] uppercase tracking-wide text-gray-400">{t('home.signoffMade')}</p>
+          <p className="mt-4 text-[13px] font-semibold uppercase tracking-wide text-meta">{t('app.tagline')}</p>
+          <p className="mt-1 text-[12px] uppercase tracking-wide text-meta">{t('home.signoffMade')}</p>
         </div>
       </div>
     </>

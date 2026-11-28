@@ -4,13 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/cn.js';
 
 /**
- * A flat page section in the reference layout: an optional grey band above it,
+ * A flat page section in the reference layout: an optional grey band above it
+ * (`band="line"`: a thin light divider instead, as on the light Home),
  * a bold title with a grey subtitle, and "SEE ALL" with a round arrow.
  */
 export function Section({ id, title, subtitle, to, seeAllLabel, band = true, children, className }) {
   const { t } = useTranslation();
   return (
-    <section aria-labelledby={id} className={cn(band && 'border-t-8 border-gray-100', 'pb-5 pt-5', className)}>
+    <section aria-labelledby={id} className={cn(band === 'line' ? 'border-t border-line' : band && 'border-t-8 border-gray-100', 'pb-5 pt-5', className)}>
       <div className="mb-3.5 flex items-start justify-between gap-3 px-4">
         <div className="min-w-0">
           <h2 id={id} className="text-[19px] font-bold leading-snug text-heading">

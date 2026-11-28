@@ -77,10 +77,10 @@
     aspect-ratio: 1;
   }
   a.cat-item:hover .cat-tile {
-    @apply bg-[#d6ecdc];
+    @apply bg-[#DCEFE2];
   }
   a.cat-item:active .cat-tile {
-    @apply bg-[#cbe6d3];
+    @apply bg-[#D0E9D8];
     transform: scale(0.95);
   }
   .cat-icon {
