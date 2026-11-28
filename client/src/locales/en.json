@@ -96,8 +96,7 @@
     "health": "Health & Medical",
     "education": "Education",
     "hotels": "Hotels & Stay",
-    "community": "Community",
-    "businesses": "All Businesses"
+    "community": "Community"
   },
   "home": {
     "tenaliBanners": {
@@ -150,19 +149,7 @@
     "featuredSubtitle": "Checked by the Mana Tenali team",
     "communitySubtitle": "What neighbours are saying",
     "seeAllBusinesses": "See all businesses",
-    "signoffMade": "Made in Tenali, for Tenali",
-    "communityPosts": {
-      "title": "Community Posts",
-      "subtitle": "What's happening around Tenali?",
-      "label": "Community posts with photos",
-      "open": "Post by {{name}}: {{text}}",
-      "likes_one": "{{count}} like",
-      "likes_other": "{{count}} likes",
-      "comments_one": "{{count}} comment",
-      "comments_other": "{{count}} comments",
-      "empty": "No photo posts yet. Share what is happening around you.",
-      "share": "Share a post"
-    }
+    "signoffMade": "Made in Tenali, for Tenali"
   },
   "explore": {
     "title": "Discover Tenali",
@@ -1395,25 +1382,5 @@
       "delete": "Deleted"
     },
     "fromReport": "From a report"
-  },
-  "features": {
-    "more": "More features",
-    "moreCount": "+{{count}}",
-    "moreTitle": "All features",
-    "moreSubtitle": "In the order you use them most.",
-    "allShown": "Every feature is already on your Home screen.",
-    "desc": {
-      "food": "Restaurants, tiffins and sweets",
-      "offers": "Deals from local businesses",
-      "news": "Local news and notices",
-      "events": "What's on in Tenali",
-      "shopping": "Shops and stores in town",
-      "healthMedical": "Hospitals, clinics and pharmacies",
-      "community": "Posts and questions from neighbours",
-      "services": "Local service providers",
-      "educationCat": "Schools, colleges and coaching",
-      "hotels": "Hotels and places to stay",
-      "businesses": "Every business in the directory"
-    }
   }
 }

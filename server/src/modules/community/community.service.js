@@ -77,13 +77,12 @@ async function loadVisible(id, viewer) {
 
 /* ----------------------------- posts ----------------------------- */
 
-/** Public feed: published posts, newest first; filters kind, area and (Home) posts with a photo. */
+/** Public feed: published posts, newest first; filters kind and area. */
 export async function feed(query, viewer) {
   const { page, limit, skip } = getPagination(query);
   const filter = { status: S.PUBLISHED };
   if (query.kind) filter.kind = query.kind;
   if (query.area) filter.area = query.area;
-  if (query.withPhoto) filter['photo.url'] = { $exists: true };
   const [items, total] = await Promise.all([
     Post.find(filter).sort({ createdAt: -1, _id: -1 }).skip(skip).limit(limit).lean(),
     Post.countDocuments(filter),

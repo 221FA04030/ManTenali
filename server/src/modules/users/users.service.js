@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { User, USER_STATUS, ENGAGEMENT_LIMITS } from './users.model.js';
+import { User, USER_STATUS } from './users.model.js';
 import { AppError } from '../../common/errors/index.js';
 import { getPagination, buildMeta } from '../../common/utils/pagination.js';
 import { ROLES } from '../../config/constants.js';
@@ -220,52 +220,4 @@ export async function getAdminContactsByIds(ids) {
 export async function findIdsMatching(q, limit = 200) {
   const rx = new RegExp(escapeRegex(q.trim()), 'i');
   return (await User.find({ $or: [{ name: rx }, { email: rx }] }).select('_id').limit(limit).lean()).map((u) => u._id);
-}
-
-/* ----------------------------- Home feature engagement ----------------------------- */
-
-const MAX_CLOCK_SKEW_MS = 5 * 60_000;
-
-function engagementOut(doc) {
-  const features = {};
-  for (const [key, e] of doc?.features ?? new Map()) {
-    features[key] = { score: e.score, updatedAt: e.updatedAt, lastSession: e.lastSession ?? null };
-  }
-  return { features };
-}
-
-/** The signed-in user's own engagement scores ({ features: {} } when there are none yet). */
-export async function getEngagement(userId) {
-  const user = await User.findById(userId).select('+featureEngagement').exec();
-  if (!user) throw AppError.notFound('User not found.');
-  return engagementOut(user.featureEngagement);
-}
-
-/**
- * Save engagement scores. Per feature, the entry with the newest updatedAt wins,
- * so two devices never wipe each other's features. With `mergeId` (an anonymous
- * record being added after sign-in), a record that was already added is ignored:
- * `applied: false` and the stored scores come back unchanged.
- */
-export async function saveEngagement(userId, { features, mergeId }) {
-  const user = await User.findById(userId).select('+featureEngagement').exec();
-  if (!user) throw AppError.notFound('User not found.');
-  const current = user.featureEngagement ?? {};
-  const merged = new Set(current.mergedIds ?? []);
-  if (mergeId && merged.has(mergeId)) return { ...engagementOut(current), applied: false };
-
-  const now = Date.now();
-  const next = new Map(current.features ?? []);
-  for (const [key, e] of Object.entries(features)) {
-    // A device clock far in the future must not lock an entry against later updates.
-    const updatedAt = new Date(Math.min(new Date(e.updatedAt).getTime(), now + MAX_CLOCK_SKEW_MS));
-    const have = next.get(key);
-    if (!have || updatedAt > have.updatedAt) next.set(key, { score: e.score, updatedAt, lastSession: e.lastSession ?? undefined });
-  }
-  // Keep the strongest features if a client sends too many keys over time.
-  const kept = [...next.entries()].sort((a, b) => b[1].score - a[1].score).slice(0, ENGAGEMENT_LIMITS.features);
-  const mergedIds = [...(current.mergedIds ?? []), ...(mergeId ? [mergeId] : [])].slice(-ENGAGEMENT_LIMITS.mergedIds);
-  user.featureEngagement = { features: new Map(kept), mergedIds: mergedIds.length ? mergedIds : undefined };
-  await user.save();
-  return { ...engagementOut(user.featureEngagement), applied: true };
 }

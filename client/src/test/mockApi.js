@@ -25,10 +25,6 @@ export function mockApi(handlers = {}) {
         return rx.test(path);
       })?.[1];
     }
-    // Home's Community Posts asks for posts on every Home render: none unless a test says so.
-    if (!handler && key === 'GET /posts') {
-      handler = () => ok([], { page: 1, limit: 12, total: 0, totalPages: 0 });
-    }
     if (!handler && key === 'GET /auth/me') {
       handler = () => ({ status: 401, body: { success: false, error: { code: 'UNAUTHENTICATED', message: 'no' } } });
     }

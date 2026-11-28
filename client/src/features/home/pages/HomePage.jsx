@@ -1,16 +1,19 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HomeHeader } from '../../../components/ui/Header.jsx';
+import { CategoryTile } from '../../../components/ui/CategoryTile.jsx';
 import { Section, Rail } from '../../../components/ui/Section.jsx';
-import { ListSkeleton } from '../../../components/ui/Skeleton.jsx';
+import { Skeleton, ListSkeleton } from '../../../components/ui/Skeleton.jsx';
 import { ErrorState } from '../../../components/ui/ErrorState.jsx';
+import { HOME_TILES } from '../../../config/navigation.js';
 import { useLocationContext } from '../../../app/providers/LocationProvider.jsx';
 import { BusinessPickTile, BusinessRoundTile, BusinessRow } from '../../businesses/components/BusinessTiles.jsx';
+import { PostCard } from '../../community/components/PostCard.jsx';
+import { useBusinessCategoryLink } from '../../categories/api.js';
 import { HeroCarousel } from '../components/HeroCarousel.jsx';
 import { TenaliBannerCarousel } from '../components/TenaliBannerCarousel.jsx';
 import { HappeningSection, mixHappening } from '../components/HappeningSection.jsx';
-import { PersonalizedFeatureGrid } from '../components/PersonalizedFeatureGrid.jsx';
-import { CommunityPostsFeed } from '../components/CommunityPostsFeed.jsx';
+import { ExploreSection } from '../components/ExploreSection.jsx';
 import { TodayInTenali } from '../components/TodayInTenali.jsx';
 import { useHomeFeed } from '../api.js';
 import { Link } from 'react-router-dom';
@@ -19,12 +22,12 @@ import { ArrowRight } from 'lucide-react';
 const NEAR_ME_KM = 10;
 
 /**
- * Home screen: light app bar, the Tenali banners, this person's 8 most used
- * features (+ More Features) and Community Posts (real photo posts drifting
- * slowly). Below them: highlights, What's Happening, Today in Tenali, nearby
- * businesses, popular restaurants and verified businesses, from GET /home
- * (real data only; empty sections are hidden). The shortcuts and Community
- * Posts work even if the Home feed fails.
+ * Home screen, laid out like the home design (DOCS/refrence.jpeg): green app
+ * bar, hero carousel overlapping it, category shortcuts, "What's Happening in
+ * Tenali" and "Explore Tenali". Below them: Today in Tenali notices, nearby
+ * businesses, popular restaurants, verified businesses and community posts.
+ * Everything comes from GET /home (real data only); empty sections are hidden.
+ * The shortcuts and Explore work even if the feed fails.
  */
 export default function HomePage() {
   const { t } = useTranslation();
@@ -34,6 +37,7 @@ export default function HomePage() {
     [coords, area],
   );
   const feed = useHomeFeed(params);
+  const categoryLink = useBusinessCategoryLink();
   const d = feed.data;
   const nearbyTitle =
     d?.nearby.mode === 'near' ? t('home.nearbyTitle') : d?.nearby.mode === 'area' ? t('home.nearbyArea', { area: d.nearby.area }) : t('home.popularTitle');
@@ -41,19 +45,31 @@ export default function HomePage() {
 
   return (
     <>
-      {/* The Tenali banners overlap the bottom of the app bar. */}
+      {/* The Tenali banners overlap the bottom of the green bar; the highlights carousel follows them. */}
       <HomeHeader />
       <TenaliBannerCarousel />
-      <PersonalizedFeatureGrid />
+      {feed.isPending ? (
+        <div className="relative mx-2.5 mt-3" aria-busy="true" aria-label={t('common.loading')}>
+          <Skeleton className="aspect-[2.6/1] max-h-[200px] min-h-[152px] w-full rounded-hero" />
+        </div>
+      ) : (
+        <HeroCarousel items={d?.banner} className="mt-3" />
+      )}
 
-      <div className="page-wide mt-5 flex flex-col">
-        {/* Community Posts has its own request, so it shows while the Home feed loads or if it fails. */}
-        <CommunityPostsFeed />
-        {d?.banner?.length > 0 && (
-          <div className="border-t border-line pb-5 pt-5">
-            <HeroCarousel items={d.banner} className="mt-0" />
-          </div>
-        )}
+      <section aria-label={t('home.categoriesLabel')} className="cat-grid mx-auto mt-6 w-full max-w-[40rem]">
+        <ul>
+          {HOME_TILES.map((tile) => {
+            const link = tile.categorySlug ? categoryLink(tile.categorySlug) : { to: tile.to };
+            return (
+              <li key={tile.key}>
+                <CategoryTile icon={tile.icon} label={t(tile.labelKey)} to={link.to} comingSoon={tile.comingSoon || link.missing} />
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <div className="page-wide mt-7 flex flex-col">
         {feed.isPending ? (
           <div className="page-pad flex flex-col gap-4">
             <ListSkeleton rows={2} />
@@ -69,6 +85,10 @@ export default function HomePage() {
             </div>
           )
         )}
+        {/* Explore needs no data, so it is there while the feed loads or if it fails. */}
+        <div className="border-t border-line pb-5 pt-5">
+          <ExploreSection />
+        </div>
         {d && (
           <>
             <div className="border-t border-line pb-5 pt-5">
@@ -120,6 +140,17 @@ export default function HomePage() {
               </Section>
             )}
 
+            {d.community?.length > 0 && (
+              <Section band="line" id="home-community" title={t('home.communityTitle')} subtitle={t('home.communitySubtitle')} to="/community">
+                <ul className="card-list px-4">
+                  {d.community.map((p) => (
+                    <li key={p.id}>
+                      <PostCard post={p} />
+                    </li>
+                  ))}
+                </ul>
+              </Section>
+            )}
           </>
         )}
 

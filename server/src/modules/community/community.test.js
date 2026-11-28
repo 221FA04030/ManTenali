@@ -171,21 +171,3 @@ describe('reports, saved posts and uploads', () => {
     expect(JSON.stringify(plan)).toMatch(/IXSCAN/);
   });
 });
-
-describe('GET /posts?withPhoto=true (Home Community Posts)', () => {
-  it('returns only published posts that have a photo, with author, area, time and counts', async () => {
-    const a = await loginAs(app);
-    await a.agent.post('/api/v1/posts').send(body({ photo: COVER, area: 'Kothapeta' })).expect(201);
-    await a.agent.post('/api/v1/posts').send(body({ text: 'Any good tailors near Bose Road?', kind: 'question' })).expect(201);
-    const res = await request(app).get('/api/v1/posts?withPhoto=true');
-    expect(res.status).toBe(200);
-    expect(res.body.data).toHaveLength(1);
-    expect(res.body.data[0]).toMatchObject({ photo: COVER, area: 'Kothapeta', author: { name: a.user.name }, likeCount: 0, commentCount: 0 });
-    expect(res.body.data[0].createdAt).toBeTruthy();
-    expect((await request(app).get('/api/v1/posts')).body.data).toHaveLength(2);
-  });
-
-  it('rejects other withPhoto values', async () => {
-    expect((await request(app).get('/api/v1/posts?withPhoto=yes')).status).toBe(400);
-  });
-});
