@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
+import { AdminModerationMenu, useLeaveAfterDelete } from '../../moderation/components/AdminModerationMenu.jsx';
 import { useTranslation } from 'react-i18next';
 import { CalendarDays, ChevronRight, Clock, ExternalLink, MapPin, Store, Ticket, UserRound } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
@@ -20,6 +21,7 @@ export default function EventDetailPage() {
   const { slug } = useParams();
   const { t, i18n } = useTranslation();
   const { data: e, isPending, isError, error, refetch } = useEvent(slug);
+  const leave = useLeaveAfterDelete('/events');
   // Admin previews of non-public events carry a status; only public views are counted.
   useTrackOnce('view', 'event', e && !e.status ? e.id : undefined);
 
@@ -72,7 +74,10 @@ export default function EventDetailPage() {
             {e.category && <Badge tone="gray">{categoryName(e.category, i18n.language)}</Badge>}
             {e.isSeed && <SampleBadge />}
           </div>
-          <h2 className={`text-xl font-bold leading-snug ${e.isCancelled ? 'line-through' : ''}`}>{e.title}</h2>
+          <div className="flex items-start gap-1">
+            <h2 className={`min-w-0 flex-1 text-xl font-bold leading-snug ${e.isCancelled ? 'line-through' : ''}`}>{e.title}</h2>
+            <AdminModerationMenu type="event" id={e.id} title={e.title} onDone={leave} className="-mr-2 -mt-2" />
+          </div>
           <p className="flex items-start gap-2 text-[15px]">
             <Clock className="mt-0.5 h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />
             <span>

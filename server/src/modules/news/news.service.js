@@ -9,6 +9,7 @@ import { escapeRegex } from '../../common/utils/validators.js';
 import { matchFilter, relevance, rankPage, CANDIDATE_LIMIT } from '../../common/utils/textSearch.js';
 import { getEnv } from '../../config/env.js';
 import { ROLES } from '../../config/constants.js';
+import { listForModeration, moderationRow, markArchived, markRestored, unusedImageIds } from '../../common/utils/moderation.js';
 
 const S = NEWS_STATUS;
 const DAY_MS = 86_400_000;
@@ -340,4 +341,51 @@ export async function seedNews(list, categoryIdBySlug = new Map(), now = new Dat
     created += 1;
   }
   return { created, skipped: list.length - created };
+}
+
+/* ----------------------------- admin moderation (archive / restore / delete) ----------------------------- */
+const MOD = {
+  hiddenStatus: S.HIDDEN,
+  publicStatuses: [S.PUBLISHED],
+  titleField: 'title',
+  authorFields: ['createdBy'],
+  select: 'title slug type status createdBy moderation publishedAt isPinned validUntil createdAt updatedAt',
+};
+const modRow = (n) => ({ ...moderationRow(n, MOD), title: n.title, slug: n.slug, newsType: n.type, publishedAt: n.publishedAt ?? null });
+
+/** Moderation dashboard rows, any status. */
+export async function moderationRows(query) {
+  const { items, total } = await listForModeration(News, MOD, query);
+  return { items: items.map(modRow), total };
+}
+
+/** Admin: take a news item off the website (kept, restorable). */
+export async function adminArchive(admin, id, reason) {
+  const doc = await loadForAdmin(id);
+  markArchived(doc, { admin, reason, hiddenStatus: S.HIDDEN, fallbackStatus: S.PUBLISHED, removedStatuses: [S.ARCHIVED] });
+  doc.updatedBy = admin.id;
+  await doc.save();
+  return modRow(doc.toObject());
+}
+
+/** Admin: restore. A pinned item stays pinned only while a pin slot is free. */
+export async function adminRestore(admin, id) {
+  const doc = await loadForAdmin(id);
+  markRestored(doc, { hiddenStatus: S.HIDDEN, fallbackStatus: S.PUBLISHED, allowedStatuses: [S.PUBLISHED, S.DRAFT] });
+  if (usesPinSlot(doc)) {
+    await assertPinSlot(doc._id).catch(() => {
+      doc.isPinned = false;
+    });
+  }
+  doc.updatedBy = admin.id;
+  await doc.save();
+  return modRow(doc.toObject());
+}
+
+/** Admin: delete the news record. Returns its cover id when no other item uses it. */
+export async function adminPurge(id) {
+  const doc = await News.findById(id).select('title coverImage').lean();
+  if (!doc) throw AppError.notFound('News item not found.');
+  await News.deleteOne({ _id: doc._id });
+  return { title: doc.title, images: await unusedImageIds(News, 'coverImage.publicId', [doc.coverImage?.publicId]) };
 }

@@ -215,3 +215,9 @@ export async function getAdminContactsByIds(ids) {
   const users = await User.find({ _id: { $in: ids } }).select('name email').lean();
   return new Map(users.map((u) => [String(u._id), { id: String(u._id), name: u.name, email: u.email ?? null }]));
 }
+
+/** Moderation dashboard author filter: ids of users whose name or email contains `q` (at most 200). */
+export async function findIdsMatching(q, limit = 200) {
+  const rx = new RegExp(escapeRegex(q.trim()), 'i');
+  return (await User.find({ $or: [{ name: rx }, { email: rx }] }).select('_id').limit(limit).lean()).map((u) => u._id);
+}

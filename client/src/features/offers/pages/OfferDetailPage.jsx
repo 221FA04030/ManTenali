@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
+import { AdminModerationMenu, useLeaveAfterDelete } from '../../moderation/components/AdminModerationMenu.jsx';
 import { useTranslation } from 'react-i18next';
 import { CalendarDays, ChevronRight, ClipboardList, Pencil, Store, TicketPercent } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
@@ -18,6 +19,7 @@ export default function OfferDetailPage() {
   const { id } = useParams();
   const { t } = useTranslation();
   const { data: o, isPending, isError, error, refetch } = useOffer(id);
+  const leave = useLeaveAfterDelete('/offers');
   // offer_view counts public views only (not owners previewing drafts or scheduled offers).
   useTrackOnce('offer_view', 'offer', o && (!o.canManage || o.displayStatus === 'live') ? o.id : undefined);
 
@@ -83,7 +85,10 @@ export default function OfferDetailPage() {
                 {o.isSeed && <SampleBadge />}
               </div>
             )}
-            <h2 className="text-xl font-bold leading-snug text-heading">{o.title}</h2>
+            <div className="flex items-start gap-1">
+              <h2 className="min-w-0 flex-1 text-xl font-bold leading-snug text-heading">{o.title}</h2>
+              <AdminModerationMenu type="offer" id={o.id} title={o.title} onDone={leave} className="-mr-2 -mt-2" />
+            </div>
             {o.description && <p className="whitespace-pre-line text-[15px] text-ink-muted">{o.description}</p>}
             <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-muted">
               <span className="inline-flex items-center gap-1">

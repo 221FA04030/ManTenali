@@ -5,18 +5,22 @@ import { Badge, SampleBadge } from '../../../components/ui/Badge.jsx';
 import { categoryName } from '../../categories/api.js';
 import { cldUrl } from '../../../lib/cloudinary.js';
 import { DateBlock, EventWhen } from './EventBits.jsx';
+import { useAdminPermissions } from '../../moderation/useAdminPermissions.js';
+import { WithModeration } from '../../moderation/components/AdminModerationMenu.jsx';
 
 /** Event card: date block, title, time, venue area, category, cancelled label, banner thumbnail when there is one. */
 export function EventCard({ event: e }) {
   const { t, i18n } = useTranslation();
+  const { canModerate } = useAdminPermissions();
   return (
+    <WithModeration type="event" id={e.id} title={e.title}>
     <Link
       to={`/events/${e.slug}`}
       className="flex gap-3 rounded-card bg-white p-3 shadow-card ring-1 ring-brand-100 transition-shadow hover:shadow-lift"
     >
       <DateBlock startLocal={e.startLocal} muted={e.isCancelled} />
-      <span className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="flex flex-wrap gap-1.5">
+      <span className={`flex min-w-0 flex-1 flex-col gap-1 ${canModerate && !e.bannerImage ? 'pr-9' : ''}`}>
+        <span className={`flex flex-wrap gap-1.5 ${canModerate ? 'pr-9' : ''}`}>
           {e.isCancelled && <Badge tone="red">{t('events.cancelled')}</Badge>}
           {e.category && <Badge tone="gray">{categoryName(e.category, i18n.language)}</Badge>}
           {e.isSeed && <SampleBadge />}
@@ -40,5 +44,6 @@ export function EventCard({ event: e }) {
         />
       )}
     </Link>
+    </WithModeration>
   );
 }

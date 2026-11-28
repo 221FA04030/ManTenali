@@ -5,6 +5,7 @@ import {
   signParams,
   uploadUrl,
   deliveryPrefix,
+  destroyAsset,
 } from '../../common/integrations/cloudinary.js';
 import { ROLES } from '../../config/constants.js';
 
@@ -149,4 +150,26 @@ export function assertOwnImages(images, purpose, { max, field = 'body.photos' } 
     throw AppError.validation(`At most ${max} images are allowed.`, [{ field, message: `Max ${max} images` }]);
   }
   return images.map((img, i) => assertOwnImage(img, purpose, `${field}.${i}`));
+}
+
+/**
+ * Admin permanent delete: remove no-longer-used public images from Cloudinary.
+ * Only ids inside this project's public folders are touched (never evidence,
+ * never another account's files). Best effort: a failure never blocks the
+ * deletion of the record. Returns { removed, failed, skipped } counts.
+ */
+export async function releaseImages(publicIds, { destroy = destroyAsset } = {}) {
+  const folders = Object.keys(UPLOAD_PURPOSES).map((p) => `${folderFor(p)}/`);
+  const ids = [...new Set(publicIds)].filter(
+    (id) => typeof id === 'string' && PUBLIC_ID_RX.test(id) && !id.includes('..') && folders.some((f) => id.startsWith(f)),
+  );
+  const result = { removed: 0, failed: 0, skipped: publicIds.length - ids.length };
+  if (!ids.length) return result;
+  if (!getCloudinaryConfig()) return { ...result, skipped: publicIds.length };
+  for (const publicId of ids) {
+    const ok = await destroy({ publicId, type: 'upload' }).catch(() => false);
+    if (ok) result.removed += 1;
+    else result.failed += 1;
+  }
+  return result;
 }

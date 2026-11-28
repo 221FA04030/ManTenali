@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { moderationField } from '../../common/utils/moderation.js';
 
 /** Reviews (spec section 7): published | hidden. Users delete their own; admins hide. */
 export const REVIEW_STATUS = Object.freeze({ PUBLISHED: 'published', HIDDEN: 'hidden' });
@@ -12,6 +13,7 @@ const reviewSchema = new mongoose.Schema(
     status: { type: String, enum: Object.values(REVIEW_STATUS), default: REVIEW_STATUS.PUBLISHED },
     hiddenBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     hiddenAt: { type: Date },
+    moderation: moderationField, // admin archive record (never public)
     isSeed: { type: Boolean, default: false },
   },
   { timestamps: true },

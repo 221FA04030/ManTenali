@@ -379,7 +379,11 @@
     "cancelled": "Cancelled",
     "pending": "Pending review",
     "rejected": "Rejected",
-    "approved": "Approved"
+    "approved": "Approved",
+    "pending_review": "Waiting for review",
+    "changes_requested": "Changes requested",
+    "withdrawn": "Withdrawn",
+    "removed": "Removed"
   },
   "form": {
     "basics": "Basic details",
@@ -821,7 +825,8 @@
       "cancelled": "Cancelled",
       "hidden": "Hidden",
       "published": "Published",
-      "removed": "Removed"
+      "removed": "Removed",
+      "restored": "Restored"
     },
     "rejectLabel": "Reason (shown to the submitter)"
   },
@@ -1076,7 +1081,8 @@
       "mark_reviewed": "Mark reviewed",
       "hide_target": "Hide content",
       "block_user": "Block user",
-      "hide_and_block": "Hide and block"
+      "hide_and_block": "Hide and block",
+      "content_deleted": "Deleted with the content"
     },
     "confirm": {
       "dismiss": "Dismiss this report?",
@@ -1276,5 +1282,99 @@
     "offers": "Current deals from local businesses",
     "events": "What's happening in Tenali",
     "news": "Local news, alerts and updates"
+  },
+  "moderation": {
+    "pageTitle": "Content moderation",
+    "pageSubtitle": "Archive, restore or delete anything people publish",
+    "hint": "Archive, restore or delete any listing, offer, event, news item, post, comment or review",
+    "menuTitle": "Admin moderation",
+    "menuFor": "Admin moderation options for {{title}}",
+    "types": {
+      "business": "Business",
+      "offer": "Offer",
+      "event": "Event",
+      "news": "News",
+      "post": "Community post",
+      "comment": "Comment",
+      "review": "Review"
+    },
+    "typesPlural": {
+      "business": "Businesses",
+      "offer": "Offers",
+      "event": "Events",
+      "news": "News",
+      "post": "Posts",
+      "comment": "Comments",
+      "review": "Reviews"
+    },
+    "typeLabel": "Content type",
+    "viewLabel": "Show",
+    "filter": {
+      "all": "All",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "status": {
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "actions": {
+      "archive": "Archive temporarily",
+      "archiveHint": "Hide it from the website. You can restore it later.",
+      "restore": "Restore",
+      "restoreHint": "Show it on the website again.",
+      "delete": "Delete permanently",
+      "deleteHint": "Remove it and its related data for good."
+    },
+    "confirm": {
+      "archive": {
+        "title": "Archive this content?",
+        "body": "It will disappear from the website, search, the home page and feeds. Nothing is deleted, and you can restore it later.",
+        "button": "Archive"
+      },
+      "restore": {
+        "title": "Restore this content?",
+        "body": "It will be visible on the website again, following the usual publishing rules.",
+        "button": "Restore"
+      },
+      "delete": {
+        "title": "Delete permanently?",
+        "body": "This cannot be undone. The item is removed from the database together with its related data (such as comments, reviews, offers and saves). Its images are deleted when nothing else uses them.",
+        "tick": "I understand that this cannot be undone.",
+        "button": "Delete permanently"
+      }
+    },
+    "reasonLabel": "Reason (optional)",
+    "reasonHint": "Only admins see this. It is kept in the audit log.",
+    "reasonShown": "Reason: {{reason}}",
+    "done": {
+      "archive": "Archived. It is no longer on the website.",
+      "restore": "Restored.",
+      "delete": "Deleted permanently."
+    },
+    "gone": "This item no longer exists.",
+    "author": "Author",
+    "noAuthor": "Added by the Mana Tenali team",
+    "business": "Business",
+    "created": "Published",
+    "archived": "Archived",
+    "reason": "Reason",
+    "count_one": "{{count}} item",
+    "count_other": "{{count}} items",
+    "emptyTitle": "Nothing here",
+    "emptyBody": "No content matches these filters.",
+    "searchLabel": "Search by title or text",
+    "authorLabel": "Author",
+    "authorHint": "Name or email",
+    "searchButton": "Search",
+    "auditTitle": "Audit log",
+    "auditEmpty": "No moderation actions yet",
+    "auditEmptyBody": "Archive, restore and delete actions will be listed here.",
+    "auditActions": {
+      "archive": "Archived",
+      "restore": "Restored",
+      "delete": "Deleted"
+    },
+    "fromReport": "From a report"
   }
 }

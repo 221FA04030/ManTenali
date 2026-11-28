@@ -24,7 +24,8 @@ const reportSchema = new mongoose.Schema(
     handledBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     handledAt: { type: Date },
     resolution: {
-      type: new mongoose.Schema({ action: { type: String, enum: REPORT_ACTIONS }, note: { type: String, maxlength: 500 } }, { _id: false }),
+      // `content_deleted` is set by the server when an admin deletes the content permanently (not a report action).
+      type: new mongoose.Schema({ action: { type: String, enum: [...REPORT_ACTIONS, 'content_deleted'] }, note: { type: String, maxlength: 500 } }, { _id: false }),
       default: undefined,
     },
     isSeed: { type: Boolean, default: false },

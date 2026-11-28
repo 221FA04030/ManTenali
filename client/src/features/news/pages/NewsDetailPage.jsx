@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom';
+import { AdminModerationMenu, useLeaveAfterDelete } from '../../moderation/components/AdminModerationMenu.jsx';
 import { useTranslation } from 'react-i18next';
 import { Clock, ExternalLink, Newspaper, Pin } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
@@ -19,6 +20,7 @@ export default function NewsDetailPage() {
   const { slug } = useParams();
   const { t, i18n } = useTranslation();
   const { data: n, isPending, isError, error, refetch } = useNewsItem(slug);
+  const leave = useLeaveAfterDelete('/news');
   useTrackOnce('view', 'news', n && !n.status ? n.id : undefined);
 
   if (isPending) {
@@ -76,7 +78,10 @@ export default function NewsDetailPage() {
             {n.category && <Badge tone="gray">{categoryName(n.category, i18n.language)}</Badge>}
             {n.isSeed && <SampleBadge />}
           </div>
-          <h2 className="text-xl font-bold leading-snug">{n.title}</h2>
+          <div className="flex items-start gap-1">
+            <h2 className="min-w-0 flex-1 text-xl font-bold leading-snug">{n.title}</h2>
+            <AdminModerationMenu type="news" id={n.id} title={n.title} onDone={leave} className="-mr-2 -mt-2" />
+          </div>
           <p className="text-[15px] font-medium leading-relaxed text-ink">{n.summary}</p>
           {n.validUntilLocal && !n.isExpired && (
             <p className="flex items-center gap-2 text-[15px]">

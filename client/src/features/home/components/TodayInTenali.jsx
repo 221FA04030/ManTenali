@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { AdminModerationMenu } from '../../moderation/components/AdminModerationMenu.jsx';
 import { useTranslation } from 'react-i18next';
 import { CalendarDays, ChevronRight } from 'lucide-react';
 import { SectionHeader } from '../../../components/ui/SectionHeader.jsx';
@@ -27,8 +28,8 @@ export function TodayInTenali({ today }) {
       ) : (
         <ul className="divide-y divide-brand-100 overflow-hidden rounded-card bg-white shadow-card ring-1 ring-brand-100">
           {notices.map((n) => (
-            <li key={n.id}>
-              <Link to={`/news/${n.slug}`} className={row}>
+            <li key={n.id} className="flex items-center">
+              <Link to={`/news/${n.slug}`} className={`${row} min-w-0 flex-1`}>
                 <NewsTypeIcon type={n.type} />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="line-clamp-2 font-semibold leading-snug">{n.title}</span>
@@ -38,11 +39,12 @@ export function TodayInTenali({ today }) {
                 </span>
                 <ChevronRight className="h-5 w-5 shrink-0 text-ink-soft" aria-hidden="true" />
               </Link>
+              <AdminModerationMenu type="news" id={n.id} title={n.title} className="mr-1" />
             </li>
           ))}
           {event && (
-            <li>
-              <Link to={`/events/${event.slug}`} className={row}>
+            <li className="flex items-center">
+              <Link to={`/events/${event.slug}`} className={`${row} min-w-0 flex-1`}>
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-status-eventBg text-status-event" aria-hidden="true">
                   <CalendarDays className="h-5 w-5" />
                 </span>
@@ -55,6 +57,7 @@ export function TodayInTenali({ today }) {
                 </span>
                 <ChevronRight className="h-5 w-5 shrink-0 text-ink-soft" aria-hidden="true" />
               </Link>
+              <AdminModerationMenu type="event" id={event.id} title={event.title} className="mr-1" />
             </li>
           )}
         </ul>

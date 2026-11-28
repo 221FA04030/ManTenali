@@ -19,6 +19,7 @@ import { useAuth } from '../../auth/AuthContext.jsx';
 import { ItemActions, ReportButton } from '../../engagement/ItemActions.jsx';
 import { POST_LIMITS, postsApi, useComments, usePost, usePostMutation } from '../api.js';
 import { Avatar, LikeButton, LinkedBusiness, PostHeader } from '../components/PostCard.jsx';
+import { AdminModerationMenu, useLeaveAfterDelete } from '../../moderation/components/AdminModerationMenu.jsx';
 
 /** Confirm before removing (authors) or hiding (admins) a post or comment. */
 function ConfirmRemove({ open, onClose, onConfirm, loading, title, body, confirmLabel }) {
@@ -44,7 +45,7 @@ function ConfirmRemove({ open, onClose, onConfirm, loading, title, body, confirm
   );
 }
 
-function Comment({ comment: c, isAdmin }) {
+function Comment({ comment: c }) {
   const { t, i18n } = useTranslation();
   const toast = useToast();
   const [confirm, setConfirm] = useState(false);
@@ -55,7 +56,7 @@ function Comment({ comment: c, isAdmin }) {
     },
     onError: (err) => toast.error(t(errorMessageKey(err))),
   });
-  const canRemove = c.isMine || isAdmin;
+  const canRemove = c.isMine;
   return (
     <li className="flex gap-3">
       <Avatar person={c.author} size="sm" />
@@ -74,6 +75,7 @@ function Comment({ comment: c, isAdmin }) {
           ) : (
             <ReportButton targetType="comment" targetId={c.id} title={t('community.commentBy', { name: c.author?.name ?? '' })} compact />
           )}
+          {!c.isMine && <AdminModerationMenu type="comment" id={c.id} title={c.text.slice(0, 80)} className="-my-2" />}
         </div>
       </div>
       <ConfirmRemove
@@ -124,7 +126,7 @@ function Comments({ post }) {
       ) : (
         <ul className="flex flex-col gap-3">
           {items.map((c) => (
-            <Comment key={c.id} comment={c} isAdmin={user?.role === 'admin'} />
+            <Comment key={c.id} comment={c} />
           ))}
         </ul>
       )}
@@ -168,10 +170,9 @@ export default function PostDetailPage() {
   const toast = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
   const { data: p, isPending, isError, error, refetch } = usePost(id);
   const [confirm, setConfirm] = useState(false);
-  const isAdmin = user?.role === 'admin';
+  const leave = useLeaveAfterDelete('/community');
   const remove = usePostMutation(() => postsApi.remove(id), {
     onSuccess: (res) => {
       setConfirm(false);
@@ -223,14 +224,19 @@ export default function PostDetailPage() {
           </p>
         )}
         <Card className="flex flex-col gap-4">
-          <PostHeader post={p} />
+          <div className="flex items-start gap-1">
+            <div className="min-w-0 flex-1">
+              <PostHeader post={p} />
+            </div>
+            <AdminModerationMenu type="post" id={p.id} title={p.text.slice(0, 80)} onDone={leave} className="-mr-2 -mt-2" />
+          </div>
           <h2 className="sr-only">{title}</h2>
           <p className="whitespace-pre-line break-words text-base leading-relaxed text-ink">{p.text}</p>
           {p.photo && <img src={cldUrl(p.photo.url, { w: 960 })} alt="" className="max-h-[70vh] w-full rounded-xl object-cover" />}
           <LinkedBusiness business={p.business} />
           <div className="-mx-2 flex flex-wrap items-center gap-1 border-t border-brand-50 pt-2">
             <LikeButton post={p} />
-            {(p.isMine || isAdmin) && isPublic && (
+            {p.isMine && isPublic && (
               <span className="ml-auto flex gap-1">
                 {p.isMine && (
                   <Link

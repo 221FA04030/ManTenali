@@ -72,3 +72,10 @@ export async function seedFavorites(list) {
   }
   return { created, skipped: list.length - created };
 }
+
+/** Admin permanent delete: remove everyone's saves of the deleted content. */
+export async function deleteForTargets(targetType, ids) {
+  if (!ids.length) return 0;
+  const { deletedCount } = await Favorite.deleteMany({ targetType, targetId: { $in: ids } });
+  return deletedCount;
+}

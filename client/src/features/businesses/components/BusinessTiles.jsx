@@ -11,6 +11,7 @@ import { cldUrl } from '../../../lib/cloudinary.js';
 import { formatDistance } from '../../../lib/format.js';
 import { track } from '../../../lib/analytics.js';
 import { cn } from '../../../lib/cn.js';
+import { AdminModerationMenu, WithModeration } from '../../moderation/components/AdminModerationMenu.jsx';
 
 /**
  * A business photo at a fixed size and crop. Without a photo (or if it fails
@@ -80,7 +81,8 @@ export function BusinessRow({ business: b, actions = true }) {
   const what = useWhat(b);
   return (
     <article className="flex flex-col gap-3 py-4">
-      <Link to={`/businesses/${b.slug}`} className="group flex gap-4 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4">
+      <div className="flex items-start gap-1">
+      <Link to={`/businesses/${b.slug}`} className="group flex min-w-0 flex-1 gap-4 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4">
         <BusinessPhoto business={b} size={92} className="h-[92px] w-[92px] shadow-sm" />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5 pt-0.5">
           <h3 className="line-clamp-2 text-[16px] font-bold leading-snug text-heading group-hover:text-primary-dark">
@@ -113,6 +115,8 @@ export function BusinessRow({ business: b, actions = true }) {
           </div>
         </div>
       </Link>
+      <AdminModerationMenu type="business" id={b.id} title={b.name} className="-mr-2 -mt-2" />
+      </div>
       {actions && (
         <div>
           <ContactActions contact={b.contact} location={b.location} name={b.name} layout="compact" onAction={() => track('contact_click', 'business', b.id)} />
@@ -125,11 +129,13 @@ export function BusinessRow({ business: b, actions = true }) {
 /** The reference's "Top Picks" tile: a square photo with the name and area under it. */
 export function BusinessPickTile({ business: b }) {
   return (
+    <WithModeration type="business" id={b.id} title={b.name} className="w-[112px]">
     <Link to={`/businesses/${b.slug}`} className="group flex w-[112px] flex-col gap-1.5 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
       <BusinessPhoto business={b} size={112} className="h-[112px] w-[112px] shadow-sm transition-transform group-hover:scale-[1.02]" />
       <span className="line-clamp-2 text-[13px] font-semibold leading-tight text-heading">{b.name}</span>
       {b.area && <span className="-mt-1 truncate text-[12px] text-meta">{b.area}</span>}
     </Link>
+    </WithModeration>
   );
 }
 
@@ -137,10 +143,12 @@ export function BusinessPickTile({ business: b }) {
 export function BusinessRoundTile({ business: b }) {
   const what = useWhat(b);
   return (
+    <WithModeration type="business" id={b.id} title={b.name} className="w-[84px]">
     <Link to={`/businesses/${b.slug}`} className="group flex w-[84px] flex-col items-center gap-1.5 rounded-xl text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2">
       <BusinessPhoto business={b} size={76} round className="h-[76px] w-[76px] ring-2 ring-white shadow-md transition-transform group-hover:scale-[1.04]" />
       <span className="line-clamp-2 text-[13px] font-semibold leading-tight text-heading">{b.name}</span>
       {what && <span className="-mt-1 line-clamp-1 text-[11px] text-meta">{what}</span>}
     </Link>
+    </WithModeration>
   );
 }

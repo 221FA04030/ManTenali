@@ -22,6 +22,14 @@ import {
 import { adminListQuery as newsListQuery, idParams as newsIdParams } from '../news/news.validation.js';
 import { adminListQuery as reportListQuery, actionSchema as reportActionSchema, idParams as reportIdParams } from '../reports/reports.validation.js';
 import { summaryQuery as analyticsSummaryQuery } from '../analytics/analytics.validation.js';
+import {
+  listQuery as moderationListQuery,
+  itemParams as moderationItemParams,
+  archiveSchema,
+  restoreSchema,
+  deleteSchema,
+  auditQuery,
+} from '../moderation/moderation.validation.js';
 import * as controller from './admin.controller.js';
 
 /** Everything under /admin requires an authenticated admin. */
@@ -81,5 +89,22 @@ export function buildAdminRoutes() {
   router.get('/reports', validate({ query: reportListQuery }), asyncHandler(controller.listReports));
   router.patch('/reports/:id', validate({ params: reportIdParams, body: reportActionSchema }), asyncHandler(controller.actOnReport));
   router.get('/analytics/summary', validate({ query: analyticsSummaryQuery }), asyncHandler(controller.analyticsSummary));
+
+  // Content moderation (every kind of user content): archive, restore, delete permanently, audit log.
+  // Admin-only like everything here: the role comes from the database on every request, never from the client.
+  router.get('/moderation', validate({ query: moderationListQuery }), asyncHandler(controller.listModeration));
+  router.get('/moderation/audit', validate({ query: auditQuery }), asyncHandler(controller.moderationAudit));
+  router.get('/moderation/:type/:id', validate({ params: moderationItemParams }), asyncHandler(controller.getModeration));
+  router.post(
+    '/moderation/:type/:id/archive',
+    validate({ params: moderationItemParams, body: archiveSchema }),
+    asyncHandler(controller.archiveContent),
+  );
+  router.post(
+    '/moderation/:type/:id/restore',
+    validate({ params: moderationItemParams, body: restoreSchema }),
+    asyncHandler(controller.restoreContent),
+  );
+  router.delete('/moderation/:type/:id', validate({ params: moderationItemParams, body: deleteSchema }), asyncHandler(controller.deleteContent));
   return router;
 }

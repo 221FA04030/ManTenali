@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { moderationField } from '../../common/utils/moderation.js';
 
 /**
  * Community posts (owner decision, building the spec's Phase 2 feature early):
@@ -27,6 +28,7 @@ const postSchema = new mongoose.Schema(
     commentCount: { type: Number, default: 0, min: 0 },
     editedAt: { type: Date },
     hiddenBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    moderation: moderationField, // admin archive record (never public)
     isSeed: { type: Boolean, default: false },
   },
   { timestamps: true },
@@ -53,6 +55,7 @@ const commentSchema = new mongoose.Schema(
     text: { type: String, required: true, trim: true, maxlength: POST_LIMITS.commentMax },
     status: { type: String, enum: Object.values(CONTENT_STATUS), default: CONTENT_STATUS.PUBLISHED },
     hiddenBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    moderation: moderationField, // admin archive record (never public)
     isSeed: { type: Boolean, default: false },
   },
   { timestamps: true },

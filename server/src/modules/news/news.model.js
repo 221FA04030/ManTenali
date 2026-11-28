@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { moderationField } from '../../common/utils/moderation.js';
 
 /**
  * News item statuses (spec: draft | published | hidden). `archived` is the
@@ -43,6 +44,7 @@ const newsSchema = new mongoose.Schema(
     status: { type: String, enum: Object.values(NEWS_STATUS), default: NEWS_STATUS.DRAFT },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    moderation: moderationField, // admin archive record (never public)
   },
   { timestamps: true },
 );

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { EyeOff, MessageSquareText, Pencil, Trash2 } from 'lucide-react';
+import { MessageSquareText, Pencil, Trash2 } from 'lucide-react';
 import { Card } from '../../../components/ui/Card.jsx';
 import { Button } from '../../../components/ui/Button.jsx';
 import { Input } from '../../../components/ui/Input.jsx';
@@ -16,6 +16,7 @@ import { useAuth } from '../../auth/AuthContext.jsx';
 import { ReportButton } from '../../engagement/ItemActions.jsx';
 import { reviewsApi, useBusinessReviews, useMyReviewFor, useReviewMutation } from '../api.js';
 import { StarInput, Stars } from './Stars.jsx';
+import { AdminModerationMenu } from '../../moderation/components/AdminModerationMenu.jsx';
 
 const linkBtn = 'inline-flex min-h-tap items-center gap-1 px-1 text-[13px] font-semibold text-ink-muted hover:text-ink';
 
@@ -142,21 +143,16 @@ function MyReview({ businessId, review }) {
 
 /**
  * FR-REV-1 on the business page: average and count, my review (write, edit,
- * delete), everyone else's reviews newest first with Report, and Hide for admins.
+ * delete), everyone else's reviews newest first with Report, and the admin moderation menu.
  */
 export function ReviewsSection({ business }) {
   const { t } = useTranslation();
-  const toast = useToast();
   const location = useLocation();
   const { user } = useAuth();
   const isAdmin = user?.role === 'admin';
   const ownsIt = Boolean(user && business.canManage && !isAdmin);
   const mine = useMyReviewFor(business.id);
   const list = useBusinessReviews(business.id);
-  const hide = useReviewMutation((id) => reviewsApi.remove(id), {
-    onSuccess: () => toast.success(t('reviews.hidden')),
-    onError: (err) => toast.error(t(errorMessageKey(err))),
-  });
   const others = (list.data?.pages.flatMap((p) => p.data) ?? []).filter((r) => r.id !== mine.data?.id);
 
   return (
@@ -201,11 +197,7 @@ export function ReviewsSection({ business }) {
               actions={
                 <>
                   <ReportButton targetType="review" targetId={r.id} title={r.author?.name ?? ''} compact />
-                  {isAdmin && (
-                    <button type="button" className={linkBtn} onClick={() => hide.mutate(r.id)} aria-label={`${t('reviews.hide')} - ${r.author?.name ?? ''}`}>
-                      <EyeOff className="h-3.5 w-3.5" aria-hidden="true" /> {t('reviews.hide')}
-                    </button>
-                  )}
+                  <AdminModerationMenu type="review" id={r.id} title={`${r.rating}/5 - ${r.author?.name ?? ''}`} className="-my-2" />
                 </>
               }
             />

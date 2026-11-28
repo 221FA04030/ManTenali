@@ -4,17 +4,21 @@ import { useTranslation } from 'react-i18next';
 import { Badge, SampleBadge } from '../../../components/ui/Badge.jsx';
 import { categoryName } from '../../categories/api.js';
 import { NewsMeta, NewsTypeBadge, NewsTypeIcon, formatUntil } from './NewsBits.jsx';
+import { useAdminPermissions } from '../../moderation/useAdminPermissions.js';
+import { WithModeration } from '../../moderation/components/AdminModerationMenu.jsx';
 
 /** News card: type icon, badges, title, summary, "until" time, source and times. */
 export function NewsCard({ item: n }) {
   const { t, i18n } = useTranslation();
+  const { canModerate } = useAdminPermissions();
   return (
+    <WithModeration type="news" id={n.id} title={n.title}>
     <Link
       to={`/news/${n.slug}`}
       className="flex gap-3 rounded-card bg-white p-3 shadow-card ring-1 ring-brand-100 transition-shadow hover:shadow-lift"
     >
       <NewsTypeIcon type={n.type} />
-      <span className="flex min-w-0 flex-1 flex-col gap-1">
+      <span className={`flex min-w-0 flex-1 flex-col gap-1 ${canModerate ? 'pr-9' : ''}`}>
         <span className="flex flex-wrap gap-1.5">
           {n.isPinned && (
             <Badge tone="solid" icon={Pin}>
@@ -36,5 +40,6 @@ export function NewsCard({ item: n }) {
         <NewsMeta item={n} />
       </span>
     </Link>
+    </WithModeration>
   );
 }

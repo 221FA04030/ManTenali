@@ -10,6 +10,7 @@ import { AppError } from '../../common/errors/index.js';
 import { getPagination, buildMeta } from '../../common/utils/pagination.js';
 import { getEnv } from '../../config/env.js';
 import { ROLES } from '../../config/constants.js';
+import * as auditService from '../moderation/audit.service.js';
 
 const ST = REPORT_STATUS;
 const FINAL = [ST.ACTIONED, ST.DISMISSED];
@@ -29,15 +30,18 @@ const INFO = {
   comment: (ids) => communityService.commentModerationInfo(ids),
 };
 
-/** Hiding goes through each module's own admin action, so its rules and history apply. */
+/**
+ * Hiding = the admin moderation "archive" of each module (same rules, history
+ * and audit log as the moderation dashboard), so it can be restored later.
+ */
 const HIDE = {
-  business: (admin, id) => businessesService.updateBusiness(admin, id, { status: 'hidden' }),
-  review: (admin, id) => reviewsService.hide(admin, id),
-  offer: (admin, id) => offersService.hideOffer(admin, id),
-  event: (admin, id) => eventsService.adminUpdate(admin, id, { status: 'hidden' }),
-  news: (admin, id) => newsService.update(admin, id, { status: 'hidden' }),
-  post: (admin, id) => communityService.hide(admin, id),
-  comment: (admin, id) => communityService.hideComment(admin, id),
+  business: (admin, id, note) => businessesService.adminArchive(admin, id, note),
+  review: (admin, id, note) => reviewsService.adminArchive(admin, id, note),
+  offer: (admin, id, note) => offersService.adminArchive(admin, id, note),
+  event: (admin, id, note) => eventsService.adminArchive(admin, id, note),
+  news: (admin, id, note) => newsService.adminArchive(admin, id, note),
+  post: (admin, id, note) => communityService.adminArchive(admin, id, note),
+  comment: (admin, id, note) => communityService.adminArchiveComment(admin, id, note),
 };
 
 /* ----------------------------- users ----------------------------- */
@@ -144,7 +148,10 @@ export async function act(admin, id, { action, note }) {
   if (hide) {
     if (report.targetType === 'suggestion') throw AppError.conflict('A suggestion has no content to hide.');
     if (!info) throw AppError.conflict('The reported content no longer exists. Dismiss the report instead.');
-    if (info.isPublic) await HIDE[report.targetType](admin, report.targetId);
+    if (info.isPublic) {
+      await HIDE[report.targetType](admin, report.targetId, note);
+      await auditService.record({ admin, contentType: report.targetType, contentId: report.targetId, action: 'archive', reason: note, title: info.title, source: 'report' });
+    }
   }
   if (block) {
     const userId = report.targetType === 'suggestion' ? String(report.reporterId) : info?.responsibleUserId;
@@ -165,6 +172,19 @@ export async function act(admin, id, { action, note }) {
     );
   }
   return (await hydrate([report.toObject()]))[0];
+}
+
+/**
+ * Admin permanent delete: open reports about the deleted content are closed as
+ * handled (kept for the record; the content itself shows as gone).
+ */
+export async function closeForTargets(admin, targetType, ids) {
+  if (!ids.length) return 0;
+  const { modifiedCount } = await Report.updateMany(
+    { targetType, targetId: { $in: ids }, status: { $in: [ST.OPEN, ST.REVIEWED] } },
+    { $set: { status: ST.ACTIONED, handledBy: admin.id, handledAt: new Date(), resolution: { action: 'content_deleted', note: 'The content was deleted permanently by an admin.' } } },
+  );
+  return modifiedCount;
 }
 
 /** Demo data only (local development); refused in production. Idempotent by (reporter, target, reason). */

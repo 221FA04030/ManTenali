@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { moderationField } from '../../common/utils/moderation.js';
 
 /**
  * Stored statuses. "live", "scheduled" and "expired" are NOT stored: they are
@@ -27,6 +28,7 @@ const offerSchema = new mongoose.Schema(
     isSeed: { type: Boolean, default: false },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    moderation: moderationField, // admin archive record (never public)
   },
   { timestamps: true },
 );

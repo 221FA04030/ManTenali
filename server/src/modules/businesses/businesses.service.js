@@ -12,6 +12,7 @@ import { isOpenAt, openNowFilter } from '../../common/utils/hours.js';
 import { escapeRegex } from '../../common/utils/validators.js';
 import { ROLES } from '../../config/constants.js';
 import { getEnv } from '../../config/env.js';
+import { listForModeration, moderationRow, markArchived, markRestored, unusedImageIds } from '../../common/utils/moderation.js';
 
 const S = BUSINESS_STATUS;
 
@@ -803,4 +804,47 @@ export async function migrateCategoryReferences({ dryRun = true } = {}) {
     if (!dryRun && Object.keys(set).length) await Business.updateOne({ _id: d._id }, { $set: set });
   }
   return { examined: docs.length, remapped, keyed, dryRun };
+}
+
+/* ----------------------------- admin moderation (archive / restore / delete) ----------------------------- */
+const MOD = {
+  hiddenStatus: S.HIDDEN,
+  publicStatuses: [S.PUBLISHED],
+  titleField: 'name',
+  authorFields: ['ownerId', 'createdBy'],
+  select: 'name slug status ownerId createdBy moderation createdAt updatedAt',
+};
+const RESTORABLE = [S.PUBLISHED, S.DRAFT, S.PENDING, S.REJECTED];
+const modRow = (b) => ({ ...moderationRow(b, MOD), title: b.name, slug: b.slug });
+
+/** Moderation dashboard rows, any status. */
+export async function moderationRows(query) {
+  const { items, total } = await listForModeration(Business, MOD, query);
+  return { items: items.map(modRow), total };
+}
+
+/** Admin: take a listing off the website. Everything is kept and can be restored. */
+export async function adminArchive(admin, id, reason) {
+  const doc = await loadForWrite(id);
+  markArchived(doc, { admin, reason, hiddenStatus: S.HIDDEN, fallbackStatus: S.PUBLISHED, removedStatuses: [S.ARCHIVED] });
+  await doc.save();
+  return modRow(doc.toObject());
+}
+
+export async function adminRestore(admin, id) {
+  const doc = await loadForWrite(id);
+  markRestored(doc, { hiddenStatus: S.HIDDEN, fallbackStatus: S.PUBLISHED, allowedStatuses: RESTORABLE });
+  await doc.save();
+  return modRow(doc.toObject());
+}
+
+/**
+ * Admin: delete the listing record. The moderation module removes its offers,
+ * reviews, saves and reports first. Returns the photo ids no other listing uses.
+ */
+export async function adminPurge(id) {
+  const doc = await Business.findById(id).select('name photos').lean();
+  if (!doc) throw AppError.notFound('Business not found.');
+  await Business.deleteOne({ _id: doc._id });
+  return { title: doc.name, images: await unusedImageIds(Business, 'photos.publicId', doc.photos.map((p) => p.publicId)) };
 }

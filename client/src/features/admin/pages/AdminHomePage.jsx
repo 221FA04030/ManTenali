@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { BarChart3, CalendarCheck, CalendarDays, ClipboardCheck, Flag, FolderTree, Newspaper, Store, Users } from 'lucide-react';
+import { BarChart3, CalendarCheck, CalendarDays, ClipboardCheck, Flag, FolderTree, Newspaper, ShieldCheck, Store, Users } from 'lucide-react';
 import { PageHeader } from '../../../components/ui/Header.jsx';
 import { ListRow } from '../../../components/ui/ListRow.jsx';
 
@@ -10,6 +10,9 @@ export default function AdminHomePage() {
     <>
       <PageHeader title={t('pages.admin')} />
       <ul className="flex flex-col gap-3 p-4">
+        <li>
+          <ListRow icon={ShieldCheck} title={t('moderation.pageTitle')} subtitle={t('moderation.hint')} to="/admin/moderation" />
+        </li>
         <li>
           <ListRow icon={Flag} title={t('adminReports.title')} subtitle={t('adminReports.hint')} to="/admin/reports" />
         </li>

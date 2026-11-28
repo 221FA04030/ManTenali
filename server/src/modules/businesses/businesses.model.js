@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { moderationField } from '../../common/utils/moderation.js';
 import { isOvernight } from '../../common/utils/hours.js';
 
 export const BUSINESS_KINDS = Object.freeze(['shop', 'food', 'service']);
@@ -131,6 +132,7 @@ const businessSchema = new mongoose.Schema(
     rejectionReason: { type: String, trim: true, maxlength: 500 },
     reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     reviewedAt: { type: Date },
+    moderation: moderationField, // admin archive record (never public)
   },
   { timestamps: true },
 );

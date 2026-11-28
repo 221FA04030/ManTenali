@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { moderationField } from '../../common/utils/moderation.js';
 
 /**
  * Event statuses (spec: draft | published | cancelled | hidden, extended for
@@ -92,6 +93,7 @@ const eventSchema = new mongoose.Schema(
     cancelledAt: { type: Date },
     cancelReason: { type: String, trim: true, maxlength: 300 }, // shown publicly with the "Cancelled" label
     moderationLog: { type: [logSchema], default: [] },
+    moderation: moderationField, // admin archive record (never public)
   },
   { timestamps: true },
 );

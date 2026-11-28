@@ -7,6 +7,7 @@ import { addOneYear, istEndOfDay, istStartOfDay, istToday, toIstDate } from '../
 import { matchFilter, relevance, rankPage, CANDIDATE_LIMIT } from '../../common/utils/textSearch.js';
 import { getEnv } from '../../config/env.js';
 import { ROLES } from '../../config/constants.js';
+import { listForModeration, moderationRow, markArchived, markRestored, unusedImageIds, isArchived } from '../../common/utils/moderation.js';
 
 const O = OFFER_STATUS;
 
@@ -252,6 +253,9 @@ export async function updateOffer(user, id, input, now = new Date()) {
   const doc = await Offer.findById(id);
   if (!doc) throw AppError.notFound('Offer not found.');
   const business = await manageableBusiness(user, doc.businessId);
+  if (user.role !== ROLES.ADMIN && isArchived(doc, O.HIDDEN)) {
+    throw AppError.conflict('An admin archived this offer. It can only be changed after an admin restores it.');
+  }
   const before = doc.toObject();
 
   const nextStatus = input.status ?? doc.status;
@@ -361,4 +365,67 @@ export async function seedOffers(list, businessIdBySlug, now = new Date()) {
     created += 1;
   }
   return { created, skipped: list.length - created };
+}
+
+/* ----------------------------- admin moderation (archive / restore / delete) ----------------------------- */
+const MOD = {
+  hiddenStatus: O.HIDDEN,
+  publicStatuses: [O.PUBLISHED],
+  titleField: 'title',
+  authorFields: ['createdBy'],
+  select: 'title businessId status createdBy moderation validFrom validTo createdAt updatedAt',
+};
+
+async function moderationRowsFor(items) {
+  const businesses = await businessesService.getSummariesByIds([...new Set(items.map((o) => String(o.businessId)))], { publishedOnly: false });
+  return items.map((o) => ({
+    ...moderationRow(o, MOD),
+    title: o.title,
+    business: businesses.get(String(o.businessId)) ?? null,
+    validTo: o.validTo,
+  }));
+}
+
+/** Moderation dashboard rows, any status. */
+export async function moderationRows(query) {
+  const { items, total } = await listForModeration(Offer, MOD, query);
+  return { items: await moderationRowsFor(items), total };
+}
+
+/** Admin: take an offer off the website. The owner can't publish it again until an admin restores it. */
+export async function adminArchive(admin, id, reason) {
+  const doc = await Offer.findById(id);
+  if (!doc) throw AppError.notFound('Offer not found.');
+  markArchived(doc, { admin, reason, hiddenStatus: O.HIDDEN, fallbackStatus: O.PUBLISHED });
+  doc.updatedBy = admin.id;
+  await doc.save();
+  return (await moderationRowsFor([doc.toObject()]))[0];
+}
+
+/** Admin: restore. Going back to published still respects the per-business offer limit. */
+export async function adminRestore(admin, id, now = new Date()) {
+  const doc = await Offer.findById(id);
+  if (!doc) throw AppError.notFound('Offer not found.');
+  markRestored(doc, { hiddenStatus: O.HIDDEN, fallbackStatus: O.PUBLISHED, allowedStatuses: [O.PUBLISHED, O.DRAFT] });
+  if (doc.status === O.PUBLISHED && doc.validTo >= now && (await countActiveOrScheduled(doc.businessId, now)) >= OFFER_LIMIT_PER_BUSINESS) {
+    throw limitError();
+  }
+  doc.updatedBy = admin.id;
+  await doc.save();
+  return (await moderationRowsFor([doc.toObject()]))[0];
+}
+
+/** Admin: delete the offer record. Returns its image id when no other offer uses it. */
+export async function adminPurge(id) {
+  const doc = await Offer.findById(id).select('title image').lean();
+  if (!doc) throw AppError.notFound('Offer not found.');
+  await Offer.deleteOne({ _id: doc._id });
+  return { title: doc.title, images: await unusedImageIds(Offer, 'image.publicId', [doc.image?.publicId]) };
+}
+
+/** Business deletion: remove every offer of the business. Returns their ids and unused image ids. */
+export async function purgeForBusiness(businessId) {
+  const items = await Offer.find({ businessId }).select('image').lean();
+  await Offer.deleteMany({ businessId });
+  return { ids: items.map((o) => o._id), images: await unusedImageIds(Offer, 'image.publicId', items.map((o) => o.image?.publicId)) };
 }

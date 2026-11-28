@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { SampleBadge } from '../../../components/ui/Badge.jsx';
 import { cldUrl } from '../../../lib/cloudinary.js';
 import { EndsIn } from './OfferBits.jsx';
+import { AdminModerationMenu } from '../../moderation/components/AdminModerationMenu.jsx';
 
 /** The offer's own image, else its business's photo, else a ticket icon tile. */
 function OfferPhoto({ offer: o }) {
@@ -39,9 +40,10 @@ function OfferPhoto({ offer: o }) {
 export function OfferCard({ offer: o, showBusiness = true, compact = false }) {
   const { t } = useTranslation();
   return (
+    <div className="flex items-start gap-1">
     <Link
       to={`/offers/${o.id}`}
-      className="group flex gap-4 rounded-xl py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      className="group flex min-w-0 flex-1 gap-4 rounded-xl py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
     >
       <OfferPhoto offer={o} />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5 pt-0.5">
@@ -61,5 +63,7 @@ export function OfferCard({ offer: o, showBusiness = true, compact = false }) {
         <span className="sr-only">{t('offers.viewOffer')}</span>
       </span>
     </Link>
+    <AdminModerationMenu type="offer" id={o.id} title={o.title} className="-mr-2 mt-2" />
+    </div>
   );
 }

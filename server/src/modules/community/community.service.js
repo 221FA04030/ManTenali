@@ -6,6 +6,7 @@ import { AppError } from '../../common/errors/index.js';
 import { getPagination, buildMeta } from '../../common/utils/pagination.js';
 import { getEnv } from '../../config/env.js';
 import { ROLES } from '../../config/constants.js';
+import { listForModeration, moderationRow, markArchived, markRestored, unusedImageIds } from '../../common/utils/moderation.js';
 
 const S = CONTENT_STATUS;
 const DAY_MS = 86_400_000;
@@ -133,7 +134,7 @@ export async function hide(admin, id) {
   const doc = await Post.findById(id);
   if (!doc) throw AppError.notFound('Post not found.');
   if (doc.status === S.PUBLISHED) {
-    doc.status = S.HIDDEN;
+    markArchived(doc, { admin, hiddenStatus: S.HIDDEN, fallbackStatus: S.PUBLISHED });
     doc.hiddenBy = admin.id;
     await doc.save();
   }
@@ -208,7 +209,11 @@ async function setCommentStatus(c, status, by) {
 export async function hideComment(admin, id) {
   const c = await PostComment.findById(id);
   if (!c) throw AppError.notFound('Comment not found.');
-  if (c.status === S.PUBLISHED) await setCommentStatus(c, S.HIDDEN, admin.id);
+  if (c.status === S.PUBLISHED) {
+    markArchived(c, { admin, hiddenStatus: S.HIDDEN, fallbackStatus: S.PUBLISHED });
+    c.status = S.PUBLISHED; // setCommentStatus moves it to hidden and keeps the post's count right
+    await setCommentStatus(c, S.HIDDEN, admin.id);
+  }
   return { id: String(c._id), status: c.status };
 }
 
@@ -271,4 +276,98 @@ export async function seedPosts(list) {
     created += 1;
   }
   return { created, skipped: list.length - created };
+}
+
+/* ----------------------------- admin moderation (archive / restore / delete) ----------------------------- */
+const POST_MOD = {
+  hiddenStatus: S.HIDDEN,
+  publicStatuses: [S.PUBLISHED],
+  titleField: 'text',
+  authorFields: ['authorId'],
+  select: 'authorId kind text status moderation commentCount createdAt updatedAt',
+};
+const COMMENT_MOD = {
+  hiddenStatus: S.HIDDEN,
+  publicStatuses: [S.PUBLISHED],
+  titleField: 'text',
+  authorFields: ['authorId'],
+  select: 'postId authorId text status moderation createdAt updatedAt',
+};
+const postRow = (p) => ({ ...moderationRow(p, POST_MOD), title: p.text.slice(0, 140), postKind: p.kind });
+const commentRow = (c) => ({ ...moderationRow(c, COMMENT_MOD), title: c.text.slice(0, 140), postId: String(c.postId) });
+
+/** Moderation dashboard rows, any status. */
+export async function moderationRows(query) {
+  const { items, total } = await listForModeration(Post, POST_MOD, query);
+  return { items: items.map(postRow), total };
+}
+
+export async function commentModerationRows(query) {
+  const { items, total } = await listForModeration(PostComment, COMMENT_MOD, query);
+  return { items: items.map(commentRow), total };
+}
+
+/** Admin: take a post off the feed (kept, restorable). The author can no longer edit it. */
+export async function adminArchive(admin, id, reason) {
+  const doc = await Post.findById(id);
+  if (!doc) throw AppError.notFound('Post not found.');
+  markArchived(doc, { admin, reason, hiddenStatus: S.HIDDEN, fallbackStatus: S.PUBLISHED, removedStatuses: [S.REMOVED] });
+  doc.hiddenBy = admin.id;
+  await doc.save();
+  return postRow(doc.toObject());
+}
+
+export async function adminRestore(admin, id) {
+  const doc = await Post.findById(id);
+  if (!doc) throw AppError.notFound('Post not found.');
+  markRestored(doc, { hiddenStatus: S.HIDDEN, fallbackStatus: S.PUBLISHED, allowedStatuses: [S.PUBLISHED] });
+  doc.hiddenBy = undefined;
+  await doc.save();
+  return postRow(doc.toObject());
+}
+
+/** Admin: delete the post with its likes and comments. Returns the comment ids and the photo id when unused. */
+export async function adminPurge(id) {
+  const doc = await Post.findById(id).select('text photo').lean();
+  if (!doc) throw AppError.notFound('Post not found.');
+  const commentIds = (await PostComment.find({ postId: doc._id }).select('_id').lean()).map((c) => c._id);
+  await Promise.all([PostLike.deleteMany({ postId: doc._id }), PostComment.deleteMany({ postId: doc._id })]);
+  await Post.deleteOne({ _id: doc._id });
+  return { title: doc.text.slice(0, 80), commentIds, images: await unusedImageIds(Post, 'photo.publicId', [doc.photo?.publicId]) };
+}
+
+/** Admin: take a comment off its post (kept, restorable); the post's comment count follows. */
+export async function adminArchiveComment(admin, id, reason) {
+  const c = await PostComment.findById(id);
+  if (!c) throw AppError.notFound('Comment not found.');
+  const wasPublished = c.status === S.PUBLISHED;
+  markArchived(c, { admin, reason, hiddenStatus: S.HIDDEN, fallbackStatus: S.PUBLISHED, removedStatuses: [S.REMOVED] });
+  c.hiddenBy = admin.id;
+  await c.save();
+  if (wasPublished) await Post.updateOne({ _id: c.postId, commentCount: { $gt: 0 } }, { $inc: { commentCount: -1 } }, { timestamps: false });
+  return commentRow(c.toObject());
+}
+
+export async function adminRestoreComment(admin, id) {
+  const c = await PostComment.findById(id);
+  if (!c) throw AppError.notFound('Comment not found.');
+  markRestored(c, { hiddenStatus: S.HIDDEN, fallbackStatus: S.PUBLISHED, allowedStatuses: [S.PUBLISHED] });
+  c.hiddenBy = undefined;
+  await c.save();
+  await Post.updateOne({ _id: c.postId }, { $inc: { commentCount: 1 } }, { timestamps: false });
+  return commentRow(c.toObject());
+}
+
+/** Admin: delete the comment record; the post's comment count follows. */
+export async function adminPurgeComment(id) {
+  const c = await PostComment.findById(id).lean();
+  if (!c) throw AppError.notFound('Comment not found.');
+  await PostComment.deleteOne({ _id: c._id });
+  if (c.status === S.PUBLISHED) await Post.updateOne({ _id: c.postId, commentCount: { $gt: 0 } }, { $inc: { commentCount: -1 } }, { timestamps: false });
+  return { title: c.text.slice(0, 80), images: [] };
+}
+
+/** Business deletion: posts that recommended it keep their text; only the link goes. */
+export async function detachBusiness(businessId) {
+  await Post.updateMany({ businessId }, { $unset: { businessId: 1 } }, { timestamps: false });
 }

@@ -9,6 +9,7 @@ import { cn } from '../../../lib/cn.js';
 import { formatRelative } from '../../../lib/format.js';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { kindInfo, useLike } from '../api.js';
+import { AdminModerationMenu } from '../../moderation/components/AdminModerationMenu.jsx';
 
 /** Round avatar: the person's photo, or their first initial. */
 export function Avatar({ person, size = 'md' }) {
@@ -119,7 +120,12 @@ export function PostCard({ post, headingLevel = 'h3' }) {
   const Heading = headingLevel;
   return (
     <article className="flex flex-col gap-3 rounded-card bg-white p-4 shadow-card ring-1 ring-brand-100">
-      <PostHeader post={post} />
+      <div className="flex items-start gap-1">
+        <div className="min-w-0 flex-1">
+          <PostHeader post={post} />
+        </div>
+        <AdminModerationMenu type="post" id={post.id} title={post.text.slice(0, 80)} className="-mr-2 -mt-2" />
+      </div>
       <Link to={`/community/${post.id}`} className="group flex flex-col gap-3">
         <Heading className="sr-only">{t('community.cardHeading', { kind: t(`community.kinds.${post.kind}`), name: post.author?.name ?? t('community.someone') })}</Heading>
         <p className="line-clamp-5 whitespace-pre-line text-[15px] leading-relaxed text-ink group-hover:text-brand-900">{post.text}</p>

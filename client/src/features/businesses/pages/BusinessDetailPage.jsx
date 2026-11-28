@@ -16,6 +16,7 @@ import { MenuView } from '../../food/components/MenuView.jsx';
 import { BusinessOffersSection } from '../../offers/components/BusinessOffersSection.jsx';
 import { PriceRange, VegFriendlyBadge } from '../../food/components/FoodBits.jsx';
 import { useBusiness } from '../api.js';
+import { AdminModerationMenu, useLeaveAfterDelete } from '../../moderation/components/AdminModerationMenu.jsx';
 import { categoryName } from '../../categories/api.js';
 import { cldUrl } from '../../../lib/cloudinary.js';
 import { formatDateTime, formatRelative } from '../../../lib/format.js';
@@ -67,6 +68,7 @@ export default function BusinessDetailPage() {
   const { t, i18n } = useTranslation();
   const lang = i18n.language;
   const { data: b, isPending, isError, error, refetch } = useBusiness(slug);
+  const leave = useLeaveAfterDelete('/businesses');
   const { user } = useAuth();
   // Count public views only (not owner or admin previews of an unpublished listing).
   const isPublic = Boolean(b) && (!b.status || b.status === 'published');
@@ -128,7 +130,10 @@ export default function BusinessDetailPage() {
           <div className="flex items-start gap-3">
             {!b.photos?.length && <IconBubble icon={categoryIcon(b.subcategory?.icon ?? b.category?.icon)} size="lg" className="rounded-xl" />}
             <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <h2 className="text-xl font-bold leading-snug text-heading">{b.name}</h2>
+              <div className="flex items-start gap-1">
+                <h2 className="min-w-0 flex-1 text-xl font-bold leading-snug text-heading">{b.name}</h2>
+                <AdminModerationMenu type="business" id={b.id} title={b.name} onDone={leave} className="-mr-2 -mt-2" />
+              </div>
               <p className="text-sm text-meta">
                 {[categoryName(b.category, lang), categoryName(b.subcategory, lang)].filter(Boolean).join(' › ')}
                 {b.address?.area && ` • ${b.address.area}`}

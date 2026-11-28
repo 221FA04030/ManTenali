@@ -13,6 +13,7 @@ import { istDateTime, istStartOfDay, istEndOfDay, toIstDateTime } from '../../co
 import { escapeRegex } from '../../common/utils/validators.js';
 import { getEnv } from '../../config/env.js';
 import { ROLES } from '../../config/constants.js';
+import { listForModeration, moderationRow, markArchived, markRestored, unusedImageIds } from '../../common/utils/moderation.js';
 
 const S = EVENT_STATUS;
 const DAY_MS = 86_400_000;
@@ -630,4 +631,54 @@ export async function seedEvents(list, categoryIdBySlug, now = new Date()) {
     created += 1;
   }
   return { created, skipped: list.length - created };
+}
+
+/* ----------------------------- admin moderation (archive / restore / delete) ----------------------------- */
+const MOD = {
+  hiddenStatus: S.HIDDEN,
+  publicStatuses: PUBLIC_STATUSES,
+  titleField: 'title',
+  authorFields: ['submittedBy', 'createdBy'],
+  select: 'title slug status submittedBy createdBy moderation startAt publishedAt createdAt updatedAt',
+};
+const RESTORABLE = [S.PUBLISHED, S.CANCELLED, S.DRAFT, S.PENDING, S.CHANGES];
+const modRow = (e) => ({ ...moderationRow(e, MOD), title: e.title, slug: e.slug, startAt: e.startAt, publishedAt: e.publishedAt ?? null });
+
+/** Moderation dashboard rows, any status. */
+export async function moderationRows(query) {
+  const { items, total } = await listForModeration(Event, MOD, query);
+  return { items: items.map(modRow), total };
+}
+
+/** Admin: take an event off the website (kept, restorable; written to its history). */
+export async function adminArchive(admin, id, reason) {
+  const doc = await loadForAdmin(id);
+  const from = doc.status;
+  markArchived(doc, { admin, reason, hiddenStatus: S.HIDDEN, fallbackStatus: S.PUBLISHED, removedStatuses: [S.ARCHIVED, S.WITHDRAWN, S.REJECTED] });
+  log(doc, admin, 'hidden', from, doc.status, reason);
+  await doc.save();
+  return modRow(doc.toObject());
+}
+
+export async function adminRestore(admin, id) {
+  const doc = await loadForAdmin(id);
+  const from = doc.status;
+  markRestored(doc, { hiddenStatus: S.HIDDEN, fallbackStatus: S.PUBLISHED, allowedStatuses: RESTORABLE });
+  log(doc, admin, 'restored', from, doc.status);
+  await doc.save();
+  return modRow(doc.toObject());
+}
+
+/** Admin: delete the event record and its private evidence files. Returns its banner id when unused elsewhere. */
+export async function adminPurge(id) {
+  const doc = await Event.findById(id).select('title bannerImage').lean();
+  if (!doc) throw AppError.notFound('Event not found.');
+  await evidenceService.deleteForEvent(doc._id);
+  await Event.deleteOne({ _id: doc._id });
+  return { title: doc.title, images: await unusedImageIds(Event, 'bannerImage.publicId', [doc.bannerImage?.publicId]) };
+}
+
+/** Business deletion: events keep their own organiser name and venue; only the link goes. */
+export async function detachBusiness(businessId) {
+  await Event.updateMany({ businessId }, { $unset: { businessId: 1 } }, { timestamps: false });
 }

@@ -177,7 +177,7 @@ don't apply to it. Search has its own rate limit (60 requests per minute per IP)
 | GET | `/api/v1/businesses/:id/reviews/mine`, `/api/v1/reviews/mine` | Signed in | My review of a business / all my reviews (profile) |
 | PATCH / DELETE | `/api/v1/reviews/:id` | Author / Admin | Edit or delete my review; an admin's DELETE hides someone else's review |
 | POST | `/api/v1/reports` | Signed in | Report a business, review, offer, event or news item with a reason, or send a suggestion (`targetType: suggestion`) |
-| GET / PATCH | `/api/v1/admin/reports[/:id]` | Admin | Moderation queue; `action`: `dismiss`, `mark_reviewed`, `hide_target`, `block_user`, `hide_and_block` |
+| GET / PATCH | `/api/v1/admin/reports[/:id]` | Admin | Moderation queue; `action`: `dismiss`, `mark_reviewed`, `hide_target` (archives the content, restorable), `block_user`, `hide_and_block` |
 | POST | `/api/v1/analytics/events` | Public | Anonymous activity event: `view`, `contact_click`, `offer_view`, `share`, `search` (strict rate limit) |
 | GET | `/api/v1/admin/analytics/summary?from=&to=` | Admin | Counts by type and IST day, and distinct anonymous sessions (default last 7 days, at most 92) |
 
@@ -185,10 +185,41 @@ Ratings are recalculated from published reviews after every change. Analytics ev
 device id kept in the browser (`mt.sid`): no account, IP address, search words or location, and they are deleted
 automatically after 180 days. The admin screens for the reports queue and metrics come with Step 10.
 
+### Admin content moderation
+
+Admins can archive (take off the website, restorable), restore and permanently delete businesses, offers,
+events, news, community posts, comments and reviews. Admins see a three-dot menu on every card and detail page
+(regular users and visitors never see it), and the `/admin/moderation` dashboard lists everything by type.
+
+| Method | Path | Access | Purpose |
+|--------|------|--------|---------|
+| GET | `/api/v1/admin/moderation?type=&status=&q=&author=&page=&limit=` | Admin | One content type (`business`, `offer`, `event`, `news`, `post`, `comment`, `review`); `status` `all` (default), `published` or `archived`; `q` searches the title or text; `author` is a name, email or user id |
+| GET | `/api/v1/admin/moderation/:type/:id` | Admin | One item's moderation state (the menu uses it to offer Archive or Restore) |
+| POST | `/api/v1/admin/moderation/:type/:id/archive` | Admin | Archive, with an optional `reason` (max 500 characters) |
+| POST | `/api/v1/admin/moderation/:type/:id/restore` | Admin | Restore to the status it had before archiving |
+| DELETE | `/api/v1/admin/moderation/:type/:id` | Admin | Delete permanently; the body must be `{ "confirm": true }` (optional `reason`) |
+| GET | `/api/v1/admin/moderation/audit?contentType=&contentId=&page=` | Admin | Audit log of archive, restore and delete actions, newest first |
+
+- **Archive** reuses each content type's existing `hidden` status, which every public query already excludes
+  (lists, search, Home, feeds, saved items and the item's own URL, which answers 404). A `moderation`
+  record on the item stores `archivedAt`, `archivedBy`, `reason` and the status to restore; it exists only while
+  the item is archived and is never sent to the public. Owners and authors cannot publish an archived item again.
+- **Delete permanently** removes the record and its dependent data: a business takes its offers and reviews
+  with it, a post takes its likes and comments; saves of the item are removed and open reports about it are
+  closed as handled. Events and posts that only mention a deleted business keep their text and lose the link.
+  Images are deleted from Cloudinary only when no other record uses them (best effort). User accounts are
+  never deleted.
+- **Security:** every endpoint sits behind `authenticate` + `authorize('admin')`; the role is read from the
+  database on every request (a role sent by the browser is ignored, and users cannot change their own role).
+  Types, ids and bodies are validated strictly; normal create and edit endpoints reject `moderation` fields.
+- **Audit log** (`moderation_audit` collection): admin, content type and id, action, reason, a short title and
+  the time. No API can edit or delete entries; only admins can read them.
+
 ### Admin tools and launch (Step 10)
 
 | Screen | Path | What it does |
 |--------|------|--------------|
+| Content moderation | `/admin/moderation` | Every kind of user content by type: published, archived or all; search by title and author; archive, restore and delete permanently; the moderation audit log |
 | Reports & suggestions | `/admin/reports` | Moderation queue by status: open the content, dismiss, mark reviewed, hide content, block the author |
 | Users | `/admin/users` | Search people, change roles, block and unblock (every change is confirmed; not your own account) |
 | Metrics | `/admin/metrics` | Anonymous launch metrics: activity per day, active devices, searches that led to a contact, 7-day return rate, event views and shares, listing freshness |

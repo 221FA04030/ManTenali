@@ -161,6 +161,14 @@ export async function purgeForEvent(eventId) {
   return items.length;
 }
 
+/** Admin permanent delete of an event: delete its files, then the records themselves. */
+export async function deleteForEvent(eventId) {
+  const items = await EventEvidence.find({ eventId, status: 'active' }).select('storage.publicId').lean();
+  for (const ev of items) await discard(ev.storage.publicId);
+  await EventEvidence.deleteMany({ eventId });
+  return items.length;
+}
+
 /** Event ids that still have active evidence (for retention cleanup). */
 export const eventIdsWithActiveEvidence = (eventIds) => EventEvidence.distinct('eventId', { eventId: { $in: eventIds }, status: 'active' });
 

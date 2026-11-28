@@ -4,6 +4,7 @@ import * as eventsService from '../events/events.service.js';
 import * as newsService from '../news/news.service.js';
 import * as reportsService from '../reports/reports.service.js';
 import * as analyticsService from '../analytics/analytics.service.js';
+import * as moderationService from '../moderation/moderation.service.js';
 import { ok } from '../../common/utils/response.js';
 
 /**
@@ -95,4 +96,35 @@ export async function actOnReport(req, res) {
 
 export async function analyticsSummary(req, res) {
   return ok(res, await analyticsService.summary(req.validated.query));
+}
+
+// Content moderation: archive, restore, delete permanently, audit log
+export async function listModeration(req, res) {
+  const { items, meta } = await moderationService.list(req.validated.query);
+  return ok(res, items, meta);
+}
+
+export async function getModeration(req, res) {
+  const { type, id } = req.validated.params;
+  return ok(res, await moderationService.getOne(type, id));
+}
+
+export async function archiveContent(req, res) {
+  const { type, id } = req.validated.params;
+  return ok(res, await moderationService.archive(req.user, type, id, req.validated.body.reason));
+}
+
+export async function restoreContent(req, res) {
+  const { type, id } = req.validated.params;
+  return ok(res, await moderationService.restore(req.user, type, id));
+}
+
+export async function deleteContent(req, res) {
+  const { type, id } = req.validated.params;
+  return ok(res, await moderationService.remove(req.user, type, id, req.validated.body.reason));
+}
+
+export async function moderationAudit(req, res) {
+  const { items, meta } = await moderationService.listAudit(req.validated.query);
+  return ok(res, items, meta);
 }

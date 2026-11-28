@@ -210,7 +210,7 @@ describe('reviews on a business page (FR-REV-1)', () => {
     expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
   });
 
-  it('owners cannot review their own business; admins can hide reviews', async () => {
+  it('owners cannot review their own business; admins archive reviews from the moderation menu', async () => {
     mockApi(detailApi({ 'GET /auth/me': () => ok(sampleUser({ role: 'owner' })), 'GET /favorites': () => ok([]), 'GET /businesses/annapurna-tiffins': () => ok(business({ canManage: true })) }));
     const { unmount } = renderApp('/businesses/annapurna-tiffins');
     expect(await screen.findByText('You cannot review your own business.')).toBeInTheDocument();
@@ -222,13 +222,19 @@ describe('reviews on a business page (FR-REV-1)', () => {
         'GET /auth/me': () => ok(sampleUser({ role: 'admin' })),
         'GET /favorites': () => ok([]),
         'GET /businesses/b1/reviews/mine': () => ok(null),
-        'DELETE /reviews/r1': () => ok({ id: 'r1', status: 'hidden' }),
+        'GET /admin/moderation/review/r1': () => ok({ type: 'review', id: 'r1', status: 'published', moderationStatus: 'published' }),
+        'POST /admin/moderation/review/r1/archive': () => ok({ type: 'review', id: 'r1', status: 'hidden', moderationStatus: 'archived' }),
       }),
     );
     renderApp('/businesses/annapurna-tiffins');
-    await userEvent.setup().click(await screen.findByRole('button', { name: 'Hide - Ravi' }));
-    await waitFor(() => expect(calls.some((c) => c.method === 'DELETE' && c.path === '/reviews/r1')).toBe(true));
-    expect(screen.getByRole('button', { name: 'Report - Ravi' })).toBeInTheDocument();
+    const user = userEvent.setup();
+    expect(await screen.findByRole('button', { name: 'Report - Ravi' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Admin moderation options for .*Ravi/ }));
+    await user.click(await screen.findByRole('button', { name: /Archive temporarily/ }));
+    await user.type(screen.getByLabelText('Reason (optional)'), 'Abusive');
+    await user.click(screen.getByRole('button', { name: 'Archive' }));
+    await waitFor(() => expect(calls.some((c) => c.method === 'POST' && c.path === '/admin/moderation/review/r1/archive')).toBe(true));
+    expect(calls.find((c) => c.path === '/admin/moderation/review/r1/archive').body).toEqual({ reason: 'Abusive' });
   });
 });
 

@@ -6,6 +6,7 @@ import { AppError } from '../../common/errors/index.js';
 import { getPagination, buildMeta } from '../../common/utils/pagination.js';
 import { getEnv } from '../../config/env.js';
 import { ROLES } from '../../config/constants.js';
+import { listForModeration, moderationRow, markArchived, markRestored } from '../../common/utils/moderation.js';
 
 const R = REVIEW_STATUS;
 const isAdmin = (user) => user?.role === ROLES.ADMIN;
@@ -115,7 +116,7 @@ export async function hide(admin, id) {
   const r = await Review.findById(id);
   if (!r) throw AppError.notFound('Review not found.');
   if (r.status !== R.HIDDEN) {
-    r.status = R.HIDDEN;
+    markArchived(r, { admin, hiddenStatus: R.HIDDEN, fallbackStatus: R.PUBLISHED });
     r.hiddenBy = admin.id;
     r.hiddenAt = new Date();
     await r.save();
@@ -176,4 +177,64 @@ export async function seedReviews(list) {
   }
   for (const id of touched) await recalculateRating(id);
   return { created, skipped: list.length - created };
+}
+
+/* ----------------------------- admin moderation (archive / restore / delete) ----------------------------- */
+const MOD = {
+  hiddenStatus: R.HIDDEN,
+  publicStatuses: [R.PUBLISHED],
+  titleField: 'comment',
+  authorFields: ['userId'],
+  select: 'businessId userId rating comment status moderation createdAt updatedAt',
+};
+const reviewTitle = (r) => `${r.rating}/5${r.comment ? ` - ${r.comment.slice(0, 120)}` : ''}`;
+
+async function moderationRowsFor(items) {
+  const businesses = await businessesService.getSummariesByIds([...new Set(items.map((r) => String(r.businessId)))], { publishedOnly: false });
+  return items.map((r) => ({ ...moderationRow(r, MOD), title: reviewTitle(r), business: businesses.get(String(r.businessId)) ?? null }));
+}
+
+/** Moderation dashboard rows, any status. */
+export async function moderationRows(query) {
+  const { items, total } = await listForModeration(Review, MOD, query);
+  return { items: await moderationRowsFor(items), total };
+}
+
+/** Admin: hide a review from the business page (kept, restorable); the rating is recalculated. */
+export async function adminArchive(admin, id, reason) {
+  const r = await Review.findById(id);
+  if (!r) throw AppError.notFound('Review not found.');
+  markArchived(r, { admin, reason, hiddenStatus: R.HIDDEN, fallbackStatus: R.PUBLISHED });
+  r.hiddenBy = admin.id;
+  r.hiddenAt = new Date();
+  await r.save();
+  await recalculateRating(r.businessId);
+  return (await moderationRowsFor([r.toObject()]))[0];
+}
+
+export async function adminRestore(admin, id) {
+  const r = await Review.findById(id);
+  if (!r) throw AppError.notFound('Review not found.');
+  markRestored(r, { hiddenStatus: R.HIDDEN, fallbackStatus: R.PUBLISHED, allowedStatuses: [R.PUBLISHED] });
+  r.hiddenBy = undefined;
+  r.hiddenAt = undefined;
+  await r.save();
+  await recalculateRating(r.businessId);
+  return (await moderationRowsFor([r.toObject()]))[0];
+}
+
+/** Admin: delete the review record; the business rating is recalculated. */
+export async function adminPurge(id) {
+  const r = await Review.findById(id).lean();
+  if (!r) throw AppError.notFound('Review not found.');
+  await Review.deleteOne({ _id: r._id });
+  await recalculateRating(r.businessId);
+  return { title: reviewTitle(r), images: [] };
+}
+
+/** Business deletion: remove its reviews. Returns their ids. */
+export async function purgeForBusiness(businessId) {
+  const ids = (await Review.find({ businessId }).select('_id').lean()).map((r) => r._id);
+  await Review.deleteMany({ businessId });
+  return { ids };
 }

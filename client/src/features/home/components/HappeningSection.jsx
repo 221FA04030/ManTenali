@@ -5,6 +5,7 @@ import { CalendarDays, MapPin, Newspaper, TicketPercent } from 'lucide-react';
 import { cldUrl } from '../../../lib/cloudinary.js';
 import { formatDate } from '../../../lib/format.js';
 import { formatIsoDate } from '../../../lib/dates.js';
+import { WithModeration } from '../../moderation/components/AdminModerationMenu.jsx';
 
 const BADGE = {
   event: 'bg-primary-light text-primary',
@@ -47,6 +48,7 @@ export function HappeningCard({ type, item }) {
   const c = cardOf(type, item, t, i18n.language);
   const Icon = PLACEHOLDER_ICON[type];
   return (
+    <WithModeration type={type} id={item.id} title={item.title} className="h-full">
     <Link to={c.to} className="flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-black/[0.03] transition-shadow hover:shadow-lift">
       <span className="relative block h-[82px] shrink-0">
         {c.image?.url ? (
@@ -74,6 +76,7 @@ export function HappeningCard({ type, item }) {
         </span>
       </span>
     </Link>
+    </WithModeration>
   );
 }
 
