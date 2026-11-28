@@ -99,6 +99,12 @@
     "community": "కమ్యూనిటీ"
   },
   "home": {
+    "tenaliBanners": {
+      "label": "తెనాలి ప్రముఖ ప్రదేశాలు",
+      "vaikuntapuram": "వైకుంఠపురం ఆలయం",
+      "railwayStation": "తెనాలి రైల్వే స్టేషన్",
+      "vinayakaStatue": "తెనాలి వినాయక విగ్రహం"
+    },
     "categoriesLabel": "విభాగాలను చూడండి",
     "bannerTitle": "తెనాలిలో ఏం జరుగుతోంది",
     "bannerSubtitle": "కార్యక్రమాలు • వార్తలు • ఆఫర్లు • అప్‌డేట్స్",

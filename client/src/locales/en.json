@@ -99,6 +99,12 @@
     "community": "Community"
   },
   "home": {
+    "tenaliBanners": {
+      "label": "Tenali landmarks",
+      "vaikuntapuram": "Vaikuntapuram Temple",
+      "railwayStation": "Tenali Railway Station",
+      "vinayakaStatue": "Tenali Vinayaka Statue"
+    },
     "categoriesLabel": "Browse categories",
     "bannerTitle": "What's Happening in Tenali",
     "bannerSubtitle": "Events • News • Offers • Updates",

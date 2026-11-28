@@ -43,7 +43,7 @@ const prefersReducedMotion = () =>
  * hovered or focused, when the tab is hidden, with the pause button (WCAG 2.2.2),
  * and never moves by itself for people who prefer reduced motion.
  */
-export function HeroCarousel({ items }) {
+export function HeroCarousel({ items, className = '-mt-10' }) {
   const { t, i18n } = useTranslation();
   const scroller = useRef(null);
   const [index, setIndex] = useState(0);
@@ -98,7 +98,7 @@ export function HeroCarousel({ items }) {
     <section
       aria-roledescription="carousel"
       aria-label={t('home.heroLabel')}
-      className="relative z-10 mx-2.5 -mt-10 overflow-hidden rounded-hero shadow-lg"
+      className={cn('relative z-10 mx-2.5 overflow-hidden rounded-hero shadow-lg', className)}
       onPointerEnter={(e) => e.pointerType === 'mouse' && setHolding(true)}
       onPointerLeave={(e) => e.pointerType === 'mouse' && setHolding(false)}
       onFocus={() => setHolding(true)}

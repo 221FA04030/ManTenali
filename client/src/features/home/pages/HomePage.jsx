@@ -11,6 +11,7 @@ import { BusinessPickTile, BusinessRoundTile, BusinessRow } from '../../business
 import { PostCard } from '../../community/components/PostCard.jsx';
 import { useBusinessCategoryLink } from '../../categories/api.js';
 import { HeroCarousel } from '../components/HeroCarousel.jsx';
+import { TenaliBannerCarousel } from '../components/TenaliBannerCarousel.jsx';
 import { HappeningSection, mixHappening } from '../components/HappeningSection.jsx';
 import { ExploreSection } from '../components/ExploreSection.jsx';
 import { TodayInTenali } from '../components/TodayInTenali.jsx';
@@ -41,18 +42,18 @@ export default function HomePage() {
   const nearbyTitle =
     d?.nearby.mode === 'near' ? t('home.nearbyTitle') : d?.nearby.mode === 'area' ? t('home.nearbyArea', { area: d.nearby.area }) : t('home.popularTitle');
   const happening = useMemo(() => (d ? mixHappening(d) : []), [d]);
-  // The hero overlaps the bottom of the green bar; without one, the bar is shorter.
-  const hasHero = feed.isPending || (d?.banner?.length ?? 0) > 0;
 
   return (
     <>
-      <HomeHeader overlap={hasHero} />
+      {/* The Tenali banners overlap the bottom of the green bar; the highlights carousel follows them. */}
+      <HomeHeader />
+      <TenaliBannerCarousel />
       {feed.isPending ? (
-        <div className="relative z-10 mx-2.5 -mt-10" aria-busy="true" aria-label={t('common.loading')}>
+        <div className="relative mx-2.5 mt-3" aria-busy="true" aria-label={t('common.loading')}>
           <Skeleton className="aspect-[2.6/1] max-h-[200px] min-h-[152px] w-full rounded-hero" />
         </div>
       ) : (
-        <HeroCarousel items={d?.banner} />
+        <HeroCarousel items={d?.banner} className="mt-3" />
       )}
 
       <section aria-label={t('home.categoriesLabel')} className="cat-grid mx-auto mt-6 w-full max-w-[40rem]">
